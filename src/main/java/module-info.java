@@ -1,16 +1,9 @@
-module org.example.pdv_toninho {
+module br.com.loja.pdv {
     requires javafx.controls;
     requires javafx.fxml;
-
-    requires org.controlsfx.controls;
-    requires org.kordamp.ikonli.javafx;
+    requires java.sql;
     requires org.kordamp.bootstrapfx.core;
-    requires java.desktop;
 
-    opens org.example.pdv_toninho to javafx.fxml;
-    opens pdv.gerenciamento.toninho to javafx.fxml;
-
-    exports org.example.pdv_toninho;
-    exports pdv.gerenciamento.toninho;
-
+    opens br.com.loja.pdv to javafx.fxml;
+    exports br.com.loja.pdv;
 }
