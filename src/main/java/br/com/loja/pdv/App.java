@@ -1,6 +1,7 @@
 package br.com.loja.pdv;
 
 import br.com.loja.pdv.controller.*;
+import br.com.loja.pdv.config.AppPaths;
 import br.com.loja.pdv.domain.model.CarrinhoVenda;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
@@ -19,7 +20,6 @@ import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Objects;
@@ -44,7 +44,7 @@ public class App extends Application {
 
     @Override
     public void init() {
-        LoggingConfigurator.configurar(Path.of("logs"));
+        LoggingConfigurator.configurar(AppPaths.logDirectory());
         Thread.setDefaultUncaughtExceptionHandler(ErrorHandler::registrarInesperado);
         database = Database.local();
         new DatabaseInitializer(database).initialize();
@@ -64,7 +64,8 @@ public class App extends Application {
                 new SQLiteVendaRepository(database), productRepository, cashRepository,
                 session, paymentService);
         backupService = new BackupService(
-                new GerenciadorBackup(database, Path.of("backups")), session, auditService);
+                new GerenciadorBackup(database, AppPaths.backupDirectory()),
+                session, auditService);
         if (userRepository.contar() == 0) {
             String configured = System.getenv("PDV_ADMIN_PASSWORD");
             generatedInitialPassword = configured == null || configured.length() < 8

@@ -201,6 +201,18 @@
 - Commit: `test: adiciona testes integrados do fluxo completo do pdv`.
 - Pendências reais: empacotamento Windows e documentação final.
 
-## Próxima funcionalidade
+## Empacotamento e documentação
 
-Preparar a distribuição Windows, os caminhos permanentes e a documentação completa.
+- Dados permanentes: banco, backups e logs ficam em `%LOCALAPPDATA%\PDV Toninho`, fora de `Program Files` e do repositório.
+- Empacotamento: script PowerShell com Maven e `jpackage` para aplicativo portátil com runtime próprio e opção de instalador `.exe`.
+- Validação: aplicativo portátil gerado com `PDV Toninho.exe`, runtime Java, JavaFX, SQLite e classpath conferidos.
+- Instalador: opção documentada e preparada; a geração `.exe` exige WiX Toolset 3.11, ausente no ambiente atual.
+- Documentação: objetivo, funções, tecnologias, JDK/Maven, compilação, execução, IntelliJ/JavaFX, primeiro acesso, permissões, dados, backup, impressora, empacotamento, limitações e solução de problemas.
+- Testes executados: `mvn clean test`, `mvn clean package` e `scripts/build-windows.ps1`.
+- Resultado: 103 testes aprovados, sem falhas ou erros; pacote portátil criado com sucesso.
+- Commit: `build: prepara distribuição e documentação do pdv`.
+- Pendências impeditivas: nenhuma.
+
+## Situação final
+
+Primeira versão funcional concluída e pronta para uso local em um computador Windows.

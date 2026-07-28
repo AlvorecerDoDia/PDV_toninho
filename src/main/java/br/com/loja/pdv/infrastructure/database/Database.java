@@ -1,5 +1,6 @@
 package br.com.loja.pdv.infrastructure.database;
 
+import br.com.loja.pdv.config.AppPaths;
 import br.com.loja.pdv.exception.DatabaseException;
 
 import java.io.IOException;
@@ -11,8 +12,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public final class Database {
-
-    private static final Path DEFAULT_DATABASE_FILE = Path.of("data", "pdv.db");
 
     private final Path databaseFile;
     private final String url;
@@ -26,7 +25,7 @@ public final class Database {
     }
 
     public static Database local() {
-        return new Database(DEFAULT_DATABASE_FILE);
+        return new Database(AppPaths.databaseFile());
     }
 
     public Path getDatabaseFile() {
