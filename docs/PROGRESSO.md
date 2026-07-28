@@ -190,6 +190,17 @@
 - Commit: `style: padroniza interface e usabilidade do sistema`.
 - Pendências reais: teste integrado do fluxo completo.
 
+## Teste integrado completo
+
+- Fluxo automatizado: banco vazio, administrador, login, produto, entrada de estoque, abertura de caixa, venda com dinheiro e PIX, desconto, troco, baixa de estoque e entrada no caixa.
+- Continuação do fluxo: comprovante não fiscal, histórico, fechamento sem diferença, relatório, backup, alteração posterior e restauração do estado salvo.
+- Falhas cobertas pela suíte: código duplicado, estoque negativo, venda sem caixa, pagamento insuficiente, cancelamento sem permissão, rollback no meio da transação, impressora indisponível e restauração inválida.
+- Isolamento: todos os testes usam diretórios e bancos temporários; o banco real não é acessado.
+- Testes executados: `mvn clean test` e `mvn clean package`.
+- Resultado: 102 testes aprovados, sem falhas ou erros.
+- Commit: `test: adiciona testes integrados do fluxo completo do pdv`.
+- Pendências reais: empacotamento Windows e documentação final.
+
 ## Próxima funcionalidade
 
-Criar o teste integrado completo do PDV e dos principais cenários de falha.
+Preparar a distribuição Windows, os caminhos permanentes e a documentação completa.
