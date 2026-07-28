@@ -1,7 +1,7 @@
 package br.com.loja.pdv.service;
 
 import br.com.loja.pdv.domain.model.Produto;
-import br.com.loja.pdv.repository.sqlite.ProdutoRepository;
+import br.com.loja.pdv.repository.ProdutoRepository;
 
 import java.time.LocalDateTime;
 

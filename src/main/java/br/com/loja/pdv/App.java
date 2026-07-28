@@ -19,7 +19,7 @@ public class App extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader loader = new FXMLLoader(
                 Objects.requireNonNull(
-                        App.class.getResource("/br/com/loja/pdv/main-view.fxml")
+                        App.class.getResource("/br/com/loja/pdv/view/main-view.fxml")
                 )
         );
 

@@ -1,4 +1,4 @@
-package br.com.loja.pdv.repository.sqlite;
+package br.com.loja.pdv.repository;
 
 import br.com.loja.pdv.domain.model.Produto;
 
