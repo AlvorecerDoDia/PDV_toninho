@@ -12,6 +12,7 @@ public final class MainController {
     @FXML private TabPane tabs;
     @FXML private Tab vendasTab;
     @FXML private Tab historicoTab;
+    @FXML private Tab relatoriosTab;
     @FXML private Tab produtosTab;
     @FXML private Tab estoqueTab;
     @FXML private Tab caixaTab;
@@ -30,6 +31,7 @@ public final class MainController {
         if (!usuario.getPerfil().permite(Permissao.VENDAS)) tabs.getTabs().remove(vendasTab);
         if (!usuario.getPerfil().permite(Permissao.RELATORIOS)) {
             tabs.getTabs().remove(historicoTab);
+            tabs.getTabs().remove(relatoriosTab);
         }
         if (!usuario.getPerfil().permite(Permissao.PRODUTOS)) tabs.getTabs().remove(produtosTab);
         if (!usuario.getPerfil().permite(Permissao.ESTOQUE)) tabs.getTabs().remove(estoqueTab);

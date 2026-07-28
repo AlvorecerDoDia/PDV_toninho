@@ -7,6 +7,7 @@ import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
 import br.com.loja.pdv.infrastructure.security.PasswordHasher;
 import br.com.loja.pdv.infrastructure.printing.FormatadorComprovante;
 import br.com.loja.pdv.infrastructure.printing.ImpressoraWindows;
+import br.com.loja.pdv.infrastructure.reporting.ExportadorCsv;
 import br.com.loja.pdv.repository.sqlite.*;
 import br.com.loja.pdv.service.*;
 import javafx.application.Application;
@@ -121,6 +122,12 @@ public class App extends Application {
             return new HistoricoVendaController(
                     saleService, userService, new SQLitePagamentoRepository(database),
                     formatter, new ImpressoraWindows(formatter));
+        }
+        if (type == RelatorioController.class) {
+            return new RelatorioController(
+                    new RelatorioService(
+                            new SQLiteRelatorioRepository(database), session),
+                    userService, productService, new ExportadorCsv());
         }
         if (type == ProdutoController.class) return new ProdutoController(productService);
         if (type == EstoqueController.class) {

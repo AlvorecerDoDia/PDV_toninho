@@ -138,6 +138,19 @@
 - Commit: `feat: implementa impressão e segunda via de comprovantes`.
 - Pendências reais: relatórios básicos e exportação CSV.
 
+## Relatórios básicos e exportação CSV
+
+- Funcionalidade: vendas por dia, período e operador; pagamentos; produtos mais vendidos; estoque baixo; movimentações; descontos; cancelamentos; fechamentos; lucro bruto estimado.
+- Filtros: período, operador, forma de pagamento e produto.
+- Regras: vendas canceladas ficam fora dos totais normais e o lucro usa custo e preço históricos.
+- Interface: aba de relatórios com filtros, tabela e exportação CSV.
+- Exportação: UTF-8, valores no padrão brasileiro, campos escapados e proteção contra fórmulas de planilha.
+- Testes criados: consultas com banco conhecido, filtros, somatórios, cancelamentos, lucro histórico, fechamento, estoque baixo e CSV.
+- Testes executados: `mvn clean test` e `mvn clean package`.
+- Resultado: 88 testes aprovados, sem falhas ou erros; ambos os comandos concluíram com `BUILD SUCCESS`.
+- Commit: `feat: implementa relatórios básicos do pdv`.
+- Pendências reais: backup e restauração segura.
+
 ## Próxima funcionalidade
 
-Implementar relatórios básicos do PDV.
+Implementar backup e restauração do banco.

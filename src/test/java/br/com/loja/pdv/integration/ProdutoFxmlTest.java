@@ -9,6 +9,7 @@ import br.com.loja.pdv.controller.CaixaController;
 import br.com.loja.pdv.controller.VendaController;
 import br.com.loja.pdv.controller.PagamentoController;
 import br.com.loja.pdv.controller.HistoricoVendaController;
+import br.com.loja.pdv.controller.RelatorioController;
 import br.com.loja.pdv.domain.model.CarrinhoVenda;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
@@ -18,15 +19,18 @@ import br.com.loja.pdv.repository.sqlite.SQLiteUsuarioRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteCaixaRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteVendaRepository;
 import br.com.loja.pdv.repository.sqlite.SQLitePagamentoRepository;
+import br.com.loja.pdv.repository.sqlite.SQLiteRelatorioRepository;
 import br.com.loja.pdv.service.EstoqueService;
 import br.com.loja.pdv.service.SessaoUsuario;
 import br.com.loja.pdv.service.UsuarioService;
 import br.com.loja.pdv.service.CaixaService;
 import br.com.loja.pdv.service.PagamentoService;
 import br.com.loja.pdv.service.VendaService;
+import br.com.loja.pdv.service.RelatorioService;
 import br.com.loja.pdv.infrastructure.security.PasswordHasher;
 import br.com.loja.pdv.infrastructure.printing.FormatadorComprovante;
 import br.com.loja.pdv.infrastructure.printing.ImpressoraWindows;
+import br.com.loja.pdv.infrastructure.reporting.ExportadorCsv;
 import br.com.loja.pdv.service.ProdutoService;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -100,6 +104,12 @@ class ProdutoFxmlTest {
                                 saleService, userService,
                                 new SQLitePagamentoRepository(database),
                                 formatter, new ImpressoraWindows(formatter));
+                    }
+                    if (type == RelatorioController.class) {
+                        return new RelatorioController(
+                                new RelatorioService(
+                                        new SQLiteRelatorioRepository(database), session),
+                                userService, productService, new ExportadorCsv());
                     }
                     if (type == ProdutoController.class) {
                         return new ProdutoController(productService);

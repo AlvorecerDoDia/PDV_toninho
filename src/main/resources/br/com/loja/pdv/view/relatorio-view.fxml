@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.loja.pdv.controller.RelatorioController" spacing="8">
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+    <Label text="Relatórios" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+    <Label fx:id="mensagemLabel" wrapText="true"/>
+    <FlowPane hgap="8" vgap="8">
+        <ComboBox fx:id="tipoCombo" prefWidth="250"/>
+        <DatePicker fx:id="inicioPicker"/>
+        <DatePicker fx:id="fimPicker"/>
+        <ComboBox fx:id="operadorCombo" promptText="Todos os operadores" prefWidth="200"/>
+        <ComboBox fx:id="formaCombo" promptText="Todas as formas" prefWidth="180"/>
+        <ComboBox fx:id="produtoCombo" promptText="Todos os produtos" prefWidth="220"/>
+        <Button text="Gerar" onAction="#generate"/>
+        <Button text="Limpar filtros" onAction="#clearFilters"/>
+        <Button text="Exportar CSV" onAction="#exportCsv"/>
+    </FlowPane>
+    <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="categoriaColumn" text="Categoria" prefWidth="210"/>
+            <TableColumn fx:id="detalheColumn" text="Detalhe" prefWidth="300"/>
+            <TableColumn fx:id="quantidadeColumn" text="Quantidade" prefWidth="100"/>
+            <TableColumn fx:id="valorColumn" text="Valor" prefWidth="130"/>
+            <TableColumn fx:id="valor2Column" text="Valor secundário" prefWidth="140"/>
+            <TableColumn fx:id="dataColumn" text="Data" prefWidth="150"/>
+        </columns>
+    </TableView>
+</VBox>
