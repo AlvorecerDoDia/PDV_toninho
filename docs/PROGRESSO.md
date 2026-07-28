@@ -123,6 +123,21 @@
 - Commit: `feat: implementa histórico e cancelamento de vendas`.
 - Pendências reais: impressão e segunda via do comprovante não fiscal.
 
+## Impressão e segunda via de comprovantes
+
+- Funcionalidade: formatação, visualização, impressão comum e segunda via.
+- Resultado: comprovante textual com loja, indicação `COMPROVANTE NÃO FISCAL`, venda, data, operador, status, itens, preços históricos, totais, desconto, pagamentos, recebido e troco.
+- Segunda via: recebe também a identificação `SEGUNDA VIA`.
+- Segurança operacional: o conteúdo é exibido para confirmação antes da impressão física; indisponibilidade ou falha da impressora não altera nem perde a venda.
+- Integração Windows: envio para a impressora padrão por meio do serviço nativo de impressão do Java.
+- Interface: ações de visualizar, imprimir e emitir segunda via no histórico de vendas.
+- Testes criados: conteúdo completo, aviso não fiscal, segunda via e uso dos valores históricos.
+- Testes executados: `mvn clean test` e `mvn clean package`.
+- Resultado: 84 testes aprovados, sem falhas ou erros; ambos os comandos concluíram com `BUILD SUCCESS`.
+- Teste físico: não executado automaticamente para evitar dependência de impressora; ausência de impressora retorna mensagem clara e mantém a venda salva.
+- Commit: `feat: implementa impressão e segunda via de comprovantes`.
+- Pendências reais: relatórios básicos e exportação CSV.
+
 ## Próxima funcionalidade
 
-Implementar impressão e segunda via de comprovantes.
+Implementar relatórios básicos do PDV.

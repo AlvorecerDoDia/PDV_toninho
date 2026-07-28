@@ -29,6 +29,10 @@
         <TextArea fx:id="pagamentosArea" editable="false" promptText="Pagamentos"/>
     </SplitPane>
     <HBox spacing="8">
+        <Button text="Visualizar comprovante" onAction="#previewReceipt"/>
+        <Button text="Imprimir" onAction="#printReceipt"/>
+        <Button text="Segunda via" onAction="#printSecondCopy"/>
+        <Region HBox.hgrow="ALWAYS"/>
         <TextField fx:id="motivoField" promptText="Motivo obrigatório do cancelamento"
                    HBox.hgrow="ALWAYS"/>
         <Button text="Cancelar venda selecionada" onAction="#cancelSelected"/>

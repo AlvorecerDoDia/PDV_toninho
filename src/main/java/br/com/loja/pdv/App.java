@@ -5,6 +5,8 @@ import br.com.loja.pdv.domain.model.CarrinhoVenda;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
 import br.com.loja.pdv.infrastructure.security.PasswordHasher;
+import br.com.loja.pdv.infrastructure.printing.FormatadorComprovante;
+import br.com.loja.pdv.infrastructure.printing.ImpressoraWindows;
 import br.com.loja.pdv.repository.sqlite.*;
 import br.com.loja.pdv.service.*;
 import javafx.application.Application;
@@ -115,8 +117,10 @@ public class App extends Application {
             return new PagamentoController(paymentService, saleService, saleCart);
         }
         if (type == HistoricoVendaController.class) {
+            FormatadorComprovante formatter = new FormatadorComprovante("PDV Toninho");
             return new HistoricoVendaController(
-                    saleService, userService, new SQLitePagamentoRepository(database));
+                    saleService, userService, new SQLitePagamentoRepository(database),
+                    formatter, new ImpressoraWindows(formatter));
         }
         if (type == ProdutoController.class) return new ProdutoController(productService);
         if (type == EstoqueController.class) {

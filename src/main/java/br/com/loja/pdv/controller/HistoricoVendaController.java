@@ -5,6 +5,8 @@ import br.com.loja.pdv.domain.model.Pagamento;
 import br.com.loja.pdv.domain.model.Usuario;
 import br.com.loja.pdv.domain.model.Venda;
 import br.com.loja.pdv.repository.PagamentoRepository;
+import br.com.loja.pdv.infrastructure.printing.FormatadorComprovante;
+import br.com.loja.pdv.infrastructure.printing.ImpressoraComprovante;
 import br.com.loja.pdv.service.UsuarioService;
 import br.com.loja.pdv.service.VendaService;
 import javafx.beans.property.SimpleStringProperty;
@@ -42,12 +44,17 @@ public final class HistoricoVendaController {
     private final VendaService vendas;
     private final UsuarioService usuarios;
     private final PagamentoRepository pagamentos;
+    private final FormatadorComprovante formatador;
+    private final ImpressoraComprovante impressora;
 
     public HistoricoVendaController(
-            VendaService vendas, UsuarioService usuarios, PagamentoRepository pagamentos) {
+            VendaService vendas, UsuarioService usuarios, PagamentoRepository pagamentos,
+            FormatadorComprovante formatador, ImpressoraComprovante impressora) {
         this.vendas = vendas;
         this.usuarios = usuarios;
         this.pagamentos = pagamentos;
+        this.formatador = formatador;
+        this.impressora = impressora;
     }
 
     @FXML
@@ -123,6 +130,26 @@ public final class HistoricoVendaController {
         }
     }
 
+    @FXML
+    private void previewReceipt() {
+        try {
+            Venda sale = detailedSelectedSale();
+            showReceipt(sale, false, false);
+        } catch (RuntimeException exception) {
+            message(exception.getMessage(), true);
+        }
+    }
+
+    @FXML
+    private void printReceipt() {
+        print(false);
+    }
+
+    @FXML
+    private void printSecondCopy() {
+        print(true);
+    }
+
     private void showDetails(Venda selected) {
         if (selected == null) {
             clearDetails();
@@ -143,6 +170,52 @@ public final class HistoricoVendaController {
         } catch (RuntimeException exception) {
             message(exception.getMessage(), true);
         }
+    }
+
+    private void print(boolean secondCopy) {
+        try {
+            Venda sale = detailedSelectedSale();
+            if (showReceipt(sale, secondCopy, true)) {
+                impressora.imprimir(sale, secondCopy);
+                message(secondCopy
+                        ? "Segunda via enviada para a impressora."
+                        : "Comprovante enviado para a impressora.", false);
+            }
+        } catch (RuntimeException exception) {
+            message(exception.getMessage(), true);
+        }
+    }
+
+    private Venda detailedSelectedSale() {
+        Venda selected = vendasTable.getSelectionModel().getSelectedItem();
+        if (selected == null) throw new IllegalStateException("Selecione uma venda.");
+        Venda detailed = vendas.detalhar(selected.getId());
+        detailed.getPagamentos().addAll(pagamentos.listarPorVenda(selected.getId()));
+        return detailed;
+    }
+
+    private boolean showReceipt(Venda sale, boolean secondCopy, boolean confirmation) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(secondCopy ? "Segunda via" : "Comprovante não fiscal");
+        dialog.setHeaderText(confirmation
+                ? "Confira o comprovante antes de imprimir"
+                : "Visualização do comprovante");
+        TextArea content = new TextArea(formatador.formatar(sale, secondCopy));
+        content.setEditable(false);
+        content.setWrapText(false);
+        content.setPrefSize(520, 560);
+        dialog.getDialogPane().setContent(content);
+        if (confirmation) {
+            dialog.getDialogPane().getButtonTypes().setAll(
+                    new ButtonType("Imprimir", ButtonBar.ButtonData.OK_DONE),
+                    ButtonType.CANCEL);
+            return dialog.showAndWait()
+                    .filter(value -> value.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+                    .isPresent();
+        }
+        dialog.getDialogPane().getButtonTypes().setAll(ButtonType.CLOSE);
+        dialog.showAndWait();
+        return false;
     }
 
     private String formatItem(ItemVenda item) {

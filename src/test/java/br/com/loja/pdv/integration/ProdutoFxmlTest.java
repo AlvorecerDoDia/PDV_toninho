@@ -25,6 +25,8 @@ import br.com.loja.pdv.service.CaixaService;
 import br.com.loja.pdv.service.PagamentoService;
 import br.com.loja.pdv.service.VendaService;
 import br.com.loja.pdv.infrastructure.security.PasswordHasher;
+import br.com.loja.pdv.infrastructure.printing.FormatadorComprovante;
+import br.com.loja.pdv.infrastructure.printing.ImpressoraWindows;
 import br.com.loja.pdv.service.ProdutoService;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -92,9 +94,12 @@ class ProdutoFxmlTest {
                         return new PagamentoController(paymentService, saleService, cart);
                     }
                     if (type == HistoricoVendaController.class) {
+                        FormatadorComprovante formatter =
+                                new FormatadorComprovante("PDV Toninho");
                         return new HistoricoVendaController(
                                 saleService, userService,
-                                new SQLitePagamentoRepository(database));
+                                new SQLitePagamentoRepository(database),
+                                formatter, new ImpressoraWindows(formatter));
                     }
                     if (type == ProdutoController.class) {
                         return new ProdutoController(productService);
