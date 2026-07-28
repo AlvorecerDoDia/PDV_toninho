@@ -178,6 +178,18 @@
 - Commit: `feat: adiciona auditoria logs e tratamento de erros`.
 - Pendências reais: padronização visual e revisão de usabilidade.
 
+## Interface e usabilidade
+
+- Identidade visual: CSS centralizado com cores, tipografia, botões, campos, abas e tabelas consistentes.
+- Navegação: barra principal com nome do sistema, usuário/perfil atual e indicador de caixa aberto ou fechado.
+- Operação: tamanhos adequados para 1366×768, foco e atalhos da venda preservados e campos monetários/inteiros com formatação e restrição de entrada.
+- Segurança: confirmações para desativação de produto, sangria, fechamento de caixa, cancelamento de venda e restauração.
+- Legibilidade: títulos padronizados, contraste, linhas alternadas, seleção visível e ações principais/perigosas diferenciadas.
+- Testes atualizados: carregamento do login e de todos os FXML, associação do CSS e validação do layout em 1366×768.
+- Testes executados: testes de FXML específicos e suíte completa.
+- Commit: `style: padroniza interface e usabilidade do sistema`.
+- Pendências reais: teste integrado do fluxo completo.
+
 ## Próxima funcionalidade
 
-Padronizar a interface e revisar a usabilidade em 1366×768.
+Criar o teste integrado completo do PDV e dos principais cenários de falha.

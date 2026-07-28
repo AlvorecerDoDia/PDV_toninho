@@ -115,15 +115,18 @@ public class App extends Application {
     private void showMain(Stage stage) throws IOException {
         FXMLLoader loader = loader("/br/com/loja/pdv/view/main-view.fxml");
         loader.setControllerFactory(type -> createMainController(type));
-        stage.setScene(new Scene(loader.load(), 1100, 700));
-        stage.setMinWidth(900);
-        stage.setMinHeight(600);
+        stage.setScene(new Scene(loader.load(), 1280, 720));
+        stage.setMinWidth(1024);
+        stage.setMinHeight(640);
         stage.centerOnScreen();
     }
 
     private Object createMainController(Class<?> type) {
         ProdutoService productService = new ProdutoService(productRepository, auditService);
-        if (type == MainController.class) return new MainController(session);
+        if (type == MainController.class) {
+            return new MainController(
+                    session, new CaixaService(cashRepository, session, auditService));
+        }
         if (type == VendaController.class) {
             return new VendaController(productService, session, saleCart);
         }

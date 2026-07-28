@@ -39,6 +39,7 @@ public final class EstoqueController {
 
     @FXML
     private void initialize() {
+        UiFormatters.inteiro(quantidadeField);
         produtoCombo.getItems().setAll(produtoService.listarAtivos());
         produtoCombo.setConverter(new StringConverter<>() {
             @Override public String toString(Produto produto) {

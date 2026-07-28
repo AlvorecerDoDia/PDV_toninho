@@ -5,7 +5,7 @@
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="br.com.loja.pdv.controller.ProdutoController">
     <top><VBox spacing="8"><padding><Insets top="16" right="16" bottom="8" left="16"/></padding>
-        <Label text="Cadastro de produtos" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+        <Label text="Cadastro de produtos" styleClass="page-title"/>
         <Label fx:id="mensagemLabel"/>
     </VBox></top>
     <left><GridPane hgap="10" vgap="10" prefWidth="360"><padding><Insets top="8" right="16" bottom="16" left="16"/></padding>
@@ -15,9 +15,11 @@
         <Label text="Preço de venda *" GridPane.rowIndex="3"/><TextField fx:id="vendaField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
         <Label text="Estoque mínimo *" GridPane.rowIndex="4"/><TextField fx:id="minimoField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
         <HBox spacing="8" GridPane.rowIndex="5" GridPane.columnSpan="2">
-            <Button text="Salvar" onAction="#save"/><Button text="Editar" onAction="#save"/>
+            <Button text="Salvar" onAction="#save" styleClass="button, primary"/>
+            <Button text="Editar" onAction="#save"/>
             <Button text="Limpar" onAction="#clear"/>
-            <Button fx:id="desativarButton" text="Desativar" disable="true" onAction="#deactivate"/>
+            <Button fx:id="desativarButton" text="Desativar" disable="true"
+                    onAction="#deactivate" styleClass="button, danger"/>
             <Button fx:id="reativarButton" text="Reativar" disable="true" onAction="#reactivate"/>
         </HBox>
     </GridPane></left>

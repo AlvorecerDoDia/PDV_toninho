@@ -5,7 +5,7 @@
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="br.com.loja.pdv.controller.UsuarioController">
     <top><VBox spacing="8"><padding><Insets top="16" right="16" bottom="8" left="16"/></padding>
-        <Label text="Usuários e permissões" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+        <Label text="Usuários e permissões" styleClass="page-title"/>
         <Label fx:id="mensagemLabel"/>
     </VBox></top>
     <left><GridPane hgap="10" vgap="10" prefWidth="390"><padding><Insets top="8" right="16" bottom="16" left="16"/></padding>
@@ -15,7 +15,8 @@
         <Label text="Perfil" GridPane.rowIndex="3"/><ComboBox fx:id="perfilCombo" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
         <CheckBox fx:id="ativoCheck" text="Usuário ativo" selected="true" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
         <HBox spacing="8" GridPane.rowIndex="5" GridPane.columnSpan="2">
-            <Button text="Salvar" onAction="#save"/><Button text="Limpar" onAction="#clear"/>
+            <Button text="Salvar" onAction="#save" styleClass="button, primary"/>
+            <Button text="Limpar" onAction="#clear"/>
         </HBox>
     </GridPane></left>
     <center><TableView fx:id="tabela"><columns>

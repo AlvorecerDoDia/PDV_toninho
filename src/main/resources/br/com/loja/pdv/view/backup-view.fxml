@@ -5,11 +5,11 @@
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="br.com.loja.pdv.controller.BackupController" spacing="10">
     <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-    <Label text="Backup e restauração" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+    <Label text="Backup e restauração" styleClass="page-title"/>
     <Label fx:id="mensagemLabel" wrapText="true"/>
     <HBox spacing="8">
-        <Button text="Criar backup agora" onAction="#createBackup"/>
-        <Button text="Restaurar selecionado" onAction="#restoreSelected"/>
+        <Button text="Criar backup agora" onAction="#createBackup" styleClass="button, primary"/>
+        <Button text="Restaurar selecionado" onAction="#restoreSelected" styleClass="button, danger"/>
         <Button text="Escolher arquivo externo" onAction="#chooseAndRestore"/>
         <Button text="Atualizar lista" onAction="#refresh"/>
     </HBox>
@@ -19,5 +19,6 @@
             <TableColumn fx:id="dataColumn" text="Data" prefWidth="190"/>
         </columns>
     </TableView>
-    <Label text="A restauração cria uma cópia de segurança do banco atual antes de substituir os dados."/>
+    <Label text="A restauração cria uma cópia de segurança do banco atual antes de substituir os dados."
+           styleClass="hint"/>
 </VBox>

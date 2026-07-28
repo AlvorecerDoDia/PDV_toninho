@@ -46,6 +46,7 @@ public final class PagamentoController {
 
     @FXML
     private void initialize() {
+        UiFormatters.moeda(valorField);
         formaCombo.getItems().setAll(FormaPagamento.values());
         formaCombo.getSelectionModel().select(FormaPagamento.DINHEIRO);
         formaColumn.setCellValueFactory(row ->

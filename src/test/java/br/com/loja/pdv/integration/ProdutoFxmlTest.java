@@ -38,6 +38,7 @@ import br.com.loja.pdv.service.ProdutoService;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -46,6 +47,7 @@ import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -72,6 +74,8 @@ class ProdutoFxmlTest {
         new DatabaseInitializer(database).initialize();
         AtomicReference<Parent> root = new AtomicReference<>();
         AtomicReference<Throwable> failure = new AtomicReference<>();
+        AtomicBoolean layoutValido = new AtomicBoolean();
+        AtomicBoolean cssCarregado = new AtomicBoolean();
         CountDownLatch loaded = new CountDownLatch(1);
 
         Platform.runLater(() -> {
@@ -93,7 +97,10 @@ class ProdutoFxmlTest {
                         App.class.getResource("/br/com/loja/pdv/view/main-view.fxml")
                 );
                 loader.setControllerFactory(type -> {
-                    if (type == MainController.class) return new MainController(session);
+                    if (type == MainController.class) {
+                        return new MainController(
+                                session, new CaixaService(cashRegisters, session));
+                    }
                     if (type == VendaController.class) {
                         return new VendaController(productService, session, cart);
                     }
@@ -139,7 +146,15 @@ class ProdutoFxmlTest {
                     }
                     throw new IllegalArgumentException(type.getName());
                 });
-                root.set(loader.load());
+                Parent loadedRoot = loader.load();
+                Scene scene = new Scene(loadedRoot, 1366, 768);
+                loadedRoot.applyCss();
+                loadedRoot.layout();
+                root.set(loadedRoot);
+                cssCarregado.set(!loadedRoot.getStylesheets().isEmpty());
+                layoutValido.set(
+                        loadedRoot.getLayoutBounds().getWidth() <= scene.getWidth()
+                                && loadedRoot.getLayoutBounds().getHeight() <= scene.getHeight());
             } catch (Throwable throwable) {
                 failure.set(throwable);
             } finally {
@@ -152,5 +167,7 @@ class ProdutoFxmlTest {
             throw new AssertionError("FXML não carregou.", failure.get());
         }
         assertNotNull(root.get());
+        assertTrue(cssCarregado.get(), "O CSS central deve estar associado à tela principal.");
+        assertTrue(layoutValido.get(), "A tela deve caber em 1366×768.");
     }
 }

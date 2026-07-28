@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="br.com.loja.pdv.controller.PagamentoController" spacing="8"
-      style="-fx-border-color: #d1d5db; -fx-border-radius: 4;">
+      styleClass="payment-panel">
     <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
     <Label text="Pagamentos (F10)" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
     <Label fx:id="mensagemLabel" wrapText="true"/>
@@ -15,7 +15,7 @@
         <Button text="Remover" onAction="#removePayment"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button text="Finalizar venda" onAction="#finishSale"
-                style="-fx-font-weight: bold;"/>
+                styleClass="button, primary"/>
     </HBox>
     <TableView fx:id="pagamentosTable" prefHeight="105">
         <columns>

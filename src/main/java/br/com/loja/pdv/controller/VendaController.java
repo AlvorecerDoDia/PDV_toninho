@@ -57,6 +57,8 @@ public final class VendaController {
 
     @FXML
     private void initialize() {
+        UiFormatters.inteiro(quantidadeField);
+        UiFormatters.moeda(descontoField);
         sessao.exigir(Permissao.VENDAS);
         produtoColumn.setCellValueFactory(row ->
                 new SimpleStringProperty(row.getValue().getProduto().getNome()));

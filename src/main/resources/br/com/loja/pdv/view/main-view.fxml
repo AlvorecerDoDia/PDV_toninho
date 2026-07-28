@@ -3,9 +3,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="br.com.loja.pdv.controller.MainController">
-    <top><HBox alignment="CENTER_RIGHT"><padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
-        <Label fx:id="usuarioLabel" style="-fx-font-weight: bold;"/>
+            fx:controller="br.com.loja.pdv.controller.MainController"
+            stylesheets="@../css/app.css" styleClass="page">
+    <top><HBox styleClass="app-bar">
+        <Label text="PDV Toninho" styleClass="app-name"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="caixaLabel" styleClass="cash-closed"/>
+        <Label fx:id="usuarioLabel" styleClass="session-indicator"/>
     </HBox></top>
     <center><TabPane fx:id="tabs" tabClosingPolicy="UNAVAILABLE"><tabs>
         <Tab fx:id="vendasTab" text="Venda"><content><fx:include source="venda-view.fxml"/></content></Tab>

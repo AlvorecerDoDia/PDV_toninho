@@ -120,6 +120,13 @@ public final class HistoricoVendaController {
             message("Selecione uma venda.", true);
             return;
         }
+        Alert confirmation = new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "Cancelar a venda selecionada e estornar estoque e caixa?",
+                ButtonType.YES, ButtonType.NO);
+        confirmation.setTitle("Confirmar cancelamento");
+        confirmation.setHeaderText("Esta operação não pode ser desfeita.");
+        if (confirmation.showAndWait().orElse(ButtonType.NO) != ButtonType.YES) return;
         try {
             vendas.cancelar(selected.getId(), motivoField.getText());
             motivoField.clear();

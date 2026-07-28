@@ -38,6 +38,7 @@ public final class CaixaController {
 
     @FXML
     private void initialize() {
+        UiFormatters.moeda(aberturaField, valorField, contadoField);
         dataColumn.setCellValueFactory(row -> new SimpleStringProperty(
                 row.getValue().getCriadoEm().format(DATE_TIME)));
         tipoColumn.setCellValueFactory(row -> new SimpleStringProperty(
@@ -69,6 +70,8 @@ public final class CaixaController {
 
     @FXML
     private void withdraw() {
+        if (!confirm("Confirmar sangria",
+                "Registrar a retirada informada do caixa?")) return;
         execute(() -> {
             service.sangrar(parseMoney(valorField.getText()), motivoField.getText());
             clearMovement();
@@ -78,6 +81,8 @@ public final class CaixaController {
 
     @FXML
     private void close() {
+        if (!confirm("Fechar caixa",
+                "Após o fechamento, o caixa não aceitará novas vendas. Continuar?")) return;
         execute(() -> {
             Caixa caixa = service.fechar(parseMoney(contadoField.getText()));
             contadoField.clear();
@@ -124,6 +129,14 @@ public final class CaixaController {
     private void message(String text, boolean error) {
         mensagemLabel.setText(text == null ? "Ocorreu um erro." : text);
         mensagemLabel.setStyle(error ? "-fx-text-fill: #b91c1c;" : "-fx-text-fill: #166534;");
+    }
+
+    private boolean confirm(String title, String text) {
+        Alert alert = new Alert(
+                Alert.AlertType.CONFIRMATION, text, ButtonType.YES, ButtonType.NO);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
     }
 
     @FunctionalInterface

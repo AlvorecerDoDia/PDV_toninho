@@ -5,7 +5,7 @@
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="br.com.loja.pdv.controller.HistoricoVendaController" spacing="8">
     <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-    <Label text="Histórico de vendas" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+    <Label text="Histórico de vendas" styleClass="page-title"/>
     <Label fx:id="mensagemLabel" wrapText="true"/>
     <HBox spacing="8">
         <TextField fx:id="numeroField" promptText="Número da venda"/>

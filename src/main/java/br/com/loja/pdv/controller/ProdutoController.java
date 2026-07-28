@@ -33,6 +33,8 @@ public final class ProdutoController {
 
     @FXML
     private void initialize() {
+        UiFormatters.moeda(custoField, vendaField);
+        UiFormatters.inteiro(minimoField);
         nomeColumn.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getNome()));
         codigoColumn.setCellValueFactory(row -> new SimpleStringProperty(
                 row.getValue().getCodigoBarras() == null ? "" : row.getValue().getCodigoBarras()));
@@ -75,6 +77,9 @@ public final class ProdutoController {
 
     private void changeStatus(boolean active) {
         if (selected == null) return;
+        if (!active && !confirm(
+                "Desativar produto",
+                "O produto deixará de aparecer nas vendas. Deseja continuar?")) return;
         try {
             if (active) service.reativar(selected.getId()); else service.desativar(selected.getId());
             clear();
@@ -114,5 +119,13 @@ public final class ProdutoController {
     private void message(String text, boolean error) {
         mensagemLabel.setText(text == null ? "Ocorreu um erro." : text);
         mensagemLabel.setStyle(error ? "-fx-text-fill: #b91c1c;" : "-fx-text-fill: #166534;");
+    }
+
+    private boolean confirm(String title, String text) {
+        Alert alert = new Alert(
+                Alert.AlertType.CONFIRMATION, text, ButtonType.YES, ButtonType.NO);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
     }
 }

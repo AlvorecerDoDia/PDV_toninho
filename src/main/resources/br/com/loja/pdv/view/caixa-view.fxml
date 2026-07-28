@@ -5,21 +5,21 @@
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="br.com.loja.pdv.controller.CaixaController" spacing="10">
     <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-    <Label text="Controle de caixa" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+    <Label text="Controle de caixa" styleClass="page-title"/>
     <Label fx:id="statusLabel" style="-fx-font-weight: bold;"/>
     <Label fx:id="mensagemLabel" wrapText="true"/>
     <HBox spacing="8">
         <TextField fx:id="aberturaField" promptText="Valor de abertura"/>
-        <Button text="Abrir caixa" onAction="#open"/>
+        <Button text="Abrir caixa" onAction="#open" styleClass="button, primary"/>
         <TextField fx:id="contadoField" promptText="Valor contado"/>
-        <Button text="Fechar caixa" onAction="#close"/>
+        <Button text="Fechar caixa" onAction="#close" styleClass="button, danger"/>
     </HBox>
     <Separator/>
     <HBox spacing="8">
         <TextField fx:id="valorField" promptText="Valor"/>
         <TextField fx:id="motivoField" promptText="Motivo" HBox.hgrow="ALWAYS"/>
         <Button text="Suprimento" onAction="#supply"/>
-        <Button text="Sangria" onAction="#withdraw"/>
+        <Button text="Sangria" onAction="#withdraw" styleClass="button, danger"/>
         <Button text="Atualizar" onAction="#refresh"/>
     </HBox>
     <TableView fx:id="movimentacoesTable" VBox.vgrow="ALWAYS">
