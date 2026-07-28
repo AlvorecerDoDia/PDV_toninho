@@ -5,6 +5,7 @@ import br.com.loja.pdv.domain.enums.StatusCaixa;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/** Representa a abertura e o eventual fechamento do caixa de um operador. */
 public class Caixa {
     private Long id;
     private long usuarioId;

@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Centraliza cadastro, edição, consulta e inativação de produtos.
+ */
 public final class ProdutoService {
 
     private final ProdutoRepository repository;

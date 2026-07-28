@@ -9,6 +9,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
+/** Controla cadastro e manutenção dos usuários e perfis. */
 public final class UsuarioController {
     @FXML private TextField nomeField;
     @FXML private TextField loginField;

@@ -5,6 +5,9 @@ import br.com.loja.pdv.exception.ValidationException;
 import br.com.loja.pdv.infrastructure.security.PasswordHasher;
 import br.com.loja.pdv.repository.UsuarioRepository;
 
+/**
+ * Autentica usuários ativos e mantém a sessão da aplicação sincronizada.
+ */
 public final class AutenticacaoService {
     private final UsuarioRepository repository;
     private final PasswordHasher hasher;

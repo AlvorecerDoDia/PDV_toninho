@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/** Persiste caixa e movimentações preservando consistência transacional. */
 public final class SQLiteCaixaRepository implements CaixaRepository {
     private final Database database;
 
@@ -30,6 +31,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         try (Connection connection = database.getConnection()) {
             connection.setAutoCommit(false);
             try {
+                // A abertura e seu lançamento inicial são indivisíveis.
                 insertCashRegister(connection, caixa);
                 abertura.setCaixaId(caixa.getId());
                 insertMovement(connection, abertura);
@@ -66,6 +68,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         try (Connection connection = database.getConnection()) {
             connection.setAutoCommit(false);
             try {
+                // Recalcula o valor esperado dentro da transação para evitar saldo obsoleto.
                 ensureOpen(connection, movimentacao.getCaixaId());
                 BigDecimal expected = expected(connection, movimentacao.getCaixaId());
                 BigDecimal next = movimentacao.getTipo().aplicar(expected, movimentacao.getValor());
@@ -89,6 +92,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         try (Connection connection = database.getConnection()) {
             connection.setAutoCommit(false);
             try {
+                // O valor esperado é congelado no mesmo instante em que o caixa é fechado.
                 ensureOpen(connection, caixaId);
                 BigDecimal expected = expected(connection, caixaId);
                 BigDecimal difference = valorContado.subtract(expected);

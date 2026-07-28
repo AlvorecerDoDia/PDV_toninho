@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Implementa a auditoria com comandos JDBC preparados. */
 public final class SQLiteAuditoriaRepository implements AuditoriaRepository {
     private final Database database;
 

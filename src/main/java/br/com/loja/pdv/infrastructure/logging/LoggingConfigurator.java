@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.*;
 
+/** Instala os handlers de console e arquivo rotativo do java.util.logging. */
 public final class LoggingConfigurator {
     private LoggingConfigurator() {}
 

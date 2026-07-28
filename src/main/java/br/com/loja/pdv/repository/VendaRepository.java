@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.time.LocalDateTime;
 
+/** Contrato transacional de finalização, consulta e cancelamento de vendas. */
 public interface VendaRepository {
     Venda finalizar(Venda venda);
     Optional<Venda> buscarPorId(long id);

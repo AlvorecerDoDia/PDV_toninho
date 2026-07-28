@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/** Implementa o catálogo de produtos e traduz restrições do SQLite. */
 public final class SQLiteProdutoRepository implements ProdutoRepository {
 
     private final Database database;

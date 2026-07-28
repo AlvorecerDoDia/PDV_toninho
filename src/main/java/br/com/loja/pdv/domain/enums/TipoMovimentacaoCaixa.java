@@ -2,6 +2,7 @@ package br.com.loja.pdv.domain.enums;
 
 import java.math.BigDecimal;
 
+/** Tipos que determinam como um valor afeta o dinheiro esperado do caixa. */
 public enum TipoMovimentacaoCaixa {
     ABERTURA(1),
     VENDA_DINHEIRO(1),

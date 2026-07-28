@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/** Executa venda e cancelamento como transações completas do SQLite. */
 public final class SQLiteVendaRepository implements VendaRepository {
     private final Database database;
 
@@ -29,6 +30,8 @@ public final class SQLiteVendaRepository implements VendaRepository {
         try (Connection connection = database.getConnection()) {
             connection.setAutoCommit(false);
             try {
+                // Venda, estoque, pagamentos e caixa formam uma única operação:
+                // qualquer falha desfaz o conjunto para não deixar saldos divergentes.
                 ensureOpenCashRegister(connection, venda);
                 validateAndCaptureStock(connection, venda);
                 insertSale(connection, venda);
@@ -119,6 +122,8 @@ public final class SQLiteVendaRepository implements VendaRepository {
         try (Connection connection = database.getConnection()) {
             connection.setAutoCommit(false);
             try {
+                // O cancelamento só é concluído depois de devolver todos os itens,
+                // estornar o caixa e registrar a auditoria na mesma transação.
                 Venda venda = findSale(connection, vendaId);
                 if (venda.getStatus() == StatusVenda.CANCELADA) {
                     throw new ValidationException("A venda já foi cancelada.");

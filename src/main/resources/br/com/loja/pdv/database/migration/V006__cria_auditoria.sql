@@ -1,3 +1,4 @@
+-- Registro das ações administrativas e alterações sensíveis.
 CREATE TABLE auditoria (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     usuario_id INTEGER,

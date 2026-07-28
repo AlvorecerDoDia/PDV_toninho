@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Executa as consultas agregadas e converte centavos para BigDecimal. */
 public final class SQLiteRelatorioRepository implements RelatorioRepository {
     private final Database database;
 

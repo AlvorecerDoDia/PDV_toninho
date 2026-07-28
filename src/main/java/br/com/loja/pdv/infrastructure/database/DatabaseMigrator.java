@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+/** Descobre e aplica scripts versionados uma única vez, dentro de transação. */
 public final class DatabaseMigrator {
 
     private static final String MIGRATION_DIRECTORY =
@@ -43,6 +44,8 @@ public final class DatabaseMigrator {
         try (Connection connection = database.getConnection()) {
             connection.setAutoCommit(false);
             try {
+                // A tabela de controle e cada script são confirmados em conjunto:
+                // uma versão só aparece como aplicada quando todo o SQL termina.
                 createSchemaVersionTable(connection);
                 Set<Integer> appliedVersions = readAppliedVersions(connection);
                 validateAppliedVersions(appliedVersions);
@@ -90,6 +93,7 @@ public final class DatabaseMigrator {
     }
 
     private void validateAppliedVersions(Set<Integer> appliedVersions) {
+        // Impede abrir com código antigo um banco já alterado por uma versão futura.
         Set<Integer> knownVersions = new TreeSet<>();
         MIGRATIONS.forEach(migration -> knownVersions.add(migration.version()));
         if (!knownVersions.containsAll(appliedVersions)) {

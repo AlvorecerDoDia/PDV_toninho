@@ -6,6 +6,9 @@ import br.com.loja.pdv.infrastructure.backup.GerenciadorBackup;
 import java.nio.file.Path;
 import java.util.List;
 
+/**
+ * Coordena criação, retenção e restauração de backups conforme as permissões do usuário.
+ */
 public final class BackupService {
     private static final int RETENCAO_PADRAO = 20;
     private final GerenciadorBackup gerenciador;

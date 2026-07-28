@@ -4,6 +4,7 @@ import br.com.loja.pdv.domain.enums.TipoMovimentacaoEstoque;
 
 import java.time.LocalDateTime;
 
+/** Histórico de uma alteração de estoque com saldos anterior e posterior. */
 public class MovimentacaoEstoque {
     private Long id;
     private long produtoId;

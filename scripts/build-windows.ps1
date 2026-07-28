@@ -8,6 +8,7 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 
 Push-Location $projectRoot
 try {
+    # Compila e testa antes de preparar qualquer distribuição.
     & ".\mvnw.cmd" clean package
     if ($LASTEXITCODE -ne 0) {
         throw "A compilação Maven falhou."
@@ -15,6 +16,7 @@ try {
 
     $packageInput = Join-Path $projectRoot "target\package-input"
     New-Item -ItemType Directory -Path $packageInput -Force | Out-Null
+    # O jpackage recebe o JAR da aplicação e todas as dependências de execução.
     & ".\mvnw.cmd" dependency:copy-dependencies `
         "-DincludeScope=runtime" `
         "-DoutputDirectory=$packageInput"
@@ -25,6 +27,7 @@ try {
         -Destination $packageInput -Force
 
     $jpackage = $null
+    # Prioriza o JDK explicitamente configurado e usa o PATH como alternativa.
     if ($env:JAVA_HOME) {
         $candidate = Join-Path $env:JAVA_HOME "bin\jpackage.exe"
         if (Test-Path -LiteralPath $candidate) {
@@ -42,6 +45,7 @@ try {
     }
 
     $packageType = if ($Installer) { "exe" } else { "app-image" }
+    # PdvLauncher evita a inicialização especial do JavaFX ao abrir o executável.
     $arguments = @(
         "--type", $packageType,
         "--name", "PDV Toninho",

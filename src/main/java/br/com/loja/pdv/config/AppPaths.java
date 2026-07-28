@@ -2,6 +2,7 @@ package br.com.loja.pdv.config;
 
 import java.nio.file.Path;
 
+/** Resolve todos os arquivos graváveis fora da pasta de instalação. */
 public final class AppPaths {
     public static final String HOME_PROPERTY = "pdv.home";
     private static final String APP_DIRECTORY = "PDV Toninho";

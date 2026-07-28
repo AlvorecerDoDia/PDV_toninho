@@ -1,5 +1,6 @@
 package br.com.loja.pdv.infrastructure.database;
 
+/** Fachada curta usada pela aplicação e pelos testes para aplicar migrações. */
 public final class DatabaseInitializer {
 
     private final DatabaseMigrator migrator;

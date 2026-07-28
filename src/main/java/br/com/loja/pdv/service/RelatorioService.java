@@ -9,6 +9,9 @@ import br.com.loja.pdv.repository.RelatorioRepository;
 
 import java.util.List;
 
+/**
+ * Valida acesso e período antes de solicitar a geração dos relatórios.
+ */
 public final class RelatorioService {
     private final RelatorioRepository repository;
     private final SessaoUsuario sessao;

@@ -8,6 +8,7 @@ import javafx.scene.control.*;
 
 import java.math.BigDecimal;
 
+/** Controla o formulário e a tabela do cadastro de produtos. */
 public final class ProdutoController {
     @FXML private TextField codigoField;
     @FXML private TextField nomeField;

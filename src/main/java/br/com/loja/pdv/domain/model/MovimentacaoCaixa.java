@@ -5,6 +5,7 @@ import br.com.loja.pdv.domain.enums.TipoMovimentacaoCaixa;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/** Registro imutável após persistência de uma entrada ou saída do caixa. */
 public class MovimentacaoCaixa {
     private Long id;
     private long caixaId;

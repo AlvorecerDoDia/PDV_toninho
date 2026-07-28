@@ -7,6 +7,9 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Registra ações relevantes do usuário para rastreabilidade administrativa.
+ */
 public final class AuditoriaService {
     private final AuditoriaRepository repository;
     private final SessaoUsuario sessao;

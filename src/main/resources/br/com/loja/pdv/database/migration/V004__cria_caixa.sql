@@ -1,3 +1,4 @@
+-- Sessões de caixa e lançamentos financeiros vinculados ao operador.
 CREATE TABLE caixa (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     usuario_id INTEGER NOT NULL,

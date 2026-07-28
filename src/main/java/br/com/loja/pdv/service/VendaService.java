@@ -15,6 +15,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Orquestra a validação, finalização e o cancelamento das vendas do PDV.
+ */
 public final class VendaService {
     private static final DateTimeFormatter NUMBER_DATE =
             DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
@@ -75,6 +78,8 @@ public final class VendaService {
         }
         venda.getPagamentos().addAll(safePayments);
 
+        // O repositório confirma novamente caixa e estoque dentro da transação,
+        // pois eles podem ter mudado desde que os itens entraram no carrinho.
         Venda finalized = vendas.finalizar(venda);
         carrinho.limpar();
         return finalized;

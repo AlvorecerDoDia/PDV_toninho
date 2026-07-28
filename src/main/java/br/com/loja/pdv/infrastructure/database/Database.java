@@ -11,6 +11,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/** Abre conexões SQLite já configuradas com integridade e espera por bloqueios. */
 public final class Database {
 
     private final Path databaseFile;

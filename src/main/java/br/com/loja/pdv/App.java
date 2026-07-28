@@ -24,10 +24,9 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/** Monta as dependências e controla a troca entre login e tela principal. */
 public class App extends Application {
     private Database database;
-    private SQLiteUsuarioRepository userRepository;
-    private PasswordHasher passwordHasher;
     private UsuarioService userService;
     private AutenticacaoService authenticationService;
     private SessaoUsuario session;
@@ -46,8 +45,8 @@ public class App extends Application {
         Thread.setDefaultUncaughtExceptionHandler(ErrorHandler::registrarInesperado);
         database = Database.local();
         new DatabaseInitializer(database).initialize();
-        userRepository = new SQLiteUsuarioRepository(database);
-        passwordHasher = new PasswordHasher();
+        SQLiteUsuarioRepository userRepository = new SQLiteUsuarioRepository(database);
+        PasswordHasher passwordHasher = new PasswordHasher();
         session = new SessaoUsuario();
         auditService = new AuditoriaService(
                 new SQLiteAuditoriaRepository(database), session);
@@ -161,10 +160,6 @@ public class App extends Application {
 
     private IllegalArgumentException unconfigured(Class<?> type) {
         return new IllegalArgumentException("Controller não configurado: " + type.getName());
-    }
-
-    public static void main(String[] args) {
-        launch();
     }
 
     @Override

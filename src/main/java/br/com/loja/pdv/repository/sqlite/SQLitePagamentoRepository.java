@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Consulta os pagamentos históricos associados a uma venda. */
 public final class SQLitePagamentoRepository implements PagamentoRepository {
     private final Database database;
 

@@ -1,3 +1,4 @@
+-- Histórico imutável de entradas, saídas, perdas, ajustes e devoluções.
 CREATE TABLE movimentacao_estoque (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     produto_id INTEGER NOT NULL,

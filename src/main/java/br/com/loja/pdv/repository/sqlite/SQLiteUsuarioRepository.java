@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/** Persiste usuários sem nunca armazenar a senha original. */
 public final class SQLiteUsuarioRepository implements UsuarioRepository {
     private final Database database;
 

@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 
+/** Monta a navegação permitida pelo perfil e exibe o estado da sessão. */
 public final class MainController {
     @FXML private TabPane tabs;
     @FXML private Tab vendasTab;

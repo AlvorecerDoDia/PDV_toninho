@@ -169,6 +169,14 @@ Os FXML, CSS e scripts de migração ficam em
 `src/main/resources/br/com/loja/pdv`. Os testes unitários, de persistência,
 FXML e de fluxo completo ficam em `src/test/java/br/com/loja/pdv`.
 
+### Como o código está documentado
+
+Cada pacote possui um `package-info.java` explicando sua responsabilidade.
+Classes e interfaces têm documentação resumida, enquanto comentários internos
+ficam concentrados nas regras menos óbvias, como transações de venda, estoque e
+caixa, migrações, senhas e restauração de backup. Os arquivos FXML, CSS, SQL e o
+script de empacotamento também identificam o propósito de suas seções.
+
 ## Solução de problemas
 
 - **JavaFX não configurado:** confirme JDK 21, reimporte `pom.xml` e execute

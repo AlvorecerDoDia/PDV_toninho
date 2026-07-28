@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Atualiza saldo e histórico de estoque na mesma transação SQLite. */
 public final class SQLiteEstoqueRepository implements EstoqueRepository {
 
     private final Database database;
@@ -26,6 +27,7 @@ public final class SQLiteEstoqueRepository implements EstoqueRepository {
         try (Connection connection = database.getConnection()) {
             connection.setAutoCommit(false);
             try {
+                // O saldo do produto e seu histórico devem sempre avançar juntos.
                 int previous = readBalance(connection, movimentacao.getProdutoId());
                 int next = movimentacao.getTipo().apply(previous, movimentacao.getQuantidade());
                 if (next < 0) {

@@ -11,6 +11,9 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Gerencia usuários, credenciais e a configuração segura do acesso administrativo inicial.
+ */
 public final class UsuarioService {
     private static final char[] SENHA_ADMIN_INICIAL = "admin".toCharArray();
     private final UsuarioRepository repository;
@@ -44,19 +47,12 @@ public final class UsuarioService {
     public Usuario criar(
             String nome, String login, char[] senha, PerfilUsuario perfil, boolean alterarSenha) {
         validatePassword(senha);
-        LocalDateTime now = LocalDateTime.now(clock);
-        Usuario usuario = new Usuario();
-        usuario.setNome(normalizeRequired(nome, "nome"));
-        usuario.setLogin(normalizeRequired(login, "login").toLowerCase());
-        usuario.setSenhaHash(hasher.hash(senha));
-        usuario.setPerfil(perfil == null ? PerfilUsuario.OPERADOR : perfil);
-        usuario.setAtivo(true);
-        usuario.setAlterarSenha(alterarSenha);
-        usuario.setCriadoEm(now);
-        usuario.setAtualizadoEm(now);
-        Usuario salvo = repository.salvar(usuario);
-        audit("CRIACAO_USUARIO", salvo.getId(), null, safeValues(salvo));
-        return salvo;
+        return criarSemValidarSenha(
+                normalizeRequired(nome, "nome"),
+                normalizeRequired(login, "login").toLowerCase(),
+                senha,
+                perfil == null ? PerfilUsuario.OPERADOR : perfil,
+                alterarSenha);
     }
 
     public Usuario criarAdministradorInicial(char[] senha) {
@@ -68,11 +64,14 @@ public final class UsuarioService {
 
     public boolean configurarAdministradorInicialPadrao() {
         if (repository.contar() == 0) {
+            // "admin" é temporária e obriga a troca logo após o primeiro acesso.
             criarSemValidarSenha(
                     "Administrador", "admin", SENHA_ADMIN_INICIAL,
                     PerfilUsuario.ADMINISTRADOR, true);
             return true;
         }
+        // Atualiza instalações antigas somente enquanto a troca inicial ainda está
+        // pendente; uma senha que o administrador já escolheu nunca é sobrescrita.
         return repository.buscarPorLogin("admin")
                 .filter(usuario -> usuario.getPerfil() == PerfilUsuario.ADMINISTRADOR)
                 .filter(Usuario::isAlterarSenha)

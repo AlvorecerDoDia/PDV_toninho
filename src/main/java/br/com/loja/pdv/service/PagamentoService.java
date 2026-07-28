@@ -11,6 +11,9 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Monta pagamentos, valida os valores recebidos e calcula o troco da venda.
+ */
 public final class PagamentoService {
     private final Clock clock;
 

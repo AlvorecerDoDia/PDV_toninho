@@ -4,6 +4,7 @@ import br.com.loja.pdv.domain.enums.PerfilUsuario;
 
 import java.time.LocalDateTime;
 
+/** Usuário autenticável com perfil, status e hash de senha. */
 public class Usuario {
     private Long id;
     private String nome;

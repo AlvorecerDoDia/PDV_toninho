@@ -223,3 +223,12 @@ Primeira versão funcional concluída e pronta para uso local em um computador W
 - A senha continua armazenada somente como hash e a troca por uma senha forte permanece obrigatória.
 - Administradores iniciais ainda pendentes de troca recebem a credencial temporária atualizada; senhas já alteradas não são sobrescritas.
 - Validação: 105 testes aprovados e novo executável iniciado com sucesso usando um banco temporário.
+
+## Limpeza e documentação interna
+
+- Limpeza: removidos o ponto de entrada duplicado em `App`, referências mantidas como campos sem necessidade e a duplicação na criação de usuários.
+- Auditoria: classes, dependências e avisos do compilador revisados; nenhuma dependência obrigatória foi removida por ser usada em execução, via módulos JavaFX, JDBC ou testes.
+- Documentação Java: todos os pacotes, classes e interfaces de produção receberam descrições de responsabilidade.
+- Comentários internos: transações de venda, estoque e caixa, migrações, senhas e restauração de backup passaram a explicar suas decisões menos óbvias.
+- Recursos: telas FXML, seções CSS, migrações SQL e script de empacotamento também foram identificados e documentados.
+- Validação: 105 testes aprovados, pacote Windows recriado e `PDV Toninho.exe` iniciado com banco temporário criado corretamente.

@@ -2,6 +2,7 @@ package br.com.loja.pdv.domain.model;
 
 import java.math.BigDecimal;
 
+/** Item mutável do carrinho com preço capturado no momento da inclusão. */
 public final class ItemCarrinho {
     private final Produto produto;
     private int quantidade;

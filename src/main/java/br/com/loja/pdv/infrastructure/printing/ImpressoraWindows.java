@@ -6,6 +6,7 @@ import br.com.loja.pdv.exception.ImpressaoException;
 import javax.print.*;
 import java.nio.charset.StandardCharsets;
 
+/** Envia o comprovante textual à impressora padrão registrada no Windows. */
 public final class ImpressoraWindows implements ImpressoraComprovante {
     private final FormatadorComprovante formatador;
 

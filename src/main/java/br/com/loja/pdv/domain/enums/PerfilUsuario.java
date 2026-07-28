@@ -3,6 +3,7 @@ package br.com.loja.pdv.domain.enums;
 import java.util.EnumSet;
 import java.util.Set;
 
+/** Perfis que agrupam as permissões disponíveis no sistema. */
 public enum PerfilUsuario {
     ADMINISTRADOR(EnumSet.allOf(Permissao.class)),
     GERENTE(EnumSet.of(

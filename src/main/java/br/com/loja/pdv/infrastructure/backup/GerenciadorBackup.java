@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 
+/** Executa backup SQLite consistente, validação, retenção e restauração. */
 public final class GerenciadorBackup {
     private static final DateTimeFormatter NAME_DATE =
             DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS");
@@ -38,6 +39,7 @@ public final class GerenciadorBackup {
                     ? "backup" : prefix.replaceAll("[^a-zA-Z0-9_-]", "-");
             Path target = backupDirectory.resolve(
                     safePrefix + "-" + LocalDateTime.now(clock).format(NAME_DATE) + ".db");
+            // O SQLite produz uma cópia consistente mesmo com o banco em uso.
             try (Connection connection = database.getConnection();
                  PreparedStatement statement = connection.prepareStatement("VACUUM INTO ?")) {
                 statement.setString(1, target.toString());
@@ -59,11 +61,14 @@ public final class GerenciadorBackup {
             throw new DatabaseException("Selecione um backup válido.");
         }
         validar(normalized);
+        // Preserva o estado atual para permitir recuperação caso o arquivo escolhido
+        // esteja íntegro, mas não contenha os dados esperados pelo operador.
         Path safety = criar("antes-restauracao");
         Path target = database.getDatabaseFile();
         Path temporary = target.resolveSibling(target.getFileName() + ".restore.tmp");
         try {
             Files.copy(normalized, temporary, StandardCopyOption.REPLACE_EXISTING);
+            // A troca atômica impede que uma interrupção deixe um banco parcialmente copiado.
             Files.move(temporary, target,
                     StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             deleteSidecars(target);
@@ -150,6 +155,7 @@ public final class GerenciadorBackup {
     }
 
     private void deleteSidecars(Path target) throws IOException {
+        // WAL e SHM pertencem ao banco anterior e não podem acompanhar a restauração.
         Files.deleteIfExists(Path.of(target + "-wal"));
         Files.deleteIfExists(Path.of(target + "-shm"));
     }

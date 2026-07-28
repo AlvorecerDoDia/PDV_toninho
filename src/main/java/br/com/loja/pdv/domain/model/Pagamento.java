@@ -5,6 +5,7 @@ import br.com.loja.pdv.domain.enums.FormaPagamento;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/** Parcela de pagamento associada a uma forma de recebimento. */
 public class Pagamento {
     private Long id;
     private Long vendaId;
