@@ -51,7 +51,7 @@ try {
         "--dest", (Join-Path $projectRoot "target\distribution"),
         "--input", $packageInput,
         "--main-jar", "pdv-toninho.jar",
-        "--main-class", "br.com.loja.pdv.App",
+        "--main-class", "br.com.loja.pdv.PdvLauncher",
         "--java-options", "-Dfile.encoding=UTF-8"
     )
     if ($Installer) {

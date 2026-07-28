@@ -205,7 +205,7 @@
 
 - Dados permanentes: banco, backups e logs ficam em `%LOCALAPPDATA%\PDV Toninho`, fora de `Program Files` e do repositório.
 - Empacotamento: script PowerShell com Maven e `jpackage` para aplicativo portátil com runtime próprio e opção de instalador `.exe`.
-- Validação: aplicativo portátil gerado com `PDV Toninho.exe`, runtime Java, JavaFX, SQLite e classpath conferidos.
+- Validação: aplicativo portátil gerado com `PDV Toninho.exe`, runtime Java, JavaFX, SQLite e classpath conferidos; o executável foi iniciado em um diretório temporário e permaneceu em execução com banco e logs criados corretamente.
 - Instalador: opção documentada e preparada; a geração `.exe` exige WiX Toolset 3.11, ausente no ambiente atual.
 - Documentação: objetivo, funções, tecnologias, JDK/Maven, compilação, execução, IntelliJ/JavaFX, primeiro acesso, permissões, dados, backup, impressora, empacotamento, limitações e solução de problemas.
 - Testes executados: `mvn clean test`, `mvn clean package` e `scripts/build-windows.ps1`.
