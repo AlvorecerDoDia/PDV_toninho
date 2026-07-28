@@ -1,5 +1,7 @@
 package br.com.loja.pdv.infrastructure.database;
 
+import br.com.loja.pdv.exception.DatabaseException;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,37 +12,56 @@ import java.sql.Statement;
 
 public final class Database {
 
-    private static final Path DATA_DIRECTORY = Path.of("data");
-    private static final Path DATABASE_FILE =
-            DATA_DIRECTORY.resolve("pdv.db");
+    private static final Path DEFAULT_DATABASE_FILE = Path.of("data", "pdv.db");
 
-    private static final String URL =
-            "jdbc:sqlite:" + DATABASE_FILE.toAbsolutePath();
+    private final Path databaseFile;
+    private final String url;
 
-    private Database() {
-    }
-
-    public static Connection getConnection() throws SQLException {
-        createDataDirectory();
-
-        Connection connection = DriverManager.getConnection(URL);
-
-        try (Statement statement = connection.createStatement()) {
-            statement.execute("PRAGMA foreign_keys = ON");
-            statement.execute("PRAGMA busy_timeout = 5000");
+    public Database(Path databaseFile) {
+        if (databaseFile == null) {
+            throw new IllegalArgumentException("O arquivo do banco é obrigatório.");
         }
-
-        return connection;
+        this.databaseFile = databaseFile.toAbsolutePath().normalize();
+        this.url = "jdbc:sqlite:" + this.databaseFile;
     }
 
-    private static void createDataDirectory() {
+    public static Database local() {
+        return new Database(DEFAULT_DATABASE_FILE);
+    }
+
+    public Connection getConnection() throws SQLException {
+        createDataDirectory();
+        Connection connection = DriverManager.getConnection(url);
+
         try {
-            Files.createDirectories(DATA_DIRECTORY);
+            configure(connection);
+            return connection;
+        } catch (SQLException exception) {
+            connection.close();
+            throw exception;
+        }
+    }
+
+    private void createDataDirectory() {
+        Path directory = databaseFile.getParent();
+        if (directory == null) {
+            return;
+        }
+        try {
+            Files.createDirectories(directory);
         } catch (IOException exception) {
-            throw new IllegalStateException(
+            throw new DatabaseException(
                     "Não foi possível criar a pasta de dados.",
                     exception
             );
+        }
+    }
+
+    private void configure(Connection connection) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("PRAGMA foreign_keys = ON");
+            statement.execute("PRAGMA busy_timeout = 5000");
+            statement.execute("PRAGMA journal_mode = WAL");
         }
     }
 }

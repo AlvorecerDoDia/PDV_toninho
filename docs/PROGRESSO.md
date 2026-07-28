@@ -12,6 +12,18 @@
 - Commit: `chore: corrige estrutura inicial e configuração do projeto`.
 - Pendências reais: migrações versionadas, implementação do repositório SQLite e CRUD completo de produtos.
 
+## Migrações versionadas do banco
+
+- Funcionalidade: inicialização e migração transacional do SQLite.
+- Resultado: tabela `schema_version`, script `V001__cria_tabela_produto.sql`, execução única por versão, rollback em falha e rejeição de versões desconhecidas.
+- Configuração da conexão: chaves estrangeiras ativadas, espera de 5 segundos e modo WAL.
+- Testes criados: banco vazio, reinicialização idempotente, restrições `CHECK`, chaves estrangeiras, WAL, diretório inexistente, erro de diretório e versão desconhecida.
+- Testes executados: `mvn clean test` e `mvn clean package`.
+- Resultado: 7 testes aprovados, sem falhas ou erros; ambos os comandos concluíram com `BUILD SUCCESS`.
+- Teste manual: não utiliza o banco real; todos os cenários usam diretórios temporários isolados.
+- Commit: `feat: implementa migrações versionadas do banco`.
+- Pendências reais: CRUD completo e interface de cadastro de produtos.
+
 ## Próxima funcionalidade
 
-Implementar migrações versionadas e testáveis do banco SQLite.
+Implementar o cadastro completo de produtos.

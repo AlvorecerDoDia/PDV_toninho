@@ -1,5 +1,6 @@
 package br.com.loja.pdv;
 
+import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -13,7 +14,7 @@ public class App extends Application {
 
     @Override
     public void init() {
-        DatabaseInitializer.initialize();
+        new DatabaseInitializer(Database.local()).initialize();
     }
     @Override
     public void start(Stage stage) throws IOException {
