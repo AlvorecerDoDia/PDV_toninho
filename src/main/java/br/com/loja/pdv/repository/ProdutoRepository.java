@@ -17,5 +17,9 @@ public interface ProdutoRepository {
 
     List<Produto> listarAtivos();
 
+    List<Produto> pesquisar(String termo);
+
     void desativar(long id);
+
+    void reativar(long id);
 }

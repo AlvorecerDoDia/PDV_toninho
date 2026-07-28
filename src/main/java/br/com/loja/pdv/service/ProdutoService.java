@@ -1,41 +1,116 @@
 package br.com.loja.pdv.service;
 
 import br.com.loja.pdv.domain.model.Produto;
+import br.com.loja.pdv.exception.EntityNotFoundException;
+import br.com.loja.pdv.exception.ValidationException;
 import br.com.loja.pdv.repository.ProdutoRepository;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
-public class ProdutoService {
+public final class ProdutoService {
 
     private final ProdutoRepository repository;
+    private final Clock clock;
 
     public ProdutoService(ProdutoRepository repository) {
+        this(repository, Clock.systemDefaultZone());
+    }
+
+    ProdutoService(ProdutoRepository repository, Clock clock) {
         this.repository = repository;
+        this.clock = clock;
     }
 
     public Produto cadastrar(Produto produto) {
-        validar(produto);
-
+        normalizeAndValidate(produto);
+        LocalDateTime now = LocalDateTime.now(clock);
+        produto.setId(null);
+        produto.setQuantidadeEstoque(0);
         produto.setAtivo(true);
-        produto.setCriadoEm(LocalDateTime.now());
-        produto.setAtualizadoEm(LocalDateTime.now());
-
+        produto.setCriadoEm(now);
+        produto.setAtualizadoEm(now);
         return repository.salvar(produto);
     }
 
-    private void validar(Produto produto) {
-        if (produto.getNome() == null
-                || produto.getNome().isBlank()) {
-            throw new IllegalArgumentException(
-                    "O nome do produto é obrigatório."
-            );
+    public void atualizar(Produto produto) {
+        if (produto == null || produto.getId() == null || produto.getId() <= 0) {
+            throw new ValidationException("Selecione um produto válido para atualizar.");
         }
+        Produto persisted = buscarPorId(produto.getId());
+        normalizeAndValidate(produto);
+        produto.setQuantidadeEstoque(persisted.getQuantidadeEstoque());
+        produto.setAtivo(persisted.isAtivo());
+        produto.setCriadoEm(persisted.getCriadoEm());
+        produto.setAtualizadoEm(LocalDateTime.now(clock));
+        repository.atualizar(produto);
+    }
 
-        if (produto.getPrecoVenda() == null
-                || produto.getPrecoVenda().signum() < 0) {
-            throw new IllegalArgumentException(
-                    "O preço de venda é inválido."
-            );
+    public Produto buscarPorId(long id) {
+        return repository.buscarPorId(id)
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado."));
+    }
+
+    public Optional<Produto> buscarPorCodigoBarras(String codigo) {
+        String normalized = normalizeBarcode(codigo);
+        return normalized == null ? Optional.empty() : repository.buscarPorCodigoBarras(normalized);
+    }
+
+    public List<Produto> listarAtivos() {
+        return repository.listarAtivos();
+    }
+
+    public List<Produto> pesquisar(String termo) {
+        return repository.pesquisar(termo == null ? "" : termo.strip());
+    }
+
+    public void desativar(long id) {
+        buscarPorId(id);
+        repository.desativar(id);
+    }
+
+    public void reativar(long id) {
+        buscarPorId(id);
+        repository.reativar(id);
+    }
+
+    private void normalizeAndValidate(Produto produto) {
+        if (produto == null) {
+            throw new ValidationException("O produto é obrigatório.");
+        }
+        String name = produto.getNome() == null ? "" : produto.getNome().strip()
+                .replaceAll("\\s+", " ");
+        if (name.isEmpty()) {
+            throw new ValidationException("O nome do produto é obrigatório.");
+        }
+        produto.setNome(name);
+        produto.setCodigoBarras(normalizeBarcode(produto.getCodigoBarras()));
+        produto.setPrecoCusto(validateMoney(produto.getPrecoCusto(), "preço de custo"));
+        produto.setPrecoVenda(validateMoney(produto.getPrecoVenda(), "preço de venda"));
+        if (produto.getEstoqueMinimo() < 0) {
+            throw new ValidationException("O estoque mínimo não pode ser negativo.");
+        }
+    }
+
+    private String normalizeBarcode(String barcode) {
+        if (barcode == null || barcode.isBlank()) {
+            return null;
+        }
+        return barcode.strip();
+    }
+
+    private BigDecimal validateMoney(BigDecimal value, String field) {
+        if (value == null || value.signum() < 0) {
+            throw new ValidationException("O " + field + " não pode ser negativo.");
+        }
+        try {
+            return value.setScale(2, RoundingMode.UNNECESSARY);
+        } catch (ArithmeticException exception) {
+            throw new ValidationException("O " + field + " deve ter no máximo duas casas decimais.");
         }
     }
 }

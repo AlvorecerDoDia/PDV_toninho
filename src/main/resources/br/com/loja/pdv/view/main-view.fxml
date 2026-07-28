@@ -1,17 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1">
     <center>
-        <Label text="PDV iniciado com sucesso!"
-               style="-fx-font-size: 24px;" />
+        <fx:include source="produto-view.fxml"/>
     </center>
-
-    <padding>
-        <Insets top="20" right="20" bottom="20" left="20" />
-    </padding>
 </BorderPane>

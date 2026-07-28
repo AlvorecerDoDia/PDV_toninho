@@ -8,7 +8,7 @@
 - Resultado antes da correção: sucesso, porém sem testes automatizados.
 - Testes executados após a correção: `mvn clean test` e `mvn clean package`.
 - Resultado após a correção: ambos concluídos com `BUILD SUCCESS`; a base ainda não possuía testes automatizados.
-- Teste manual: carregamento do FXML principal será validado na etapa de cadastro de produtos.
+- Teste manual: carregamento e uso do FXML principal validados na etapa de cadastro de produtos.
 - Commit: `chore: corrige estrutura inicial e configuração do projeto`.
 - Pendências reais: migrações versionadas, implementação do repositório SQLite e CRUD completo de produtos.
 
@@ -26,4 +26,17 @@
 
 ## Próxima funcionalidade
 
-Implementar o cadastro completo de produtos.
+Implementar o controle e histórico de estoque.
+
+## Cadastro completo de produtos
+
+- Funcionalidade: CRUD de produtos com tela JavaFX.
+- Resultado: cadastro, atualização, pesquisa, desativação, reativação e persistência SQLite implementados.
+- Validações: nome obrigatório e normalizado, valores monetários não negativos, duas casas decimais, estoque mínimo não negativo e código de barras opcional e único.
+- Segurança dos dados: dinheiro persistido em centavos; quantidade de estoque não pode ser editada pelo cadastro.
+- Testes criados: serviço, repositório SQLite com banco temporário e carregamento completo do FXML.
+- Testes executados: `mvn clean test` e `mvn clean package`.
+- Resultado: 19 testes aprovados, sem falhas ou erros; ambos os comandos concluíram com `BUILD SUCCESS`.
+- Teste manual: aprovado pelo usuário em 28/07/2026; tela e operações visuais funcionando corretamente.
+- Commit: `feat: implementa cadastro completo de produtos`.
+- Pendências reais: controle transacional e histórico de estoque.

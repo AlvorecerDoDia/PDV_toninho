@@ -4,5 +4,6 @@ module br.com.loja.pdv {
     requires java.sql;
 
     opens br.com.loja.pdv to javafx.fxml;
+    opens br.com.loja.pdv.controller to javafx.fxml;
     exports br.com.loja.pdv;
 }
