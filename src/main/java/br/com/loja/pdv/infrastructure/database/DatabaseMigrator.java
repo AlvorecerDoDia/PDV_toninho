@@ -24,7 +24,8 @@ public final class DatabaseMigrator {
     private static final List<Migration> MIGRATIONS = List.of(
             new Migration(1, "cria tabela produto", "V001__cria_tabela_produto.sql"),
             new Migration(2, "cria movimentacao estoque", "V002__cria_movimentacao_estoque.sql"),
-            new Migration(3, "cria tabela usuario", "V003__cria_usuario.sql")
+            new Migration(3, "cria tabela usuario", "V003__cria_usuario.sql"),
+            new Migration(4, "cria caixa e movimentacoes", "V004__cria_caixa.sql")
     );
 
     private final Database database;

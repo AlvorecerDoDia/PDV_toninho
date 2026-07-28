@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.loja.pdv.controller.CaixaController" spacing="10">
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+    <Label text="Controle de caixa" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+    <Label fx:id="statusLabel" style="-fx-font-weight: bold;"/>
+    <Label fx:id="mensagemLabel" wrapText="true"/>
+    <HBox spacing="8">
+        <TextField fx:id="aberturaField" promptText="Valor de abertura"/>
+        <Button text="Abrir caixa" onAction="#open"/>
+        <TextField fx:id="contadoField" promptText="Valor contado"/>
+        <Button text="Fechar caixa" onAction="#close"/>
+    </HBox>
+    <Separator/>
+    <HBox spacing="8">
+        <TextField fx:id="valorField" promptText="Valor"/>
+        <TextField fx:id="motivoField" promptText="Motivo" HBox.hgrow="ALWAYS"/>
+        <Button text="Suprimento" onAction="#supply"/>
+        <Button text="Sangria" onAction="#withdraw"/>
+        <Button text="Atualizar" onAction="#refresh"/>
+    </HBox>
+    <TableView fx:id="movimentacoesTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="dataColumn" text="Data" prefWidth="150"/>
+            <TableColumn fx:id="tipoColumn" text="Tipo" prefWidth="160"/>
+            <TableColumn fx:id="valorColumn" text="Valor" prefWidth="130"/>
+            <TableColumn fx:id="motivoColumn" text="Motivo" prefWidth="380"/>
+        </columns>
+    </TableView>
+</VBox>

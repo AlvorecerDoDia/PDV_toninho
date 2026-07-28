@@ -5,14 +5,17 @@ import br.com.loja.pdv.controller.ProdutoController;
 import br.com.loja.pdv.controller.EstoqueController;
 import br.com.loja.pdv.controller.MainController;
 import br.com.loja.pdv.controller.UsuarioController;
+import br.com.loja.pdv.controller.CaixaController;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
 import br.com.loja.pdv.repository.sqlite.SQLiteProdutoRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteEstoqueRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteUsuarioRepository;
+import br.com.loja.pdv.repository.sqlite.SQLiteCaixaRepository;
 import br.com.loja.pdv.service.EstoqueService;
 import br.com.loja.pdv.service.SessaoUsuario;
 import br.com.loja.pdv.service.UsuarioService;
+import br.com.loja.pdv.service.CaixaService;
 import br.com.loja.pdv.infrastructure.security.PasswordHasher;
 import br.com.loja.pdv.service.ProdutoService;
 import javafx.application.Platform;
@@ -77,6 +80,10 @@ class ProdutoFxmlTest {
                                         new SQLiteEstoqueRepository(database), products),
                                 productService
                         );
+                    }
+                    if (type == CaixaController.class) {
+                        return new CaixaController(
+                                new CaixaService(new SQLiteCaixaRepository(database), session));
                     }
                     if (type == UsuarioController.class) {
                         return new UsuarioController(userService, session);

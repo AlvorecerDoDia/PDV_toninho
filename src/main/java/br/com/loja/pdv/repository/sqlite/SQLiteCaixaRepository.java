@@ -1,0 +1,289 @@
+package br.com.loja.pdv.repository.sqlite;
+
+import br.com.loja.pdv.domain.enums.StatusCaixa;
+import br.com.loja.pdv.domain.enums.TipoMovimentacaoCaixa;
+import br.com.loja.pdv.domain.model.Caixa;
+import br.com.loja.pdv.domain.model.MovimentacaoCaixa;
+import br.com.loja.pdv.exception.DatabaseException;
+import br.com.loja.pdv.exception.EntityNotFoundException;
+import br.com.loja.pdv.exception.ValidationException;
+import br.com.loja.pdv.infrastructure.database.Database;
+import br.com.loja.pdv.repository.CaixaRepository;
+import br.com.loja.pdv.util.MoneyUtils;
+
+import java.math.BigDecimal;
+import java.sql.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+public final class SQLiteCaixaRepository implements CaixaRepository {
+    private final Database database;
+
+    public SQLiteCaixaRepository(Database database) {
+        this.database = database;
+    }
+
+    @Override
+    public Caixa abrir(Caixa caixa, MovimentacaoCaixa abertura) {
+        try (Connection connection = database.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                insertCashRegister(connection, caixa);
+                abertura.setCaixaId(caixa.getId());
+                insertMovement(connection, abertura);
+                connection.commit();
+                return caixa;
+            } catch (RuntimeException | SQLException exception) {
+                rollback(connection, exception);
+                if (isUniqueConstraint(exception)) {
+                    throw new ValidationException("O usuário já possui um caixa aberto.");
+                }
+                throw translate("Não foi possível abrir o caixa.", exception);
+            }
+        } catch (SQLException exception) {
+            throw new DatabaseException("Não foi possível acessar o caixa.", exception);
+        }
+    }
+
+    @Override
+    public Optional<Caixa> buscarPorId(long id) {
+        return findOne("SELECT * FROM caixa WHERE id = ?", id);
+    }
+
+    @Override
+    public Optional<Caixa> buscarAbertoPorUsuario(long usuarioId) {
+        return findOne("""
+                SELECT * FROM caixa
+                WHERE usuario_id = ? AND status = 'ABERTO'
+                ORDER BY id DESC LIMIT 1
+                """, usuarioId);
+    }
+
+    @Override
+    public MovimentacaoCaixa registrar(MovimentacaoCaixa movimentacao) {
+        try (Connection connection = database.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                ensureOpen(connection, movimentacao.getCaixaId());
+                BigDecimal expected = expected(connection, movimentacao.getCaixaId());
+                BigDecimal next = movimentacao.getTipo().aplicar(expected, movimentacao.getValor());
+                if (next.signum() < 0) {
+                    throw new ValidationException("A sangria supera o dinheiro esperado.");
+                }
+                insertMovement(connection, movimentacao);
+                connection.commit();
+                return movimentacao;
+            } catch (RuntimeException | SQLException exception) {
+                rollback(connection, exception);
+                throw translate("Não foi possível registrar a movimentação de caixa.", exception);
+            }
+        } catch (SQLException exception) {
+            throw new DatabaseException("Não foi possível acessar o caixa.", exception);
+        }
+    }
+
+    @Override
+    public Caixa fechar(long caixaId, BigDecimal valorContado, LocalDateTime fechadoEm) {
+        try (Connection connection = database.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                ensureOpen(connection, caixaId);
+                BigDecimal expected = expected(connection, caixaId);
+                BigDecimal difference = valorContado.subtract(expected);
+                try (PreparedStatement statement = connection.prepareStatement("""
+                        UPDATE caixa SET status = 'FECHADO', valor_esperado_centavos = ?,
+                            valor_contado_centavos = ?, diferenca_centavos = ?, fechado_em = ?
+                        WHERE id = ? AND status = 'ABERTO'
+                        """)) {
+                    statement.setLong(1, MoneyUtils.toCents(expected));
+                    statement.setLong(2, MoneyUtils.toCents(valorContado));
+                    statement.setLong(3, MoneyUtils.toCents(difference));
+                    statement.setString(4, fechadoEm.toString());
+                    statement.setLong(5, caixaId);
+                    statement.executeUpdate();
+                }
+                connection.commit();
+                return buscarPorId(caixaId).orElseThrow();
+            } catch (RuntimeException | SQLException exception) {
+                rollback(connection, exception);
+                throw translate("Não foi possível fechar o caixa.", exception);
+            }
+        } catch (SQLException exception) {
+            throw new DatabaseException("Não foi possível acessar o caixa.", exception);
+        }
+    }
+
+    @Override
+    public BigDecimal buscarDinheiroEsperado(long caixaId) {
+        try (Connection connection = database.getConnection()) {
+            ensureExists(connection, caixaId);
+            return expected(connection, caixaId);
+        } catch (SQLException exception) {
+            throw new DatabaseException("Não foi possível calcular o caixa.", exception);
+        }
+    }
+
+    @Override
+    public List<MovimentacaoCaixa> listarMovimentacoes(long caixaId) {
+        String sql = """
+                SELECT * FROM movimentacao_caixa
+                WHERE caixa_id = ? ORDER BY criado_em DESC, id DESC
+                """;
+        try (Connection connection = database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, caixaId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<MovimentacaoCaixa> result = new ArrayList<>();
+                while (resultSet.next()) result.add(mapMovement(resultSet));
+                return result;
+            }
+        } catch (SQLException exception) {
+            throw new DatabaseException("Não foi possível consultar as movimentações.", exception);
+        }
+    }
+
+    private Optional<Caixa> findOne(String sql, long parameter) {
+        try (Connection connection = database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, parameter);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() ? Optional.of(mapCashRegister(resultSet)) : Optional.empty();
+            }
+        } catch (SQLException exception) {
+            throw new DatabaseException("Não foi possível consultar o caixa.", exception);
+        }
+    }
+
+    private void insertCashRegister(Connection connection, Caixa caixa) throws SQLException {
+        String sql = """
+                INSERT INTO caixa (usuario_id, status, valor_abertura_centavos, aberto_em)
+                VALUES (?, 'ABERTO', ?, ?)
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(
+                sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setLong(1, caixa.getUsuarioId());
+            statement.setLong(2, MoneyUtils.toCents(caixa.getValorAbertura()));
+            statement.setString(3, caixa.getAbertoEm().toString());
+            statement.executeUpdate();
+            try (ResultSet keys = statement.getGeneratedKeys()) {
+                if (!keys.next()) throw new SQLException("ID do caixa não retornado.");
+                caixa.setId(keys.getLong(1));
+            }
+        }
+    }
+
+    private void insertMovement(Connection connection, MovimentacaoCaixa movement)
+            throws SQLException {
+        String sql = """
+                INSERT INTO movimentacao_caixa (
+                    caixa_id, usuario_id, tipo, valor_centavos, motivo, criado_em
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(
+                sql, Statement.RETURN_GENERATED_KEYS)) {
+            statement.setLong(1, movement.getCaixaId());
+            statement.setLong(2, movement.getUsuarioId());
+            statement.setString(3, movement.getTipo().name());
+            statement.setLong(4, MoneyUtils.toCents(movement.getValor()));
+            statement.setString(5, movement.getMotivo());
+            statement.setString(6, movement.getCriadoEm().toString());
+            statement.executeUpdate();
+            try (ResultSet keys = statement.getGeneratedKeys()) {
+                if (keys.next()) movement.setId(keys.getLong(1));
+            }
+        }
+    }
+
+    private void ensureOpen(Connection connection, long caixaId) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT status FROM caixa WHERE id = ?")) {
+            statement.setLong(1, caixaId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) throw new EntityNotFoundException("Caixa não encontrado.");
+                if (!StatusCaixa.ABERTO.name().equals(resultSet.getString(1))) {
+                    throw new ValidationException("O caixa está fechado.");
+                }
+            }
+        }
+    }
+
+    private void ensureExists(Connection connection, long caixaId) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT 1 FROM caixa WHERE id = ?")) {
+            statement.setLong(1, caixaId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) throw new EntityNotFoundException("Caixa não encontrado.");
+            }
+        }
+    }
+
+    private BigDecimal expected(Connection connection, long caixaId) throws SQLException {
+        String sql = """
+                SELECT COALESCE(SUM(CASE
+                    WHEN tipo IN ('ABERTURA', 'VENDA_DINHEIRO', 'SUPRIMENTO')
+                    THEN valor_centavos ELSE -valor_centavos END), 0)
+                FROM movimentacao_caixa WHERE caixa_id = ?
+                """;
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, caixaId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                return MoneyUtils.fromCents(resultSet.getLong(1));
+            }
+        }
+    }
+
+    private Caixa mapCashRegister(ResultSet resultSet) throws SQLException {
+        Caixa caixa = new Caixa();
+        caixa.setId(resultSet.getLong("id"));
+        caixa.setUsuarioId(resultSet.getLong("usuario_id"));
+        caixa.setStatus(StatusCaixa.valueOf(resultSet.getString("status")));
+        caixa.setValorAbertura(MoneyUtils.fromCents(
+                resultSet.getLong("valor_abertura_centavos")));
+        caixa.setValorEsperado(nullableMoney(resultSet, "valor_esperado_centavos"));
+        caixa.setValorContado(nullableMoney(resultSet, "valor_contado_centavos"));
+        caixa.setDiferenca(nullableMoney(resultSet, "diferenca_centavos"));
+        caixa.setAbertoEm(LocalDateTime.parse(resultSet.getString("aberto_em")));
+        String closed = resultSet.getString("fechado_em");
+        caixa.setFechadoEm(closed == null ? null : LocalDateTime.parse(closed));
+        return caixa;
+    }
+
+    private MovimentacaoCaixa mapMovement(ResultSet resultSet) throws SQLException {
+        MovimentacaoCaixa movement = new MovimentacaoCaixa();
+        movement.setId(resultSet.getLong("id"));
+        movement.setCaixaId(resultSet.getLong("caixa_id"));
+        movement.setUsuarioId(resultSet.getLong("usuario_id"));
+        movement.setTipo(TipoMovimentacaoCaixa.valueOf(resultSet.getString("tipo")));
+        movement.setValor(MoneyUtils.fromCents(resultSet.getLong("valor_centavos")));
+        movement.setMotivo(resultSet.getString("motivo"));
+        movement.setCriadoEm(LocalDateTime.parse(resultSet.getString("criado_em")));
+        return movement;
+    }
+
+    private BigDecimal nullableMoney(ResultSet resultSet, String column) throws SQLException {
+        long cents = resultSet.getLong(column);
+        return resultSet.wasNull() ? null : MoneyUtils.fromCents(cents);
+    }
+
+    private RuntimeException translate(String message, Exception exception) {
+        if (exception instanceof RuntimeException runtimeException) return runtimeException;
+        return new DatabaseException(message, exception);
+    }
+
+    private boolean isUniqueConstraint(Exception exception) {
+        return exception instanceof SQLException sql
+                && sql.getMessage() != null
+                && sql.getMessage().contains("UNIQUE constraint failed");
+    }
+
+    private void rollback(Connection connection, Exception cause) {
+        try {
+            connection.rollback();
+        } catch (SQLException exception) {
+            cause.addSuppressed(exception);
+        }
+    }
+}

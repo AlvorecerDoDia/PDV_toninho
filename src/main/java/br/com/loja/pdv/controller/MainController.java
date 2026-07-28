@@ -12,6 +12,7 @@ public final class MainController {
     @FXML private TabPane tabs;
     @FXML private Tab produtosTab;
     @FXML private Tab estoqueTab;
+    @FXML private Tab caixaTab;
     @FXML private Tab usuariosTab;
     @FXML private Label usuarioLabel;
     private final SessaoUsuario sessao;
@@ -26,6 +27,7 @@ public final class MainController {
         usuarioLabel.setText(usuario.getNome() + " — " + usuario.getPerfil());
         if (!usuario.getPerfil().permite(Permissao.PRODUTOS)) tabs.getTabs().remove(produtosTab);
         if (!usuario.getPerfil().permite(Permissao.ESTOQUE)) tabs.getTabs().remove(estoqueTab);
+        if (!usuario.getPerfil().permite(Permissao.CAIXA)) tabs.getTabs().remove(caixaTab);
         if (!usuario.getPerfil().permite(Permissao.USUARIOS)) tabs.getTabs().remove(usuariosTab);
     }
 }

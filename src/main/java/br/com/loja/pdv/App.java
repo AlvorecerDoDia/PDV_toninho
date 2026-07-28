@@ -102,6 +102,10 @@ public class App extends Application {
                     new EstoqueService(new SQLiteEstoqueRepository(database), products),
                     productService);
         }
+        if (type == CaixaController.class) {
+            return new CaixaController(
+                    new CaixaService(new SQLiteCaixaRepository(database), session));
+        }
         if (type == UsuarioController.class) return new UsuarioController(userService, session);
         throw unconfigured(type);
     }

@@ -1,0 +1,139 @@
+package br.com.loja.pdv.service;
+
+import br.com.loja.pdv.domain.enums.Permissao;
+import br.com.loja.pdv.domain.enums.StatusCaixa;
+import br.com.loja.pdv.domain.enums.TipoMovimentacaoCaixa;
+import br.com.loja.pdv.domain.model.Caixa;
+import br.com.loja.pdv.domain.model.MovimentacaoCaixa;
+import br.com.loja.pdv.domain.model.Usuario;
+import br.com.loja.pdv.exception.ValidationException;
+import br.com.loja.pdv.repository.CaixaRepository;
+import br.com.loja.pdv.util.MoneyUtils;
+
+import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+public final class CaixaService {
+    private final CaixaRepository repository;
+    private final SessaoUsuario sessao;
+    private final Clock clock;
+
+    public CaixaService(CaixaRepository repository, SessaoUsuario sessao) {
+        this(repository, sessao, Clock.systemDefaultZone());
+    }
+
+    CaixaService(CaixaRepository repository, SessaoUsuario sessao, Clock clock) {
+        this.repository = repository;
+        this.sessao = sessao;
+        this.clock = clock;
+    }
+
+    public Caixa abrir(BigDecimal valorAbertura) {
+        Usuario usuario = usuarioAtual();
+        validateMoney(valorAbertura, true);
+        if (repository.buscarAbertoPorUsuario(usuario.getId()).isPresent()) {
+            throw new ValidationException("O usuário já possui um caixa aberto.");
+        }
+        LocalDateTime now = LocalDateTime.now(clock);
+        Caixa caixa = new Caixa();
+        caixa.setUsuarioId(usuario.getId());
+        caixa.setStatus(StatusCaixa.ABERTO);
+        caixa.setValorAbertura(valorAbertura);
+        caixa.setAbertoEm(now);
+
+        MovimentacaoCaixa abertura = movement(
+                caixa, usuario, TipoMovimentacaoCaixa.ABERTURA, valorAbertura,
+                "Abertura do caixa", now);
+        return repository.abrir(caixa, abertura);
+    }
+
+    public MovimentacaoCaixa suprir(BigDecimal valor, String motivo) {
+        return registrar(TipoMovimentacaoCaixa.SUPRIMENTO, valor, motivo);
+    }
+
+    public MovimentacaoCaixa sangrar(BigDecimal valor, String motivo) {
+        return registrar(TipoMovimentacaoCaixa.SANGRIA, valor, motivo);
+    }
+
+    public Caixa fechar(BigDecimal valorContado) {
+        Usuario usuario = usuarioAtual();
+        validateMoney(valorContado, true);
+        Caixa caixa = caixaAberto(usuario.getId());
+        return repository.fechar(caixa.getId(), valorContado, LocalDateTime.now(clock));
+    }
+
+    public Optional<Caixa> buscarCaixaAtual() {
+        Usuario usuario = usuarioAtual();
+        return repository.buscarAbertoPorUsuario(usuario.getId());
+    }
+
+    public List<MovimentacaoCaixa> listarMovimentacoesAtuais() {
+        Usuario usuario = usuarioAtual();
+        Optional<Caixa> caixa = repository.buscarAbertoPorUsuario(usuario.getId());
+        return caixa.map(value -> repository.listarMovimentacoes(value.getId()))
+                .orElseGet(List::of);
+    }
+
+    public BigDecimal consultarDinheiroEsperado(long caixaId) {
+        sessao.exigir(Permissao.RELATORIOS);
+        return repository.buscarDinheiroEsperado(caixaId);
+    }
+
+    private MovimentacaoCaixa registrar(
+            TipoMovimentacaoCaixa tipo, BigDecimal valor, String motivo) {
+        Usuario usuario = usuarioAtual();
+        validateMoney(valor, false);
+        String normalizedReason = normalizeReason(motivo);
+        Caixa caixa = caixaAberto(usuario.getId());
+        MovimentacaoCaixa movement = movement(
+                caixa, usuario, tipo, valor, normalizedReason, LocalDateTime.now(clock));
+        return repository.registrar(movement);
+    }
+
+    private Usuario usuarioAtual() {
+        sessao.exigir(Permissao.CAIXA);
+        return sessao.atual().orElseThrow();
+    }
+
+    private Caixa caixaAberto(long usuarioId) {
+        return repository.buscarAbertoPorUsuario(usuarioId)
+                .orElseThrow(() -> new ValidationException("Abra o caixa para continuar."));
+    }
+
+    private MovimentacaoCaixa movement(
+            Caixa caixa, Usuario usuario, TipoMovimentacaoCaixa tipo,
+            BigDecimal valor, String motivo, LocalDateTime timestamp) {
+        MovimentacaoCaixa movement = new MovimentacaoCaixa();
+        if (caixa.getId() != null) movement.setCaixaId(caixa.getId());
+        movement.setUsuarioId(usuario.getId());
+        movement.setTipo(tipo);
+        movement.setValor(valor);
+        movement.setMotivo(motivo);
+        movement.setCriadoEm(timestamp);
+        return movement;
+    }
+
+    private String normalizeReason(String value) {
+        String normalized = value == null ? "" : value.strip().replaceAll("\\s+", " ");
+        if (normalized.isEmpty()) {
+            throw new ValidationException("Informe o motivo da movimentação.");
+        }
+        return normalized;
+    }
+
+    private void validateMoney(BigDecimal value, boolean allowZero) {
+        if (value == null || value.signum() < 0 || (!allowZero && value.signum() == 0)) {
+            throw new ValidationException(allowZero
+                    ? "O valor não pode ser negativo."
+                    : "O valor deve ser maior que zero.");
+        }
+        try {
+            MoneyUtils.toCents(value);
+        } catch (ArithmeticException exception) {
+            throw new ValidationException("O valor deve possuir no máximo duas casas decimais.");
+        }
+    }
+}

@@ -10,6 +10,7 @@
     <center><TabPane fx:id="tabs" tabClosingPolicy="UNAVAILABLE"><tabs>
         <Tab fx:id="produtosTab" text="Produtos"><content><fx:include source="produto-view.fxml"/></content></Tab>
         <Tab fx:id="estoqueTab" text="Estoque"><content><fx:include source="estoque-view.fxml"/></content></Tab>
+        <Tab fx:id="caixaTab" text="Caixa"><content><fx:include source="caixa-view.fxml"/></content></Tab>
         <Tab fx:id="usuariosTab" text="Usuários"><content><fx:include source="usuario-view.fxml"/></content></Tab>
     </tabs></TabPane></center>
 </BorderPane>

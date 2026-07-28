@@ -64,6 +64,21 @@
 - Commit: `feat: implementa usuários login e permissões`.
 - Pendências reais: abertura, movimentação, sangria, suprimento e fechamento de caixa.
 
+## Abertura e movimentações de caixa
+
+- Funcionalidade: abertura, suprimento, sangria e fechamento individual de caixa.
+- Resultado: cada operador possui no máximo um caixa aberto; abertura e movimentação inicial são atômicas, o caixa fechado rejeita novas movimentações e a sangria nunca supera o dinheiro esperado.
+- Fechamento: registra valor esperado, valor contado e diferença; o operador só recebe esses valores depois de informar a contagem.
+- Persistência: valores monetários armazenados em centavos e histórico completo de movimentações associado ao usuário.
+- Interface: aba de caixa com abertura, suprimento, sangria, fechamento e histórico.
+- Migração: `V004__cria_caixa.sql`.
+- Testes criados: abertura, duplicidade, suprimento, sangria, saldo insuficiente, motivo, precisão monetária, fechamento, diferença, usuário, persistência, caixa fechado e rollback provocado.
+- Testes executados: `mvn clean test` e `mvn clean package`.
+- Resultado: 47 testes aprovados, sem falhas ou erros; ambos os comandos concluíram com `BUILD SUCCESS`.
+- Teste de integração: FXML principal carregado com a nova aba de caixa.
+- Commit: `feat: implementa abertura e movimentações de caixa`.
+- Pendências reais: carrinho e tela de venda.
+
 ## Próxima funcionalidade
 
-Implementar o controle completo de caixa.
+Implementar carrinho e tela de venda.
