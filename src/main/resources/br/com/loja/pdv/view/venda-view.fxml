@@ -39,5 +39,6 @@
         <Label text="TOTAL:" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
         <Label fx:id="totalLabel" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
     </HBox>
-    <Label text="Atalhos: F2 pesquisar • F4 quantidade • Delete remover • F6 desconto • Esc cancelar entrada"/>
+    <fx:include fx:id="pagamentoPane" source="pagamento-view.fxml"/>
+    <Label text="Atalhos: F2 pesquisar • F4 quantidade • Delete remover • F6 desconto • F10 pagamento • Esc cancelar entrada"/>
 </VBox>

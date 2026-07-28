@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.loja.pdv.controller.PagamentoController" spacing="8"
+      style="-fx-border-color: #d1d5db; -fx-border-radius: 4;">
+    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+    <Label text="Pagamentos (F10)" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+    <Label fx:id="mensagemLabel" wrapText="true"/>
+    <HBox spacing="8">
+        <ComboBox fx:id="formaCombo" prefWidth="180"/>
+        <TextField fx:id="valorField" promptText="Valor" onAction="#addPayment"/>
+        <Button text="Adicionar pagamento" onAction="#addPayment"/>
+        <Button text="Remover" onAction="#removePayment"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Finalizar venda" onAction="#finishSale"
+                style="-fx-font-weight: bold;"/>
+    </HBox>
+    <TableView fx:id="pagamentosTable" prefHeight="105">
+        <columns>
+            <TableColumn fx:id="formaColumn" text="Forma" prefWidth="220"/>
+            <TableColumn fx:id="valorColumn" text="Valor" prefWidth="150"/>
+        </columns>
+    </TableView>
+    <HBox alignment="CENTER_RIGHT" spacing="16">
+        <Label text="Recebido:"/><Label fx:id="recebidoLabel"/>
+        <Label text="Restante:"/><Label fx:id="restanteLabel"/>
+        <Label text="Troco:"/><Label fx:id="trocoLabel" style="-fx-font-weight: bold;"/>
+    </HBox>
+</VBox>

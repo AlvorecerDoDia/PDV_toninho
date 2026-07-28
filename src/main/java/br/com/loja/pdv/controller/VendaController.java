@@ -38,6 +38,7 @@ public final class VendaController {
     @FXML private TableColumn<ItemCarrinho, String> quantidadeColumn;
     @FXML private TableColumn<ItemCarrinho, String> unitarioColumn;
     @FXML private TableColumn<ItemCarrinho, String> subtotalColumn;
+    @FXML private PagamentoController pagamentoPaneController;
 
     private final ProdutoService produtos;
     private final SessaoUsuario sessao;
@@ -47,7 +48,8 @@ public final class VendaController {
         this(produtos, sessao, new CarrinhoVenda());
     }
 
-    VendaController(ProdutoService produtos, SessaoUsuario sessao, CarrinhoVenda carrinho) {
+    public VendaController(
+            ProdutoService produtos, SessaoUsuario sessao, CarrinhoVenda carrinho) {
         this.produtos = produtos;
         this.sessao = sessao;
         this.carrinho = carrinho;
@@ -79,6 +81,7 @@ public final class VendaController {
                     }
                 });
         installShortcuts();
+        pagamentoPaneController.setOnSaleFinalized(this::saleFinalized);
         refresh();
         Platform.runLater(codigoField::requestFocus);
     }
@@ -160,6 +163,7 @@ public final class VendaController {
             else if (event.getCode() == KeyCode.F4) quantidadeField.requestFocus();
             else if (event.getCode() == KeyCode.DELETE) removeSelected();
             else if (event.getCode() == KeyCode.F6) descontoField.requestFocus();
+            else if (event.getCode() == KeyCode.F10) pagamentoPaneController.focus();
             else if (event.getCode() == KeyCode.ESCAPE) cancelCurrentInput();
             else return;
             event.consume();
@@ -196,6 +200,13 @@ public final class VendaController {
         subtotalLabel.setText(CURRENCY.format(carrinho.getSubtotal()));
         descontoLabel.setText(CURRENCY.format(carrinho.getDesconto()));
         totalLabel.setText(CURRENCY.format(carrinho.getTotal()));
+        pagamentoPaneController.refreshTotals();
+    }
+
+    private void saleFinalized(String message) {
+        refresh();
+        message(message, false);
+        codigoField.requestFocus();
     }
 
     private BigDecimal parseMoney(String text) {

@@ -93,6 +93,21 @@
 - Commit: `feat: implementa carrinho e tela de venda`.
 - Pendências reais: pagamentos e finalização transacional da venda.
 
+## Pagamentos e finalização transacional de vendas
+
+- Funcionalidade: recebimentos em dinheiro, PIX, cartão de débito, cartão de crédito e combinações.
+- Resultado: venda numerada com operador e caixa, itens e pagamentos persistidos, custo e preço históricos, troco exclusivo do dinheiro, baixa de estoque e entrada do valor líquido em dinheiro no caixa.
+- Transação: valida caixa, carrinho, preços e estoque; grava venda, itens e pagamentos; baixa estoque; cria históricos de estoque e caixa; qualquer falha desfaz toda a operação.
+- Regras: venda vazia ou sem caixa aberto é recusada, pagamentos precisam ser positivos e suficientes, PIX e cartão não geram troco e estoque e preço são verificados novamente na finalização.
+- Interface: painel de pagamentos integrado à tela de venda, pagamento combinado, valores recebido/restante/troco e atalho F10.
+- Migração: `V005__cria_venda.sql`.
+- Testes criados: dinheiro e troco, PIX, débito, crédito, combinado, insuficiência, troco inválido, venda vazia, caixa fechado, estoque, persistência, custo histórico, movimentação de caixa e rollback total provocado.
+- Testes executados: `mvn clean test` e `mvn clean package`.
+- Resultado: 75 testes aprovados, sem falhas ou erros; ambos os comandos concluíram com `BUILD SUCCESS`.
+- Teste de integração: FXML principal carregado com carrinho e painel de pagamentos compartilhando o mesmo estado.
+- Commit: `feat: implementa finalização transacional de vendas`.
+- Pendências reais: histórico e cancelamento transacional de vendas.
+
 ## Próxima funcionalidade
 
-Implementar pagamentos e finalização transacional de vendas.
+Implementar histórico e cancelamento de vendas.

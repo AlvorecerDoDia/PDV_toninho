@@ -7,16 +7,21 @@ import br.com.loja.pdv.controller.MainController;
 import br.com.loja.pdv.controller.UsuarioController;
 import br.com.loja.pdv.controller.CaixaController;
 import br.com.loja.pdv.controller.VendaController;
+import br.com.loja.pdv.controller.PagamentoController;
+import br.com.loja.pdv.domain.model.CarrinhoVenda;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
 import br.com.loja.pdv.repository.sqlite.SQLiteProdutoRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteEstoqueRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteUsuarioRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteCaixaRepository;
+import br.com.loja.pdv.repository.sqlite.SQLiteVendaRepository;
 import br.com.loja.pdv.service.EstoqueService;
 import br.com.loja.pdv.service.SessaoUsuario;
 import br.com.loja.pdv.service.UsuarioService;
 import br.com.loja.pdv.service.CaixaService;
+import br.com.loja.pdv.service.PagamentoService;
+import br.com.loja.pdv.service.VendaService;
 import br.com.loja.pdv.infrastructure.security.PasswordHasher;
 import br.com.loja.pdv.service.ProdutoService;
 import javafx.application.Platform;
@@ -67,13 +72,22 @@ class ProdutoFxmlTest {
                 SessaoUsuario session = new SessaoUsuario();
                 session.iniciar(userService.criarAdministradorInicial(
                         "SenhaForte1".toCharArray()));
+                SQLiteCaixaRepository cashRegisters = new SQLiteCaixaRepository(database);
+                CarrinhoVenda cart = new CarrinhoVenda();
+                PagamentoService paymentService = new PagamentoService();
+                VendaService saleService = new VendaService(
+                        new SQLiteVendaRepository(database), products, cashRegisters,
+                        session, paymentService);
                 FXMLLoader loader = new FXMLLoader(
                         App.class.getResource("/br/com/loja/pdv/view/main-view.fxml")
                 );
                 loader.setControllerFactory(type -> {
                     if (type == MainController.class) return new MainController(session);
                     if (type == VendaController.class) {
-                        return new VendaController(productService, session);
+                        return new VendaController(productService, session, cart);
+                    }
+                    if (type == PagamentoController.class) {
+                        return new PagamentoController(paymentService, saleService, cart);
                     }
                     if (type == ProdutoController.class) {
                         return new ProdutoController(productService);
@@ -87,7 +101,7 @@ class ProdutoFxmlTest {
                     }
                     if (type == CaixaController.class) {
                         return new CaixaController(
-                                new CaixaService(new SQLiteCaixaRepository(database), session));
+                                new CaixaService(cashRegisters, session));
                     }
                     if (type == UsuarioController.class) {
                         return new UsuarioController(userService, session);

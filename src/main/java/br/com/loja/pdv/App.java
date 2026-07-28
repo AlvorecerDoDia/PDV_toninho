@@ -1,6 +1,7 @@
 package br.com.loja.pdv;
 
 import br.com.loja.pdv.controller.*;
+import br.com.loja.pdv.domain.model.CarrinhoVenda;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
 import br.com.loja.pdv.infrastructure.security.PasswordHasher;
@@ -24,6 +25,11 @@ public class App extends Application {
     private UsuarioService userService;
     private AutenticacaoService authenticationService;
     private SessaoUsuario session;
+    private SQLiteProdutoRepository productRepository;
+    private SQLiteCaixaRepository cashRepository;
+    private CarrinhoVenda saleCart;
+    private PagamentoService paymentService;
+    private VendaService saleService;
     private String generatedInitialPassword;
 
     @Override
@@ -36,6 +42,13 @@ public class App extends Application {
         session = new SessaoUsuario();
         authenticationService = new AutenticacaoService(
                 userRepository, passwordHasher, session);
+        productRepository = new SQLiteProdutoRepository(database);
+        cashRepository = new SQLiteCaixaRepository(database);
+        saleCart = new CarrinhoVenda();
+        paymentService = new PagamentoService();
+        saleService = new VendaService(
+                new SQLiteVendaRepository(database), productRepository, cashRepository,
+                session, paymentService);
         if (userRepository.contar() == 0) {
             String configured = System.getenv("PDV_ADMIN_PASSWORD");
             generatedInitialPassword = configured == null || configured.length() < 8
@@ -93,19 +106,23 @@ public class App extends Application {
     }
 
     private Object createMainController(Class<?> type) {
-        SQLiteProdutoRepository products = new SQLiteProdutoRepository(database);
-        ProdutoService productService = new ProdutoService(products);
+        ProdutoService productService = new ProdutoService(productRepository);
         if (type == MainController.class) return new MainController(session);
-        if (type == VendaController.class) return new VendaController(productService, session);
+        if (type == VendaController.class) {
+            return new VendaController(productService, session, saleCart);
+        }
+        if (type == PagamentoController.class) {
+            return new PagamentoController(paymentService, saleService, saleCart);
+        }
         if (type == ProdutoController.class) return new ProdutoController(productService);
         if (type == EstoqueController.class) {
             return new EstoqueController(
-                    new EstoqueService(new SQLiteEstoqueRepository(database), products),
+                    new EstoqueService(
+                            new SQLiteEstoqueRepository(database), productRepository),
                     productService);
         }
         if (type == CaixaController.class) {
-            return new CaixaController(
-                    new CaixaService(new SQLiteCaixaRepository(database), session));
+            return new CaixaController(new CaixaService(cashRepository, session));
         }
         if (type == UsuarioController.class) return new UsuarioController(userService, session);
         throw unconfigured(type);
