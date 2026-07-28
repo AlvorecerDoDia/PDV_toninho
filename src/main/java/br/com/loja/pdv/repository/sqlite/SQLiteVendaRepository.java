@@ -40,6 +40,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
                     insertPayment(connection, venda.getId(), payment);
                 }
                 insertCashMovement(connection, venda);
+                insertDiscountAudit(connection, venda);
                 connection.commit();
                 return venda;
             } catch (RuntimeException | SQLException exception) {
@@ -305,6 +306,27 @@ public final class SQLiteVendaRepository implements VendaRepository {
             statement.setString(3, "status=FINALIZADA");
             statement.setString(4, "status=CANCELADA; motivo=" + motivo);
             statement.setString(5, canceledAt.toString());
+            statement.executeUpdate();
+        }
+    }
+
+    private void insertDiscountAudit(Connection connection, Venda venda)
+            throws SQLException {
+        if (venda.getDesconto().signum() == 0) return;
+        try (PreparedStatement statement = connection.prepareStatement("""
+                INSERT INTO auditoria (
+                    usuario_id, acao, entidade, entidade_id,
+                    valores_anteriores, valores_novos, criado_em
+                ) VALUES (?, 'DESCONTO', 'VENDA', ?, ?, ?, ?)
+                """)) {
+            statement.setLong(1, venda.getOperadorId());
+            statement.setLong(2, venda.getId());
+            statement.setString(3, "subtotal="
+                    + venda.getSubtotal().toPlainString());
+            statement.setString(4, "desconto="
+                    + venda.getDesconto().toPlainString()
+                    + "; total=" + venda.getTotal().toPlainString());
+            statement.setString(5, venda.getCriadoEm().toString());
             statement.executeUpdate();
         }
     }

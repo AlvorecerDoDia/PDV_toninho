@@ -60,7 +60,7 @@ public final class UsuarioController {
             refresh();
             mensagemLabel.setText("Usuário salvo.");
         } catch (RuntimeException exception) {
-            mensagemLabel.setText(exception.getMessage());
+            mensagemLabel.setText(ErrorHandler.mensagem(exception));
         }
     }
 

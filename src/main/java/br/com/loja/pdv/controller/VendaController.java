@@ -106,7 +106,7 @@ public final class VendaController {
                 resultadoCombo.getSelectionModel().selectFirst();
             }
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
@@ -190,8 +190,7 @@ public final class VendaController {
             message(action.run(), false);
             refresh();
         } catch (RuntimeException exception) {
-            message(exception instanceof NumberFormatException
-                    ? "Informe um valor válido." : exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 

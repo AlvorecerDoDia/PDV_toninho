@@ -20,14 +20,27 @@ public final class CaixaService {
     private final CaixaRepository repository;
     private final SessaoUsuario sessao;
     private final Clock clock;
+    private final AuditoriaService auditoria;
 
     public CaixaService(CaixaRepository repository, SessaoUsuario sessao) {
-        this(repository, sessao, Clock.systemDefaultZone());
+        this(repository, sessao, null, Clock.systemDefaultZone());
+    }
+
+    public CaixaService(
+            CaixaRepository repository, SessaoUsuario sessao, AuditoriaService auditoria) {
+        this(repository, sessao, auditoria, Clock.systemDefaultZone());
     }
 
     CaixaService(CaixaRepository repository, SessaoUsuario sessao, Clock clock) {
+        this(repository, sessao, null, clock);
+    }
+
+    CaixaService(
+            CaixaRepository repository, SessaoUsuario sessao,
+            AuditoriaService auditoria, Clock clock) {
         this.repository = repository;
         this.sessao = sessao;
+        this.auditoria = auditoria;
         this.clock = clock;
     }
 
@@ -90,7 +103,15 @@ public final class CaixaService {
         Caixa caixa = caixaAberto(usuario.getId());
         MovimentacaoCaixa movement = movement(
                 caixa, usuario, tipo, valor, normalizedReason, LocalDateTime.now(clock));
-        return repository.registrar(movement);
+        MovimentacaoCaixa registrada = repository.registrar(movement);
+        if (auditoria != null
+                && (tipo == TipoMovimentacaoCaixa.SANGRIA
+                || tipo == TipoMovimentacaoCaixa.SUPRIMENTO)) {
+            auditoria.registrar(
+                    tipo.name(), "CAIXA", caixa.getId(), null,
+                    "valor=" + valor.toPlainString() + "; motivo=" + normalizedReason);
+        }
+        return registrada;
     }
 
     private Usuario usuarioAtual() {

@@ -65,8 +65,7 @@ public final class PagamentoController {
             refreshTotals();
             message("Pagamento adicionado.", false);
         } catch (RuntimeException exception) {
-            message(exception instanceof NumberFormatException
-                    ? "Informe um valor monetário válido." : exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
@@ -95,7 +94,7 @@ public final class PagamentoController {
                         + CURRENCY.format(venda.getTroco()));
             }
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 

@@ -164,6 +164,20 @@
 - Commit: `feat: implementa backup e restauração do banco`.
 - Pendências reais: auditoria completa, logs e tratamento centralizado de erros.
 
+## Auditoria, logs e tratamento de erros
+
+- Auditoria: repositório SQLite e serviço para consultar e registrar usuário, ação, entidade, valores anteriores, valores novos e data.
+- Operações auditadas: alteração de preço, ajuste de estoque, sangria, suprimento, desconto, cancelamento, criação/alteração de usuário, troca de senha sem registrar credenciais e restauração de backup.
+- Transações: desconto e cancelamento são auditados dentro da mesma transação da venda.
+- Logs: arquivos rotativos em `logs/`, com limite de tamanho, retenção e registro global de erros não tratados.
+- Tratamento centralizado: validação, banco, impressão, formato numérico e falhas inesperadas recebem mensagens apropriadas sem expor detalhes técnicos.
+- Segurança: senhas, hashes e dados de cartão não são incluídos na auditoria ou nas mensagens.
+- Testes criados: persistência da auditoria, operações auditáveis, desconto transacional e tradução centralizada de erros.
+- Testes executados: `mvn clean test`.
+- Resultado: 100 testes aprovados, sem falhas ou erros.
+- Commit: `feat: adiciona auditoria logs e tratamento de erros`.
+- Pendências reais: padronização visual e revisão de usabilidade.
+
 ## Próxima funcionalidade
 
-Implementar auditoria completa, logs e tratamento centralizado de erros.
+Padronizar a interface e revisar a usabilidade em 1366×768.

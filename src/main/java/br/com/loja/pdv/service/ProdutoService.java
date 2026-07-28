@@ -16,13 +16,24 @@ public final class ProdutoService {
 
     private final ProdutoRepository repository;
     private final Clock clock;
+    private final AuditoriaService auditoria;
 
     public ProdutoService(ProdutoRepository repository) {
-        this(repository, Clock.systemDefaultZone());
+        this(repository, null, Clock.systemDefaultZone());
+    }
+
+    public ProdutoService(ProdutoRepository repository, AuditoriaService auditoria) {
+        this(repository, auditoria, Clock.systemDefaultZone());
     }
 
     ProdutoService(ProdutoRepository repository, Clock clock) {
+        this(repository, null, clock);
+    }
+
+    ProdutoService(
+            ProdutoRepository repository, AuditoriaService auditoria, Clock clock) {
         this.repository = repository;
+        this.auditoria = auditoria;
         this.clock = clock;
     }
 
@@ -48,6 +59,13 @@ public final class ProdutoService {
         produto.setCriadoEm(persisted.getCriadoEm());
         produto.setAtualizadoEm(LocalDateTime.now(clock));
         repository.atualizar(produto);
+        if (auditoria != null
+                && (persisted.getPrecoCusto().compareTo(produto.getPrecoCusto()) != 0
+                || persisted.getPrecoVenda().compareTo(produto.getPrecoVenda()) != 0)) {
+            auditoria.registrar(
+                    "ALTERACAO_PRECO", "PRODUTO", produto.getId(),
+                    prices(persisted), prices(produto));
+        }
     }
 
     public Produto buscarPorId(long id) {
@@ -112,5 +130,10 @@ public final class ProdutoService {
         } catch (ArithmeticException exception) {
             throw new ValidationException("O " + field + " deve ter no máximo duas casas decimais.");
         }
+    }
+
+    private String prices(Produto produto) {
+        return "custo=" + produto.getPrecoCusto().toPlainString()
+                + "; venda=" + produto.getPrecoVenda().toPlainString();
     }
 }

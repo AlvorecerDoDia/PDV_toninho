@@ -90,7 +90,7 @@ public final class RelatorioController {
             tabela.getItems().setAll(currentRows);
             message(currentRows.size() + " linha(s) gerada(s).", false);
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
@@ -112,7 +112,7 @@ public final class RelatorioController {
             exporter.exportar(file.toPath(), tipoCombo.getValue(), currentRows);
             message("Relatório exportado para " + file.getAbsolutePath(), false);
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 

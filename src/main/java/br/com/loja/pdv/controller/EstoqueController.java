@@ -83,8 +83,7 @@ public final class EstoqueController {
             message("Movimentação registrada.", false);
             refresh();
         } catch (RuntimeException exception) {
-            message(exception instanceof NumberFormatException
-                    ? "Informe uma quantidade inteira válida." : exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
@@ -104,7 +103,7 @@ public final class EstoqueController {
             historicoTable.getItems().setAll(estoqueService.listar(
                     produto.getId(), inicioPicker.getValue(), fimPicker.getValue()));
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 

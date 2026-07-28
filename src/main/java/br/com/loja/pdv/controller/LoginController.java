@@ -46,7 +46,7 @@ public final class LoginController {
             }
             onSuccess.run();
         } catch (RuntimeException exception) {
-            mensagemLabel.setText(exception.getMessage());
+            mensagemLabel.setText(ErrorHandler.mensagem(exception));
         }
     }
 }

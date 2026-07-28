@@ -124,6 +124,26 @@ class SQLiteVendaRepositoryTest {
     }
 
     @Test
+    void deveAuditarDescontoNaMesmaTransacaoDaVenda() throws Exception {
+        cashService.abrir(BigDecimal.ZERO);
+        CarrinhoVenda cart = cart(1);
+        cart.aplicarDesconto(new BigDecimal("10.00"));
+
+        Venda sale = saleService.finalizar(cart, List.of(
+                paymentService.criar(FormaPagamento.PIX, new BigDecimal("90.00"))));
+
+        assertEquals(1, count("auditoria"));
+        try (Connection connection = database.getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(
+                     "SELECT acao, entidade_id FROM auditoria")) {
+            assertTrue(resultSet.next());
+            assertEquals("DESCONTO", resultSet.getString("acao"));
+            assertEquals(sale.getId(), resultSet.getLong("entidade_id"));
+        }
+    }
+
+    @Test
     void deveImpedirVendaSemCaixaAberto() {
         CarrinhoVenda cart = cart(1);
         assertThrows(ValidationException.class, () ->

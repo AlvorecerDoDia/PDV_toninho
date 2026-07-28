@@ -48,7 +48,7 @@ public final class BackupController {
             refresh();
             message("Backup criado: " + created, false);
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
@@ -77,7 +77,7 @@ public final class BackupController {
         try {
             tabela.getItems().setAll(service.listar());
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
@@ -93,7 +93,7 @@ public final class BackupController {
             message("Backup restaurado. Cópia anterior: " + safety
                     + ". Reinicie o sistema para recarregar todas as telas.", false);
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 

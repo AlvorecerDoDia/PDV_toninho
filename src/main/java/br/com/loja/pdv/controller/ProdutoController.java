@@ -66,8 +66,7 @@ public final class ProdutoController {
             clear();
             refresh();
         } catch (RuntimeException exception) {
-            message(exception instanceof NumberFormatException
-                    ? "Informe valores numéricos válidos." : exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
@@ -82,7 +81,7 @@ public final class ProdutoController {
             refresh();
             message(active ? "Produto reativado." : "Produto desativado.", false);
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 

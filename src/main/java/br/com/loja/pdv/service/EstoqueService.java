@@ -16,16 +16,32 @@ public final class EstoqueService {
     private final EstoqueRepository estoqueRepository;
     private final ProdutoRepository produtoRepository;
     private final Clock clock;
+    private final SessaoUsuario sessao;
+    private final AuditoriaService auditoria;
 
     public EstoqueService(
             EstoqueRepository estoqueRepository, ProdutoRepository produtoRepository) {
-        this(estoqueRepository, produtoRepository, Clock.systemDefaultZone());
+        this(estoqueRepository, produtoRepository, null, null, Clock.systemDefaultZone());
+    }
+
+    public EstoqueService(
+            EstoqueRepository estoqueRepository, ProdutoRepository produtoRepository,
+            SessaoUsuario sessao, AuditoriaService auditoria) {
+        this(estoqueRepository, produtoRepository, sessao, auditoria, Clock.systemDefaultZone());
     }
 
     EstoqueService(
             EstoqueRepository estoqueRepository, ProdutoRepository produtoRepository, Clock clock) {
+        this(estoqueRepository, produtoRepository, null, null, clock);
+    }
+
+    EstoqueService(
+            EstoqueRepository estoqueRepository, ProdutoRepository produtoRepository,
+            SessaoUsuario sessao, AuditoriaService auditoria, Clock clock) {
         this.estoqueRepository = estoqueRepository;
         this.produtoRepository = produtoRepository;
+        this.sessao = sessao;
+        this.auditoria = auditoria;
         this.clock = clock;
     }
 
@@ -50,8 +66,19 @@ public final class EstoqueService {
         movement.setQuantidade(quantidade);
         movement.setMotivo(normalizedReason == null || normalizedReason.isBlank()
                 ? null : normalizedReason);
+        if (sessao != null) {
+            movement.setUsuarioId(sessao.atual().map(usuario -> usuario.getId()).orElse(null));
+        }
         movement.setCriadoEm(LocalDateTime.now(clock));
-        return estoqueRepository.registrar(movement);
+        MovimentacaoEstoque registrada = estoqueRepository.registrar(movement);
+        if (auditoria != null && tipo != TipoMovimentacaoEstoque.ENTRADA) {
+            auditoria.registrar(
+                    "AJUSTE_ESTOQUE", "PRODUTO", produtoId,
+                    "quantidade=" + registrada.getQuantidadeAnterior(),
+                    "quantidade=" + registrada.getQuantidadePosterior()
+                            + "; tipo=" + tipo + "; motivo=" + registrada.getMotivo());
+        }
+        return registrada;
     }
 
     public int buscarSaldo(long produtoId) {

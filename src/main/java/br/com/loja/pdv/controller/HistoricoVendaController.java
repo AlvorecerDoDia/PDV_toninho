@@ -100,7 +100,7 @@ public final class HistoricoVendaController {
             else clearDetails();
             message(result.size() + " venda(s) encontrada(s).", false);
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
@@ -126,7 +126,7 @@ public final class HistoricoVendaController {
             search();
             message("Venda cancelada e valores estornados.", false);
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
@@ -136,7 +136,7 @@ public final class HistoricoVendaController {
             Venda sale = detailedSelectedSale();
             showReceipt(sale, false, false);
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
@@ -168,7 +168,7 @@ public final class HistoricoVendaController {
                     .reduce((left, right) -> left + System.lineSeparator() + right)
                     .orElse(""));
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
@@ -182,7 +182,7 @@ public final class HistoricoVendaController {
                         : "Comprovante enviado para a impressora.", false);
             }
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 

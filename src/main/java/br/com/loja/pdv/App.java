@@ -9,6 +9,7 @@ import br.com.loja.pdv.infrastructure.printing.FormatadorComprovante;
 import br.com.loja.pdv.infrastructure.printing.ImpressoraWindows;
 import br.com.loja.pdv.infrastructure.reporting.ExportadorCsv;
 import br.com.loja.pdv.infrastructure.backup.GerenciadorBackup;
+import br.com.loja.pdv.infrastructure.logging.LoggingConfigurator;
 import br.com.loja.pdv.repository.sqlite.*;
 import br.com.loja.pdv.service.*;
 import javafx.application.Application;
@@ -22,6 +23,8 @@ import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class App extends Application {
     private Database database;
@@ -36,16 +39,21 @@ public class App extends Application {
     private PagamentoService paymentService;
     private VendaService saleService;
     private BackupService backupService;
+    private AuditoriaService auditService;
     private String generatedInitialPassword;
 
     @Override
     public void init() {
+        LoggingConfigurator.configurar(Path.of("logs"));
+        Thread.setDefaultUncaughtExceptionHandler(ErrorHandler::registrarInesperado);
         database = Database.local();
         new DatabaseInitializer(database).initialize();
         userRepository = new SQLiteUsuarioRepository(database);
         passwordHasher = new PasswordHasher();
-        userService = new UsuarioService(userRepository, passwordHasher);
         session = new SessaoUsuario();
+        auditService = new AuditoriaService(
+                new SQLiteAuditoriaRepository(database), session);
+        userService = new UsuarioService(userRepository, passwordHasher, auditService);
         authenticationService = new AutenticacaoService(
                 userRepository, passwordHasher, session);
         productRepository = new SQLiteProdutoRepository(database);
@@ -56,7 +64,7 @@ public class App extends Application {
                 new SQLiteVendaRepository(database), productRepository, cashRepository,
                 session, paymentService);
         backupService = new BackupService(
-                new GerenciadorBackup(database, Path.of("backups")), session);
+                new GerenciadorBackup(database, Path.of("backups")), session, auditService);
         if (userRepository.contar() == 0) {
             String configured = System.getenv("PDV_ADMIN_PASSWORD");
             generatedInitialPassword = configured == null || configured.length() < 8
@@ -114,7 +122,7 @@ public class App extends Application {
     }
 
     private Object createMainController(Class<?> type) {
-        ProdutoService productService = new ProdutoService(productRepository);
+        ProdutoService productService = new ProdutoService(productRepository, auditService);
         if (type == MainController.class) return new MainController(session);
         if (type == VendaController.class) {
             return new VendaController(productService, session, saleCart);
@@ -139,11 +147,13 @@ public class App extends Application {
         if (type == EstoqueController.class) {
             return new EstoqueController(
                     new EstoqueService(
-                            new SQLiteEstoqueRepository(database), productRepository),
+                            new SQLiteEstoqueRepository(database), productRepository,
+                            session, auditService),
                     productService);
         }
         if (type == CaixaController.class) {
-            return new CaixaController(new CaixaService(cashRepository, session));
+            return new CaixaController(
+                    new CaixaService(cashRepository, session, auditService));
         }
         if (type == UsuarioController.class) return new UsuarioController(userService, session);
         throw unconfigured(type);
@@ -169,6 +179,12 @@ public class App extends Application {
 
     @Override
     public void stop() {
-        if (backupService != null) backupService.criarAutomatico();
+        if (backupService == null) return;
+        try {
+            backupService.criarAutomatico();
+        } catch (RuntimeException exception) {
+            Logger.getLogger(App.class.getName()).log(
+                    Level.SEVERE, "Falha ao criar backup automático no encerramento.", exception);
+        }
     }
 }

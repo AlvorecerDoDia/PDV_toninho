@@ -10,10 +10,18 @@ public final class BackupService {
     private static final int RETENCAO_PADRAO = 20;
     private final GerenciadorBackup gerenciador;
     private final SessaoUsuario sessao;
+    private final AuditoriaService auditoria;
 
     public BackupService(GerenciadorBackup gerenciador, SessaoUsuario sessao) {
+        this(gerenciador, sessao, null);
+    }
+
+    public BackupService(
+            GerenciadorBackup gerenciador, SessaoUsuario sessao,
+            AuditoriaService auditoria) {
         this.gerenciador = gerenciador;
         this.sessao = sessao;
+        this.auditoria = auditoria;
     }
 
     public Path criarManual() {
@@ -31,7 +39,14 @@ public final class BackupService {
 
     public Path restaurar(Path arquivo) {
         sessao.exigir(Permissao.BACKUP);
-        return gerenciador.restaurar(arquivo);
+        Path seguranca = gerenciador.restaurar(arquivo);
+        if (auditoria != null) {
+            auditoria.registrar(
+                    "RESTAURACAO_BACKUP", "BANCO", null,
+                    "copia_seguranca=" + seguranca.getFileName(),
+                    "arquivo=" + arquivo.toAbsolutePath().normalize().getFileName());
+        }
+        return seguranca;
     }
 
     public List<Path> listar() {

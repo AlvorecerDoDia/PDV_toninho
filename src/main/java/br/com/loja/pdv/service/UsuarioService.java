@@ -15,14 +15,28 @@ public final class UsuarioService {
     private final UsuarioRepository repository;
     private final PasswordHasher hasher;
     private final Clock clock;
+    private final AuditoriaService auditoria;
 
     public UsuarioService(UsuarioRepository repository, PasswordHasher hasher) {
-        this(repository, hasher, Clock.systemDefaultZone());
+        this(repository, hasher, null, Clock.systemDefaultZone());
+    }
+
+    public UsuarioService(
+            UsuarioRepository repository, PasswordHasher hasher,
+            AuditoriaService auditoria) {
+        this(repository, hasher, auditoria, Clock.systemDefaultZone());
     }
 
     UsuarioService(UsuarioRepository repository, PasswordHasher hasher, Clock clock) {
+        this(repository, hasher, null, clock);
+    }
+
+    UsuarioService(
+            UsuarioRepository repository, PasswordHasher hasher,
+            AuditoriaService auditoria, Clock clock) {
         this.repository = repository;
         this.hasher = hasher;
+        this.auditoria = auditoria;
         this.clock = clock;
     }
 
@@ -39,7 +53,9 @@ public final class UsuarioService {
         usuario.setAlterarSenha(alterarSenha);
         usuario.setCriadoEm(now);
         usuario.setAtualizadoEm(now);
-        return repository.salvar(usuario);
+        Usuario salvo = repository.salvar(usuario);
+        audit("CRIACAO_USUARIO", salvo.getId(), null, safeValues(salvo));
+        return salvo;
     }
 
     public Usuario criarAdministradorInicial(char[] senha) {
@@ -51,12 +67,14 @@ public final class UsuarioService {
 
     public void atualizar(long id, String nome, String login, PerfilUsuario perfil, boolean ativo) {
         Usuario usuario = buscar(id);
+        String anterior = safeValues(usuario);
         usuario.setNome(normalizeRequired(nome, "nome"));
         usuario.setLogin(normalizeRequired(login, "login").toLowerCase());
         usuario.setPerfil(perfil == null ? usuario.getPerfil() : perfil);
         usuario.setAtivo(ativo);
         usuario.setAtualizadoEm(LocalDateTime.now(clock));
         repository.atualizar(usuario);
+        audit("ALTERACAO_USUARIO", id, anterior, safeValues(usuario));
     }
 
     public void trocarSenha(long id, char[] senha) {
@@ -66,6 +84,7 @@ public final class UsuarioService {
         usuario.setAlterarSenha(false);
         usuario.setAtualizadoEm(LocalDateTime.now(clock));
         repository.atualizar(usuario);
+        audit("TROCA_SENHA", id, null, "senha=alterada");
     }
 
     public Usuario buscar(long id) {
@@ -87,5 +106,16 @@ public final class UsuarioService {
         String normalized = value == null ? "" : value.strip().replaceAll("\\s+", " ");
         if (normalized.isEmpty()) throw new ValidationException("O " + field + " é obrigatório.");
         return normalized;
+    }
+
+    private String safeValues(Usuario usuario) {
+        return "nome=" + usuario.getNome() + "; login=" + usuario.getLogin()
+                + "; perfil=" + usuario.getPerfil() + "; ativo=" + usuario.isAtivo();
+    }
+
+    private void audit(String action, Long id, String before, String after) {
+        if (auditoria != null) {
+            auditoria.registrar(action, "USUARIO", id, before, after);
+        }
     }
 }

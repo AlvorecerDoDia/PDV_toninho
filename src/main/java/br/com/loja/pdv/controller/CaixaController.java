@@ -95,7 +95,7 @@ public final class CaixaController {
                     () -> statusLabel.setText("Caixa fechado"));
             movimentacoesTable.getItems().setAll(service.listarMovimentacoesAtuais());
         } catch (RuntimeException exception) {
-            message(exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
@@ -104,8 +104,7 @@ public final class CaixaController {
             message(action.run(), false);
             refresh();
         } catch (RuntimeException exception) {
-            message(exception instanceof NumberFormatException
-                    ? "Informe um valor monetário válido." : exception.getMessage(), true);
+            message(ErrorHandler.mensagem(exception), true);
         }
     }
 
