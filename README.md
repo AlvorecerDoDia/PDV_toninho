@@ -66,17 +66,17 @@ fornece os módulos JavaFX necessários.
 
 ## Primeiro acesso
 
-Quando não existem usuários, o sistema cria o login `admin`. Por padrão, uma
-senha temporária aleatória é mostrada apenas na primeira inicialização e deve
-ser alterada. Para definir a senha inicial antes de executar:
+Quando não existem usuários, o sistema cria estas credenciais temporárias:
 
-```powershell
-$env:PDV_ADMIN_PASSWORD = "UmaSenhaTemporariaForte"
-.\mvnw.cmd javafx:run
+```text
+Usuário: admin
+Senha: admin
 ```
 
-A senha precisa ter ao menos oito caracteres. Não grave essa variável em
-arquivos versionados.
+A troca por uma senha de pelo menos oito caracteres é obrigatória antes de
+entrar no sistema. Enquanto essa troca não tiver sido concluída, a credencial
+temporária também é reaplicada a um administrador inicial criado por uma versão
+anterior.
 
 ## Usuários e permissões
 

@@ -44,6 +44,30 @@ class UsuarioServiceTest {
     }
 
     @Test
+    void deveConfigurarLoginESenhaAdminNoPrimeiroAcesso() {
+        assertTrue(usuarios.configurarAdministradorInicialPadrao());
+
+        Usuario admin = autenticacao.autenticar("admin", "admin".toCharArray());
+
+        assertEquals(PerfilUsuario.ADMINISTRADOR, admin.getPerfil());
+        assertTrue(admin.isAlterarSenha());
+        assertNotEquals("admin", admin.getSenhaHash());
+    }
+
+    @Test
+    void naoDeveRedefinirSenhaDepoisDaTrocaObrigatoria() {
+        usuarios.configurarAdministradorInicialPadrao();
+        Usuario admin = autenticacao.autenticar("admin", "admin".toCharArray());
+        usuarios.trocarSenha(admin.getId(), "NovaSenha2".toCharArray());
+
+        assertFalse(usuarios.configurarAdministradorInicialPadrao());
+        assertThrows(ValidationException.class, () ->
+                autenticacao.autenticar("admin", "admin".toCharArray()));
+        assertDoesNotThrow(() ->
+                autenticacao.autenticar("admin", "NovaSenha2".toCharArray()));
+    }
+
+    @Test
     void deveAutenticarUsuarioValidoEManterSessao() {
         Usuario admin = usuarios.criarAdministradorInicial("SenhaForte1".toCharArray());
         Usuario logged = autenticacao.autenticar("ADMIN", "SenhaForte1".toCharArray());

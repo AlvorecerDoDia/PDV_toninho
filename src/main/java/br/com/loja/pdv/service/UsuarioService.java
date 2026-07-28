@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public final class UsuarioService {
+    private static final char[] SENHA_ADMIN_INICIAL = "admin".toCharArray();
     private final UsuarioRepository repository;
     private final PasswordHasher hasher;
     private final Clock clock;
@@ -65,6 +66,27 @@ public final class UsuarioService {
         return criar("Administrador", "admin", senha, PerfilUsuario.ADMINISTRADOR, true);
     }
 
+    public boolean configurarAdministradorInicialPadrao() {
+        if (repository.contar() == 0) {
+            criarSemValidarSenha(
+                    "Administrador", "admin", SENHA_ADMIN_INICIAL,
+                    PerfilUsuario.ADMINISTRADOR, true);
+            return true;
+        }
+        return repository.buscarPorLogin("admin")
+                .filter(usuario -> usuario.getPerfil() == PerfilUsuario.ADMINISTRADOR)
+                .filter(Usuario::isAlterarSenha)
+                .map(usuario -> {
+                    usuario.setSenhaHash(hasher.hash(SENHA_ADMIN_INICIAL));
+                    usuario.setAtualizadoEm(LocalDateTime.now(clock));
+                    repository.atualizar(usuario);
+                    audit("CREDENCIAL_INICIAL_ADMIN", usuario.getId(), null,
+                            "senha_temporaria=redefinida");
+                    return true;
+                })
+                .orElse(false);
+    }
+
     public void atualizar(long id, String nome, String login, PerfilUsuario perfil, boolean ativo) {
         Usuario usuario = buscar(id);
         String anterior = safeValues(usuario);
@@ -100,6 +122,24 @@ public final class UsuarioService {
         if (senha == null || senha.length < 8) {
             throw new ValidationException("A senha deve ter pelo menos 8 caracteres.");
         }
+    }
+
+    private Usuario criarSemValidarSenha(
+            String nome, String login, char[] senha,
+            PerfilUsuario perfil, boolean alterarSenha) {
+        LocalDateTime now = LocalDateTime.now(clock);
+        Usuario usuario = new Usuario();
+        usuario.setNome(nome);
+        usuario.setLogin(login);
+        usuario.setSenhaHash(hasher.hash(senha));
+        usuario.setPerfil(perfil);
+        usuario.setAtivo(true);
+        usuario.setAlterarSenha(alterarSenha);
+        usuario.setCriadoEm(now);
+        usuario.setAtualizadoEm(now);
+        Usuario salvo = repository.salvar(usuario);
+        audit("CRIACAO_USUARIO", salvo.getId(), null, safeValues(salvo));
+        return salvo;
     }
 
     private String normalizeRequired(String value, String field) {

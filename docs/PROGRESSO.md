@@ -55,7 +55,7 @@
 
 - Funcionalidade: cadastro e manutenção de usuários, autenticação e autorização por perfil.
 - Resultado: login com senha protegida por PBKDF2, sessão explícita, usuários ativos e inativos, troca obrigatória da senha inicial e perfis Administrador, Gerente e Operador.
-- Segurança: nenhum valor de senha é persistido em texto puro; o primeiro administrador usa senha temporária aleatória ou a variável `PDV_ADMIN_PASSWORD`, exibida uma única vez.
+- Segurança: nenhum valor de senha é persistido em texto puro; o primeiro administrador usa a credencial temporária `admin`/`admin` e precisa substituí-la antes de entrar.
 - Permissões: matriz centralizada por perfil e ocultação das áreas não autorizadas da interface.
 - Migração: `V003__cria_usuario.sql`.
 - Testes criados: criação do administrador inicial, hash de senha, login válido e inválido, usuário inativo, troca de senha, sessão, permissões e carregamento dos FXMLs principal e de login.
@@ -209,10 +209,17 @@
 - Instalador: opção documentada e preparada; a geração `.exe` exige WiX Toolset 3.11, ausente no ambiente atual.
 - Documentação: objetivo, funções, tecnologias, JDK/Maven, compilação, execução, IntelliJ/JavaFX, primeiro acesso, permissões, dados, backup, impressora, empacotamento, limitações e solução de problemas.
 - Testes executados: `mvn clean test`, `mvn clean package` e `scripts/build-windows.ps1`.
-- Resultado: 103 testes aprovados, sem falhas ou erros; pacote portátil criado com sucesso.
+- Resultado: 105 testes aprovados, sem falhas ou erros; pacote portátil criado com sucesso.
 - Commit: `build: prepara distribuição e documentação do pdv`.
 - Pendências impeditivas: nenhuma.
 
 ## Situação final
 
 Primeira versão funcional concluída e pronta para uso local em um computador Windows.
+
+## Ajuste de credencial inicial
+
+- Primeiro acesso configurado como usuário `admin` e senha temporária `admin`.
+- A senha continua armazenada somente como hash e a troca por uma senha forte permanece obrigatória.
+- Administradores iniciais ainda pendentes de troca recebem a credencial temporária atualizada; senhas já alteradas não são sobrescritas.
+- Validação: 105 testes aprovados e novo executável iniciado com sucesso usando um banco temporário.

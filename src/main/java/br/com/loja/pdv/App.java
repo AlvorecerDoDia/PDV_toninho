@@ -20,8 +20,6 @@ import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,7 +38,7 @@ public class App extends Application {
     private VendaService saleService;
     private BackupService backupService;
     private AuditoriaService auditService;
-    private String generatedInitialPassword;
+    private boolean initialAdminConfigured;
 
     @Override
     public void init() {
@@ -66,12 +64,7 @@ public class App extends Application {
         backupService = new BackupService(
                 new GerenciadorBackup(database, AppPaths.backupDirectory()),
                 session, auditService);
-        if (userRepository.contar() == 0) {
-            String configured = System.getenv("PDV_ADMIN_PASSWORD");
-            generatedInitialPassword = configured == null || configured.length() < 8
-                    ? generateInitialPassword() : configured;
-            userService.criarAdministradorInicial(generatedInitialPassword.toCharArray());
-        }
+        initialAdminConfigured = userService.configurarAdministradorInicialPadrao();
     }
 
     @Override
@@ -79,15 +72,14 @@ public class App extends Application {
         showLogin(stage);
         stage.setTitle("PDV Toninho");
         stage.show();
-        if (generatedInitialPassword != null) {
+        if (initialAdminConfigured) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Primeiro acesso");
-            alert.setHeaderText("Administrador inicial criado");
-            alert.setContentText("Login: admin\nSenha temporária: "
-                    + generatedInitialPassword
+            alert.setHeaderText("Administrador inicial configurado");
+            alert.setContentText("Login: admin\nSenha temporária: admin"
                     + "\nA troca será exigida no primeiro acesso.");
             alert.showAndWait();
-            generatedInitialPassword = null;
+            initialAdminConfigured = false;
         }
     }
 
@@ -169,12 +161,6 @@ public class App extends Application {
 
     private IllegalArgumentException unconfigured(Class<?> type) {
         return new IllegalArgumentException("Controller não configurado: " + type.getName());
-    }
-
-    private String generateInitialPassword() {
-        byte[] bytes = new byte[12];
-        new SecureRandom().nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
     public static void main(String[] args) {
