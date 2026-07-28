@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
-
-<TabPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-         tabClosingPolicy="UNAVAILABLE">
-    <tabs>
-        <Tab text="Produtos"><content><fx:include source="produto-view.fxml"/></content></Tab>
-        <Tab text="Estoque"><content><fx:include source="estoque-view.fxml"/></content></Tab>
-    </tabs>
-</TabPane>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="br.com.loja.pdv.controller.MainController">
+    <top><HBox alignment="CENTER_RIGHT"><padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
+        <Label fx:id="usuarioLabel" style="-fx-font-weight: bold;"/>
+    </HBox></top>
+    <center><TabPane fx:id="tabs" tabClosingPolicy="UNAVAILABLE"><tabs>
+        <Tab fx:id="produtosTab" text="Produtos"><content><fx:include source="produto-view.fxml"/></content></Tab>
+        <Tab fx:id="estoqueTab" text="Estoque"><content><fx:include source="estoque-view.fxml"/></content></Tab>
+        <Tab fx:id="usuariosTab" text="Usuários"><content><fx:include source="usuario-view.fxml"/></content></Tab>
+    </tabs></TabPane></center>
+</BorderPane>

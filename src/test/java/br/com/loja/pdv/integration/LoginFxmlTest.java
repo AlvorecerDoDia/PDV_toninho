@@ -1,20 +1,14 @@
 package br.com.loja.pdv.integration;
 
 import br.com.loja.pdv.App;
-import br.com.loja.pdv.controller.ProdutoController;
-import br.com.loja.pdv.controller.EstoqueController;
-import br.com.loja.pdv.controller.MainController;
-import br.com.loja.pdv.controller.UsuarioController;
+import br.com.loja.pdv.controller.LoginController;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
-import br.com.loja.pdv.repository.sqlite.SQLiteProdutoRepository;
-import br.com.loja.pdv.repository.sqlite.SQLiteEstoqueRepository;
+import br.com.loja.pdv.infrastructure.security.PasswordHasher;
 import br.com.loja.pdv.repository.sqlite.SQLiteUsuarioRepository;
-import br.com.loja.pdv.service.EstoqueService;
+import br.com.loja.pdv.service.AutenticacaoService;
 import br.com.loja.pdv.service.SessaoUsuario;
 import br.com.loja.pdv.service.UsuarioService;
-import br.com.loja.pdv.infrastructure.security.PasswordHasher;
-import br.com.loja.pdv.service.ProdutoService;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -30,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ProdutoFxmlTest {
+class LoginFxmlTest {
 
     @TempDir
     Path tempDirectory;
@@ -47,39 +41,26 @@ class ProdutoFxmlTest {
     }
 
     @Test
-    void deveCarregarTelaDeProdutosSemErro() throws InterruptedException {
-        Database database = new Database(tempDirectory.resolve("fxml.db"));
+    void deveCarregarTelaDeLoginSemErro() throws InterruptedException {
+        Database database = new Database(tempDirectory.resolve("login-fxml.db"));
         new DatabaseInitializer(database).initialize();
+        SQLiteUsuarioRepository repository = new SQLiteUsuarioRepository(database);
+        PasswordHasher hasher = new PasswordHasher();
+        UsuarioService usuarios = new UsuarioService(repository, hasher);
+        AutenticacaoService autenticacao =
+                new AutenticacaoService(repository, hasher, new SessaoUsuario());
         AtomicReference<Parent> root = new AtomicReference<>();
         AtomicReference<Throwable> failure = new AtomicReference<>();
         CountDownLatch loaded = new CountDownLatch(1);
 
         Platform.runLater(() -> {
             try {
-                SQLiteProdutoRepository products = new SQLiteProdutoRepository(database);
-                ProdutoService productService = new ProdutoService(products);
-                UsuarioService userService = new UsuarioService(
-                        new SQLiteUsuarioRepository(database), new PasswordHasher());
-                SessaoUsuario session = new SessaoUsuario();
-                session.iniciar(userService.criarAdministradorInicial(
-                        "SenhaForte1".toCharArray()));
                 FXMLLoader loader = new FXMLLoader(
-                        App.class.getResource("/br/com/loja/pdv/view/main-view.fxml")
+                        App.class.getResource("/br/com/loja/pdv/view/login-view.fxml")
                 );
                 loader.setControllerFactory(type -> {
-                    if (type == MainController.class) return new MainController(session);
-                    if (type == ProdutoController.class) {
-                        return new ProdutoController(productService);
-                    }
-                    if (type == EstoqueController.class) {
-                        return new EstoqueController(
-                                new EstoqueService(
-                                        new SQLiteEstoqueRepository(database), products),
-                                productService
-                        );
-                    }
-                    if (type == UsuarioController.class) {
-                        return new UsuarioController(userService, session);
+                    if (type == LoginController.class) {
+                        return new LoginController(autenticacao, usuarios, () -> { });
                     }
                     throw new IllegalArgumentException(type.getName());
                 });
@@ -93,7 +74,7 @@ class ProdutoFxmlTest {
 
         assertTrue(loaded.await(10, TimeUnit.SECONDS));
         if (failure.get() != null) {
-            throw new AssertionError("FXML não carregou.", failure.get());
+            throw new AssertionError("FXML de login não carregou.", failure.get());
         }
         assertNotNull(root.get());
     }

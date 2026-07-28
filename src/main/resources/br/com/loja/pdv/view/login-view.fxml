@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.loja.pdv.controller.LoginController"
+      alignment="CENTER" spacing="12">
+    <padding><Insets top="28" right="52" bottom="28" left="52"/></padding>
+    <Label text="PDV Toninho" style="-fx-font-size: 26px; -fx-font-weight: bold;"/>
+    <Label fx:id="mensagemLabel" wrapText="true"/>
+    <Label text="Login"/><TextField fx:id="loginField" promptText="Seu login"/>
+    <Label text="Senha"/><PasswordField fx:id="senhaField" promptText="Sua senha"/>
+    <Label fx:id="novaSenhaLabel" text="Nova senha" visible="false" managed="false"/>
+    <PasswordField fx:id="novaSenhaField" promptText="Mínimo de 8 caracteres"
+                   visible="false" managed="false"/>
+    <Button text="Entrar" onAction="#login" defaultButton="true" maxWidth="Infinity"/>
+</VBox>

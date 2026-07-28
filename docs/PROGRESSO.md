@@ -51,6 +51,19 @@
 - Commit: `feat: implementa controle e histórico de estoque`.
 - Pendências reais: usuários, autenticação e permissões.
 
+## Usuários, login e permissões
+
+- Funcionalidade: cadastro e manutenção de usuários, autenticação e autorização por perfil.
+- Resultado: login com senha protegida por PBKDF2, sessão explícita, usuários ativos e inativos, troca obrigatória da senha inicial e perfis Administrador, Gerente e Operador.
+- Segurança: nenhum valor de senha é persistido em texto puro; o primeiro administrador usa senha temporária aleatória ou a variável `PDV_ADMIN_PASSWORD`, exibida uma única vez.
+- Permissões: matriz centralizada por perfil e ocultação das áreas não autorizadas da interface.
+- Migração: `V003__cria_usuario.sql`.
+- Testes criados: criação do administrador inicial, hash de senha, login válido e inválido, usuário inativo, troca de senha, sessão, permissões e carregamento dos FXMLs principal e de login.
+- Testes executados: `mvn clean test` e `mvn clean package`.
+- Resultado: 37 testes aprovados, sem falhas ou erros; ambos os comandos concluíram com `BUILD SUCCESS`.
+- Commit: `feat: implementa usuários login e permissões`.
+- Pendências reais: abertura, movimentação, sangria, suprimento e fechamento de caixa.
+
 ## Próxima funcionalidade
 
-Implementar usuários, login e permissões.
+Implementar o controle completo de caixa.
