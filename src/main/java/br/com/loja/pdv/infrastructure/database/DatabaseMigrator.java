@@ -22,7 +22,8 @@ public final class DatabaseMigrator {
             "/br/com/loja/pdv/database/migration/";
 
     private static final List<Migration> MIGRATIONS = List.of(
-            new Migration(1, "cria tabela produto", "V001__cria_tabela_produto.sql")
+            new Migration(1, "cria tabela produto", "V001__cria_tabela_produto.sql"),
+            new Migration(2, "cria movimentacao estoque", "V002__cria_movimentacao_estoque.sql")
     );
 
     private final Database database;

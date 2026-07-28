@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="br.com.loja.pdv.controller.EstoqueController">
+    <top><VBox spacing="8"><padding><Insets top="16" right="16" bottom="8" left="16"/></padding>
+        <Label text="Controle de estoque" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+        <Label fx:id="mensagemLabel"/>
+    </VBox></top>
+    <left><GridPane hgap="10" vgap="10" prefWidth="390"><padding><Insets top="8" right="16" bottom="16" left="16"/></padding>
+        <Label text="Produto" GridPane.rowIndex="0"/><ComboBox fx:id="produtoCombo" prefWidth="240" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <Label fx:id="saldoLabel" text="Saldo: —" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+        <Label text="Tipo" GridPane.rowIndex="2"/><ComboBox fx:id="tipoCombo" prefWidth="240" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <Label text="Quantidade" GridPane.rowIndex="3"/><TextField fx:id="quantidadeField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <Label text="Motivo" GridPane.rowIndex="4"/><TextArea fx:id="motivoArea" prefRowCount="3" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+        <Button text="Registrar movimentação" onAction="#register" GridPane.rowIndex="5" GridPane.columnSpan="2"/>
+    </GridPane></left>
+    <center><VBox spacing="8"><padding><Insets top="8" right="16" bottom="16" left="0"/></padding>
+        <HBox spacing="8"><Label text="De"/><DatePicker fx:id="inicioPicker"/><Label text="Até"/>
+            <DatePicker fx:id="fimPicker"/><Button text="Filtrar" onAction="#refresh"/></HBox>
+        <TableView fx:id="historicoTable" VBox.vgrow="ALWAYS"><columns>
+            <TableColumn fx:id="dataColumn" text="Data" prefWidth="140"/>
+            <TableColumn fx:id="tipoColumn" text="Tipo" prefWidth="140"/>
+            <TableColumn fx:id="quantidadeColumn" text="Qtd." prefWidth="60"/>
+            <TableColumn fx:id="saldoColumn" text="Saldo" prefWidth="100"/>
+            <TableColumn fx:id="motivoColumn" text="Motivo" prefWidth="220"/>
+        </columns></TableView>
+    </VBox></center>
+</BorderPane>

@@ -24,10 +24,6 @@
 - Commit: `feat: implementa migrações versionadas do banco`.
 - Pendências reais: CRUD completo e interface de cadastro de produtos.
 
-## Próxima funcionalidade
-
-Implementar o controle e histórico de estoque.
-
 ## Cadastro completo de produtos
 
 - Funcionalidade: CRUD de produtos com tela JavaFX.
@@ -40,3 +36,21 @@ Implementar o controle e histórico de estoque.
 - Teste manual: aprovado pelo usuário em 28/07/2026; tela e operações visuais funcionando corretamente.
 - Commit: `feat: implementa cadastro completo de produtos`.
 - Pendências reais: controle transacional e histórico de estoque.
+
+## Controle e histórico de estoque
+
+- Funcionalidade: entradas, ajustes, perdas, devoluções, saldo e histórico por produto e período.
+- Resultado: saldo e movimentação são gravados na mesma transação; qualquer falha executa rollback integral.
+- Regras: quantidade positiva, saldo nunca negativo, motivo obrigatório em ajustes e perdas, produto existente e ativo e saída de venda bloqueada fora da finalização.
+- Interface: aba de estoque com produto, saldo, tipo, quantidade, motivo, filtros por período e histórico; saldo abaixo do mínimo recebe destaque.
+- Migração: `V002__cria_movimentacao_estoque.sql`.
+- Testes criados: serviço, repositório SQLite, histórico, produto inativo, estoque negativo e rollback provocado.
+- Testes executados: `mvn clean test` e `mvn clean package`.
+- Resultado: 30 testes aprovados, sem falhas ou erros; ambos os comandos concluíram com `BUILD SUCCESS`.
+- Teste de integração: FXML principal, produtos e estoque carregados em conjunto sem erro.
+- Commit: `feat: implementa controle e histórico de estoque`.
+- Pendências reais: usuários, autenticação e permissões.
+
+## Próxima funcionalidade
+
+Implementar usuários, login e permissões.

@@ -2,9 +2,12 @@ package br.com.loja.pdv.integration;
 
 import br.com.loja.pdv.App;
 import br.com.loja.pdv.controller.ProdutoController;
+import br.com.loja.pdv.controller.EstoqueController;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
 import br.com.loja.pdv.repository.sqlite.SQLiteProdutoRepository;
+import br.com.loja.pdv.repository.sqlite.SQLiteEstoqueRepository;
+import br.com.loja.pdv.service.EstoqueService;
 import br.com.loja.pdv.service.ProdutoService;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -50,9 +53,21 @@ class ProdutoFxmlTest {
                 FXMLLoader loader = new FXMLLoader(
                         App.class.getResource("/br/com/loja/pdv/view/main-view.fxml")
                 );
-                loader.setControllerFactory(type -> new ProdutoController(
-                        new ProdutoService(new SQLiteProdutoRepository(database))
-                ));
+                loader.setControllerFactory(type -> {
+                    SQLiteProdutoRepository products = new SQLiteProdutoRepository(database);
+                    ProdutoService productService = new ProdutoService(products);
+                    if (type == ProdutoController.class) {
+                        return new ProdutoController(productService);
+                    }
+                    if (type == EstoqueController.class) {
+                        return new EstoqueController(
+                                new EstoqueService(
+                                        new SQLiteEstoqueRepository(database), products),
+                                productService
+                        );
+                    }
+                    throw new IllegalArgumentException(type.getName());
+                });
                 root.set(loader.load());
             } catch (Throwable throwable) {
                 failure.set(throwable);

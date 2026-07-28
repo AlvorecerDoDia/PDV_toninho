@@ -1,9 +1,12 @@
 package br.com.loja.pdv;
 
 import br.com.loja.pdv.controller.ProdutoController;
+import br.com.loja.pdv.controller.EstoqueController;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
 import br.com.loja.pdv.repository.sqlite.SQLiteProdutoRepository;
+import br.com.loja.pdv.repository.sqlite.SQLiteEstoqueRepository;
+import br.com.loja.pdv.service.EstoqueService;
 import br.com.loja.pdv.service.ProdutoService;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -29,9 +32,15 @@ public class App extends Application {
                 )
         );
         loader.setControllerFactory(type -> {
+            SQLiteProdutoRepository products = new SQLiteProdutoRepository(database);
+            ProdutoService productService = new ProdutoService(products);
             if (type == ProdutoController.class) {
-                return new ProdutoController(
-                        new ProdutoService(new SQLiteProdutoRepository(database))
+                return new ProdutoController(productService);
+            }
+            if (type == EstoqueController.class) {
+                return new EstoqueController(
+                        new EstoqueService(new SQLiteEstoqueRepository(database), products),
+                        productService
                 );
             }
             throw new IllegalArgumentException("Controller não configurado: " + type.getName());

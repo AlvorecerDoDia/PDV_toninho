@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 
-<BorderPane xmlns="http://javafx.com/javafx/21"
-            xmlns:fx="http://javafx.com/fxml/1">
-    <center>
-        <fx:include source="produto-view.fxml"/>
-    </center>
-</BorderPane>
+<TabPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+         tabClosingPolicy="UNAVAILABLE">
+    <tabs>
+        <Tab text="Produtos"><content><fx:include source="produto-view.fxml"/></content></Tab>
+        <Tab text="Estoque"><content><fx:include source="estoque-view.fxml"/></content></Tab>
+    </tabs>
+</TabPane>
