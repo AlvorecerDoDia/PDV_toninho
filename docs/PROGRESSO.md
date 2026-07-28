@@ -108,6 +108,21 @@
 - Commit: `feat: implementa finalização transacional de vendas`.
 - Pendências reais: histórico e cancelamento transacional de vendas.
 
+## Histórico e cancelamento de vendas
+
+- Funcionalidade: consulta de vendas por número, período e operador, visualização de itens e pagamentos e cancelamento autorizado.
+- Resultado: histórico exibe status e valores; o cancelamento exige motivo, só pode ocorrer uma vez e é restrito a perfis autorizados.
+- Transação: o cancelamento altera a venda, devolve os produtos ao estoque, cria movimentações de devolução, estorna o dinheiro do caixa e grava auditoria; qualquer falha desfaz tudo.
+- Caixa fechado: o estorno permanece registrado e recalcula o valor esperado e a diferença do fechamento original.
+- Interface: aba de histórico com filtros, detalhes completos e cancelamento da venda selecionada.
+- Migração: `V006__cria_auditoria.sql`, introduzindo a base de auditoria usada pelo cancelamento.
+- Testes criados: consultas, filtros, cancelamento, estoque devolvido, estorno de caixa aberto e fechado, duplicidade, permissão, motivo obrigatório, auditoria e rollback provocado.
+- Testes executados: `mvn clean test` e `mvn clean package`.
+- Resultado: 81 testes aprovados, sem falhas ou erros; ambos os comandos concluíram com `BUILD SUCCESS`.
+- Teste de integração: FXML principal carregado com histórico, carrinho e pagamentos.
+- Commit: `feat: implementa histórico e cancelamento de vendas`.
+- Pendências reais: impressão e segunda via do comprovante não fiscal.
+
 ## Próxima funcionalidade
 
-Implementar histórico e cancelamento de vendas.
+Implementar impressão e segunda via de comprovantes.

@@ -56,15 +56,43 @@ public final class SQLiteVendaRepository implements VendaRepository {
 
     @Override
     public Optional<Venda> buscarPorId(long id) {
+        return findSale("SELECT * FROM venda WHERE id = ?",
+                statement -> statement.setLong(1, id));
+    }
+
+    @Override
+    public Optional<Venda> buscarPorNumero(String numero) {
+        return findSale("SELECT * FROM venda WHERE numero = ?",
+                statement -> statement.setString(1, numero));
+    }
+
+    @Override
+    public List<Venda> listar(
+            LocalDateTime inicio, LocalDateTime fim, Long operadorId) {
+        String sql = """
+                SELECT * FROM venda
+                WHERE criado_em >= ? AND criado_em <= ?
+                  AND (? IS NULL OR operador_id = ?)
+                ORDER BY criado_em DESC, id DESC
+                """;
         try (Connection connection = database.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "SELECT * FROM venda WHERE id = ?")) {
-            statement.setLong(1, id);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, inicio.toString());
+            statement.setString(2, fim.toString());
+            if (operadorId == null) {
+                statement.setNull(3, Types.BIGINT);
+                statement.setNull(4, Types.BIGINT);
+            } else {
+                statement.setLong(3, operadorId);
+                statement.setLong(4, operadorId);
+            }
             try (ResultSet resultSet = statement.executeQuery()) {
-                return resultSet.next() ? Optional.of(mapSale(resultSet)) : Optional.empty();
+                List<Venda> result = new ArrayList<>();
+                while (resultSet.next()) result.add(mapSale(resultSet));
+                return result;
             }
         } catch (SQLException exception) {
-            throw new DatabaseException("Não foi possível consultar a venda.", exception);
+            throw new DatabaseException("Não foi possível consultar as vendas.", exception);
         }
     }
 
@@ -81,6 +109,203 @@ public final class SQLiteVendaRepository implements VendaRepository {
             }
         } catch (SQLException exception) {
             throw new DatabaseException("Não foi possível consultar os itens da venda.", exception);
+        }
+    }
+
+    @Override
+    public Venda cancelar(
+            long vendaId, long usuarioId, String motivo, LocalDateTime canceladoEm) {
+        try (Connection connection = database.getConnection()) {
+            connection.setAutoCommit(false);
+            try {
+                Venda venda = findSale(connection, vendaId);
+                if (venda.getStatus() == StatusVenda.CANCELADA) {
+                    throw new ValidationException("A venda já foi cancelada.");
+                }
+                markCanceled(connection, vendaId, motivo, canceladoEm);
+                List<ItemVenda> items = listItems(connection, vendaId);
+                for (ItemVenda item : items) {
+                    restoreStock(connection, venda, item, usuarioId, motivo, canceladoEm);
+                }
+                BigDecimal cashToReverse = cashRetained(connection, venda);
+                if (cashToReverse.signum() > 0) {
+                    reverseCash(connection, venda, usuarioId, motivo, canceladoEm, cashToReverse);
+                }
+                insertCancellationAudit(
+                        connection, venda, usuarioId, motivo, canceladoEm);
+                connection.commit();
+                venda.setStatus(StatusVenda.CANCELADA);
+                venda.setCanceladoEm(canceladoEm);
+                venda.setMotivoCancelamento(motivo);
+                return venda;
+            } catch (RuntimeException | SQLException exception) {
+                rollback(connection, exception);
+                if (exception instanceof RuntimeException runtimeException) {
+                    throw runtimeException;
+                }
+                throw new DatabaseException("Não foi possível cancelar a venda.", exception);
+            }
+        } catch (SQLException exception) {
+            throw new DatabaseException("Não foi possível acessar a venda.", exception);
+        }
+    }
+
+    private Optional<Venda> findSale(String sql, StatementBinder binder) {
+        try (Connection connection = database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            binder.bind(statement);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next() ? Optional.of(mapSale(resultSet)) : Optional.empty();
+            }
+        } catch (SQLException exception) {
+            throw new DatabaseException("Não foi possível consultar a venda.", exception);
+        }
+    }
+
+    private Venda findSale(Connection connection, long vendaId) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT * FROM venda WHERE id = ?")) {
+            statement.setLong(1, vendaId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) throw new ValidationException("Venda não encontrada.");
+                return mapSale(resultSet);
+            }
+        }
+    }
+
+    private List<ItemVenda> listItems(Connection connection, long vendaId) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT * FROM item_venda WHERE venda_id = ? ORDER BY id")) {
+            statement.setLong(1, vendaId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<ItemVenda> result = new ArrayList<>();
+                while (resultSet.next()) result.add(mapItem(resultSet));
+                return result;
+            }
+        }
+    }
+
+    private void markCanceled(
+            Connection connection, long vendaId, String motivo, LocalDateTime canceledAt)
+            throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement("""
+                UPDATE venda SET status = 'CANCELADA', cancelado_em = ?,
+                    motivo_cancelamento = ?
+                WHERE id = ? AND status = 'FINALIZADA'
+                """)) {
+            statement.setString(1, canceledAt.toString());
+            statement.setString(2, motivo);
+            statement.setLong(3, vendaId);
+            if (statement.executeUpdate() != 1) {
+                throw new ValidationException("A venda já foi cancelada.");
+            }
+        }
+    }
+
+    private void restoreStock(
+            Connection connection, Venda venda, ItemVenda item, long usuarioId,
+            String motivo, LocalDateTime canceledAt) throws SQLException {
+        int previous;
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT quantidade_estoque FROM produto WHERE id = ?")) {
+            statement.setLong(1, item.getProdutoId());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    throw new ValidationException(
+                            "Produto da venda não foi encontrado: " + item.getProdutoNome() + ".");
+                }
+                previous = resultSet.getInt(1);
+            }
+        }
+        int next = Math.addExact(previous, item.getQuantidade());
+        try (PreparedStatement statement = connection.prepareStatement("""
+                UPDATE produto SET quantidade_estoque = ?, atualizado_em = ? WHERE id = ?
+                """)) {
+            statement.setInt(1, next);
+            statement.setString(2, canceledAt.toString());
+            statement.setLong(3, item.getProdutoId());
+            statement.executeUpdate();
+        }
+        try (PreparedStatement statement = connection.prepareStatement("""
+                INSERT INTO movimentacao_estoque (
+                    produto_id, tipo, quantidade, quantidade_anterior,
+                    quantidade_posterior, motivo, usuario_id, venda_id, criado_em
+                ) VALUES (?, 'DEVOLUCAO', ?, ?, ?, ?, ?, ?, ?)
+                """)) {
+            statement.setLong(1, item.getProdutoId());
+            statement.setInt(2, item.getQuantidade());
+            statement.setInt(3, previous);
+            statement.setInt(4, next);
+            statement.setString(5, "Cancelamento da venda " + venda.getNumero()
+                    + ": " + motivo);
+            statement.setLong(6, usuarioId);
+            statement.setLong(7, venda.getId());
+            statement.setString(8, canceledAt.toString());
+            statement.executeUpdate();
+        }
+    }
+
+    private BigDecimal cashRetained(Connection connection, Venda venda) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement("""
+                SELECT COALESCE(SUM(valor_centavos), 0)
+                FROM pagamento WHERE venda_id = ? AND forma = 'DINHEIRO'
+                """)) {
+            statement.setLong(1, venda.getId());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                return MoneyUtils.fromCents(resultSet.getLong(1)).subtract(venda.getTroco());
+            }
+        }
+    }
+
+    private void reverseCash(
+            Connection connection, Venda venda, long usuarioId, String motivo,
+            LocalDateTime canceledAt, BigDecimal value) throws SQLException {
+        long cents = MoneyUtils.toCents(value);
+        try (PreparedStatement statement = connection.prepareStatement("""
+                INSERT INTO movimentacao_caixa (
+                    caixa_id, usuario_id, tipo, valor_centavos, motivo, criado_em
+                ) VALUES (?, ?, 'ESTORNO', ?, ?, ?)
+                """)) {
+            statement.setLong(1, venda.getCaixaId());
+            statement.setLong(2, usuarioId);
+            statement.setLong(3, cents);
+            statement.setString(4, "Cancelamento da venda " + venda.getNumero()
+                    + ": " + motivo);
+            statement.setString(5, canceledAt.toString());
+            statement.executeUpdate();
+        }
+        try (PreparedStatement statement = connection.prepareStatement("""
+                UPDATE caixa
+                SET valor_esperado_centavos = valor_esperado_centavos - ?,
+                    diferenca_centavos = valor_contado_centavos
+                        - (valor_esperado_centavos - ?)
+                WHERE id = ? AND status = 'FECHADO'
+                  AND valor_esperado_centavos IS NOT NULL
+                  AND valor_contado_centavos IS NOT NULL
+                """)) {
+            statement.setLong(1, cents);
+            statement.setLong(2, cents);
+            statement.setLong(3, venda.getCaixaId());
+            statement.executeUpdate();
+        }
+    }
+
+    private void insertCancellationAudit(
+            Connection connection, Venda venda, long usuarioId, String motivo,
+            LocalDateTime canceledAt) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement("""
+                INSERT INTO auditoria (
+                    usuario_id, acao, entidade, entidade_id,
+                    valores_anteriores, valores_novos, criado_em
+                ) VALUES (?, 'CANCELAMENTO', 'VENDA', ?, ?, ?, ?)
+                """)) {
+            statement.setLong(1, usuarioId);
+            statement.setLong(2, venda.getId());
+            statement.setString(3, "status=FINALIZADA");
+            statement.setString(4, "status=CANCELADA; motivo=" + motivo);
+            statement.setString(5, canceledAt.toString());
+            statement.executeUpdate();
         }
     }
 
@@ -306,5 +531,10 @@ public final class SQLiteVendaRepository implements VendaRepository {
         } catch (SQLException exception) {
             cause.addSuppressed(exception);
         }
+    }
+
+    @FunctionalInterface
+    private interface StatementBinder {
+        void bind(PreparedStatement statement) throws SQLException;
     }
 }

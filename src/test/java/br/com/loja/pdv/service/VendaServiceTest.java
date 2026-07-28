@@ -112,10 +112,32 @@ class VendaServiceTest {
         }
 
         @Override
+        public Optional<Venda> buscarPorNumero(String number) {
+            return saved != null && saved.getNumero().equals(number)
+                    ? Optional.of(saved) : Optional.empty();
+        }
+
+        @Override
+        public List<Venda> listar(
+                LocalDateTime start, LocalDateTime end, Long operatorId) {
+            return saved == null ? List.of() : List.of(saved);
+        }
+
+        @Override
         public List<ItemVenda> listarItens(long vendaId) {
             return buscarPorId(vendaId)
                     .map(value -> List.copyOf(value.getItens()))
                     .orElseGet(List::of);
+        }
+
+        @Override
+        public Venda cancelar(
+                long saleId, long userId, String reason, LocalDateTime canceledAt) {
+            Venda sale = buscarPorId(saleId).orElseThrow();
+            sale.setStatus(StatusVenda.CANCELADA);
+            sale.setMotivoCancelamento(reason);
+            sale.setCanceladoEm(canceledAt);
+            return sale;
         }
     }
 

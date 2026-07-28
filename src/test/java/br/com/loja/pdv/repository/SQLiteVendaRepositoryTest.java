@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,6 +41,8 @@ class SQLiteVendaRepositoryTest {
     private VendaService saleService;
     private CaixaService cashService;
     private Produto product;
+    private SQLiteUsuarioRepository users;
+    private Usuario manager;
 
     @BeforeEach
     void setUp() {
@@ -50,8 +53,8 @@ class SQLiteVendaRepositoryTest {
         cashRegisters = new SQLiteCaixaRepository(database);
         sales = new SQLiteVendaRepository(database);
         payments = new SQLitePagamentoRepository(database);
-        SQLiteUsuarioRepository users = new SQLiteUsuarioRepository(database);
-        Usuario manager = new UsuarioService(users, new PasswordHasher()).criar(
+        users = new SQLiteUsuarioRepository(database);
+        manager = new UsuarioService(users, new PasswordHasher()).criar(
                 "Gerente", "gerente", "SenhaForte1".toCharArray(),
                 PerfilUsuario.GERENTE, false);
         SessaoUsuario session = new SessaoUsuario();
@@ -172,6 +175,106 @@ class SQLiteVendaRepositoryTest {
         assertEquals(0, count("venda"));
         assertEquals(0, count("item_venda"));
         assertFalse(cart.isVazio());
+    }
+
+    @Test
+    void deveConsultarVendaPorNumeroPeriodoEOperador() {
+        cashService.abrir(BigDecimal.ZERO);
+        Venda sale = saleService.finalizar(cart(1), List.of(
+                paymentService.criar(FormaPagamento.PIX, new BigDecimal("100.00"))));
+
+        assertEquals(sale.getId(),
+                saleService.buscarPorNumero(sale.getNumero().toLowerCase()).getId());
+        assertEquals(1, saleService.listar(
+                LocalDate.now(), LocalDate.now(), manager.getId()).size());
+        assertTrue(saleService.listar(
+                LocalDate.now(), LocalDate.now(), manager.getId() + 999).isEmpty());
+    }
+
+    @Test
+    void deveCancelarVendaDevolverEstoqueEstornarCaixaEAuditar() throws Exception {
+        var cash = cashService.abrir(BigDecimal.ZERO);
+        Venda sale = saleService.finalizar(cart(2), List.of(
+                paymentService.criar(
+                        FormaPagamento.DINHEIRO, new BigDecimal("200.00"))));
+
+        Venda canceled = saleService.cancelar(sale.getId(), "Cliente desistiu");
+
+        assertEquals(br.com.loja.pdv.domain.enums.StatusVenda.CANCELADA,
+                canceled.getStatus());
+        assertEquals(10, stock.buscarSaldo(product.getId()));
+        assertEquals(BigDecimal.ZERO.setScale(2),
+                cashRegisters.buscarDinheiroEsperado(cash.getId()));
+        assertEquals(1, count("auditoria"));
+        assertEquals(3, new EstoqueService(stock, products).listar(
+                product.getId(), LocalDate.now(), LocalDate.now()).size());
+    }
+
+    @Test
+    void deveImpedirCancelamentoDuplicadoEMotivoVazio() {
+        cashService.abrir(BigDecimal.ZERO);
+        Venda sale = saleService.finalizar(cart(1), List.of(
+                paymentService.criar(FormaPagamento.PIX, new BigDecimal("100.00"))));
+        assertThrows(ValidationException.class, () ->
+                saleService.cancelar(sale.getId(), " "));
+        saleService.cancelar(sale.getId(), "Erro no pedido");
+        assertThrows(ValidationException.class, () ->
+                saleService.cancelar(sale.getId(), "Nova tentativa"));
+    }
+
+    @Test
+    void deveBloquearCancelamentoSemPermissao() {
+        cashService.abrir(BigDecimal.ZERO);
+        Venda sale = saleService.finalizar(cart(1), List.of(
+                paymentService.criar(FormaPagamento.PIX, new BigDecimal("100.00"))));
+        Usuario operator = new UsuarioService(users, new PasswordHasher()).criar(
+                "Operador", "operador", "SenhaForte2".toCharArray(),
+                PerfilUsuario.OPERADOR, false);
+        SessaoUsuario operatorSession = new SessaoUsuario();
+        operatorSession.iniciar(operator);
+        VendaService operatorSales = new VendaService(
+                sales, products, cashRegisters, operatorSession, paymentService);
+        assertThrows(ValidationException.class, () ->
+                operatorSales.cancelar(sale.getId(), "Sem permissão"));
+    }
+
+    @Test
+    void deveRecalcularDiferencaAoCancelarVendaDeCaixaFechado() {
+        var cash = cashService.abrir(BigDecimal.ZERO);
+        Venda sale = saleService.finalizar(cart(1), List.of(
+                paymentService.criar(
+                        FormaPagamento.DINHEIRO, new BigDecimal("100.00"))));
+        cashService.fechar(new BigDecimal("100.00"));
+
+        saleService.cancelar(sale.getId(), "Devolução posterior");
+
+        var closed = cashRegisters.buscarPorId(cash.getId()).orElseThrow();
+        assertEquals(BigDecimal.ZERO.setScale(2), closed.getValorEsperado());
+        assertEquals(new BigDecimal("100.00"), closed.getDiferenca());
+    }
+
+    @Test
+    void deveFazerRollbackDoCancelamentoQuandoAuditoriaFalhar() throws Exception {
+        var cash = cashService.abrir(BigDecimal.ZERO);
+        Venda sale = saleService.finalizar(cart(1), List.of(
+                paymentService.criar(
+                        FormaPagamento.DINHEIRO, new BigDecimal("100.00"))));
+        try (Connection connection = database.getConnection();
+             Statement statement = connection.createStatement()) {
+            statement.execute("""
+                    CREATE TRIGGER falha_auditoria BEFORE INSERT ON auditoria
+                    BEGIN SELECT RAISE(ABORT, 'falha provocada'); END
+                    """);
+        }
+
+        assertThrows(DatabaseException.class, () ->
+                saleService.cancelar(sale.getId(), "Teste de rollback"));
+        assertEquals(br.com.loja.pdv.domain.enums.StatusVenda.FINALIZADA,
+                sales.buscarPorId(sale.getId()).orElseThrow().getStatus());
+        assertEquals(9, stock.buscarSaldo(product.getId()));
+        assertEquals(new BigDecimal("100.00"),
+                cashRegisters.buscarDinheiroEsperado(cash.getId()));
+        assertEquals(0, count("auditoria"));
     }
 
     private CarrinhoVenda cart(int quantity) {

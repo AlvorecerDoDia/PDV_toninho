@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.loja.pdv.controller.HistoricoVendaController" spacing="8">
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+    <Label text="Histórico de vendas" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+    <Label fx:id="mensagemLabel" wrapText="true"/>
+    <HBox spacing="8">
+        <TextField fx:id="numeroField" promptText="Número da venda"/>
+        <DatePicker fx:id="inicioPicker"/>
+        <DatePicker fx:id="fimPicker"/>
+        <ComboBox fx:id="operadorCombo" promptText="Todos os operadores" prefWidth="220"/>
+        <Button text="Pesquisar" onAction="#search"/>
+        <Button text="Limpar filtros" onAction="#clearFilters"/>
+    </HBox>
+    <TableView fx:id="vendasTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="numeroColumn" text="Número" prefWidth="230"/>
+            <TableColumn fx:id="dataColumn" text="Data" prefWidth="150"/>
+            <TableColumn fx:id="operadorColumn" text="Operador" prefWidth="100"/>
+            <TableColumn fx:id="totalColumn" text="Total" prefWidth="120"/>
+            <TableColumn fx:id="statusColumn" text="Status" prefWidth="120"/>
+        </columns>
+    </TableView>
+    <SplitPane dividerPositions="0.6" prefHeight="150">
+        <TextArea fx:id="itensArea" editable="false" promptText="Itens"/>
+        <TextArea fx:id="pagamentosArea" editable="false" promptText="Pagamentos"/>
+    </SplitPane>
+    <HBox spacing="8">
+        <TextField fx:id="motivoField" promptText="Motivo obrigatório do cancelamento"
+                   HBox.hgrow="ALWAYS"/>
+        <Button text="Cancelar venda selecionada" onAction="#cancelSelected"/>
+    </HBox>
+</VBox>

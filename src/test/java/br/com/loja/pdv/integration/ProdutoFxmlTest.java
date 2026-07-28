@@ -8,6 +8,7 @@ import br.com.loja.pdv.controller.UsuarioController;
 import br.com.loja.pdv.controller.CaixaController;
 import br.com.loja.pdv.controller.VendaController;
 import br.com.loja.pdv.controller.PagamentoController;
+import br.com.loja.pdv.controller.HistoricoVendaController;
 import br.com.loja.pdv.domain.model.CarrinhoVenda;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
@@ -16,6 +17,7 @@ import br.com.loja.pdv.repository.sqlite.SQLiteEstoqueRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteUsuarioRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteCaixaRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteVendaRepository;
+import br.com.loja.pdv.repository.sqlite.SQLitePagamentoRepository;
 import br.com.loja.pdv.service.EstoqueService;
 import br.com.loja.pdv.service.SessaoUsuario;
 import br.com.loja.pdv.service.UsuarioService;
@@ -88,6 +90,11 @@ class ProdutoFxmlTest {
                     }
                     if (type == PagamentoController.class) {
                         return new PagamentoController(paymentService, saleService, cart);
+                    }
+                    if (type == HistoricoVendaController.class) {
+                        return new HistoricoVendaController(
+                                saleService, userService,
+                                new SQLitePagamentoRepository(database));
                     }
                     if (type == ProdutoController.class) {
                         return new ProdutoController(productService);

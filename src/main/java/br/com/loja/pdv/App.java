@@ -114,6 +114,10 @@ public class App extends Application {
         if (type == PagamentoController.class) {
             return new PagamentoController(paymentService, saleService, saleCart);
         }
+        if (type == HistoricoVendaController.class) {
+            return new HistoricoVendaController(
+                    saleService, userService, new SQLitePagamentoRepository(database));
+        }
         if (type == ProdutoController.class) return new ProdutoController(productService);
         if (type == EstoqueController.class) {
             return new EstoqueController(

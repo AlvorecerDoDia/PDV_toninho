@@ -10,6 +10,7 @@ import br.com.loja.pdv.repository.VendaRepository;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
@@ -77,6 +78,51 @@ public final class VendaService {
         Venda finalized = vendas.finalizar(venda);
         carrinho.limpar();
         return finalized;
+    }
+
+    public Venda buscarPorNumero(String numero) {
+        sessao.exigir(Permissao.RELATORIOS);
+        String normalized = numero == null ? "" : numero.strip().toUpperCase();
+        if (normalized.isEmpty()) {
+            throw new ValidationException("Informe o número da venda.");
+        }
+        Venda venda = vendas.buscarPorNumero(normalized)
+                .orElseThrow(() -> new ValidationException("Venda não encontrada."));
+        venda.getItens().clear();
+        venda.getItens().addAll(vendas.listarItens(venda.getId()));
+        return venda;
+    }
+
+    public List<Venda> listar(LocalDate inicio, LocalDate fim, Long operadorId) {
+        sessao.exigir(Permissao.RELATORIOS);
+        if (inicio == null || fim == null || inicio.isAfter(fim)) {
+            throw new ValidationException("Informe um período válido.");
+        }
+        if (operadorId != null && operadorId <= 0) {
+            throw new ValidationException("Operador inválido.");
+        }
+        return vendas.listar(
+                inicio.atStartOfDay(), fim.plusDays(1).atStartOfDay().minusNanos(1),
+                operadorId);
+    }
+
+    public Venda detalhar(long vendaId) {
+        sessao.exigir(Permissao.RELATORIOS);
+        Venda venda = vendas.buscarPorId(vendaId)
+                .orElseThrow(() -> new ValidationException("Venda não encontrada."));
+        venda.getItens().addAll(vendas.listarItens(vendaId));
+        return venda;
+    }
+
+    public Venda cancelar(long vendaId, String motivo) {
+        sessao.exigir(Permissao.CANCELAMENTOS);
+        Usuario usuario = sessao.atual().orElseThrow();
+        String normalized = motivo == null ? "" : motivo.strip().replaceAll("\\s+", " ");
+        if (normalized.isEmpty()) {
+            throw new ValidationException("Informe o motivo do cancelamento.");
+        }
+        return vendas.cancelar(
+                vendaId, usuario.getId(), normalized, LocalDateTime.now(clock));
     }
 
     private ItemVenda toSaleItem(ItemCarrinho cartItem) {

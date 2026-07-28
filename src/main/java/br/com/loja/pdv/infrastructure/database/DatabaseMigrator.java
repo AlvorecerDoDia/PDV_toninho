@@ -26,7 +26,8 @@ public final class DatabaseMigrator {
             new Migration(2, "cria movimentacao estoque", "V002__cria_movimentacao_estoque.sql"),
             new Migration(3, "cria tabela usuario", "V003__cria_usuario.sql"),
             new Migration(4, "cria caixa e movimentacoes", "V004__cria_caixa.sql"),
-            new Migration(5, "cria venda itens e pagamentos", "V005__cria_venda.sql")
+            new Migration(5, "cria venda itens e pagamentos", "V005__cria_venda.sql"),
+            new Migration(6, "cria auditoria", "V006__cria_auditoria.sql")
     );
 
     private final Database database;
