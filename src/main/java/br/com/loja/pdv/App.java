@@ -8,6 +8,7 @@ import br.com.loja.pdv.infrastructure.security.PasswordHasher;
 import br.com.loja.pdv.infrastructure.printing.FormatadorComprovante;
 import br.com.loja.pdv.infrastructure.printing.ImpressoraWindows;
 import br.com.loja.pdv.infrastructure.reporting.ExportadorCsv;
+import br.com.loja.pdv.infrastructure.backup.GerenciadorBackup;
 import br.com.loja.pdv.repository.sqlite.*;
 import br.com.loja.pdv.service.*;
 import javafx.application.Application;
@@ -17,6 +18,7 @@ import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Objects;
@@ -33,6 +35,7 @@ public class App extends Application {
     private CarrinhoVenda saleCart;
     private PagamentoService paymentService;
     private VendaService saleService;
+    private BackupService backupService;
     private String generatedInitialPassword;
 
     @Override
@@ -52,6 +55,8 @@ public class App extends Application {
         saleService = new VendaService(
                 new SQLiteVendaRepository(database), productRepository, cashRepository,
                 session, paymentService);
+        backupService = new BackupService(
+                new GerenciadorBackup(database, Path.of("backups")), session);
         if (userRepository.contar() == 0) {
             String configured = System.getenv("PDV_ADMIN_PASSWORD");
             generatedInitialPassword = configured == null || configured.length() < 8
@@ -129,6 +134,7 @@ public class App extends Application {
                             new SQLiteRelatorioRepository(database), session),
                     userService, productService, new ExportadorCsv());
         }
+        if (type == BackupController.class) return new BackupController(backupService);
         if (type == ProdutoController.class) return new ProdutoController(productService);
         if (type == EstoqueController.class) {
             return new EstoqueController(
@@ -159,5 +165,10 @@ public class App extends Application {
 
     public static void main(String[] args) {
         launch();
+    }
+
+    @Override
+    public void stop() {
+        if (backupService != null) backupService.criarAutomatico();
     }
 }

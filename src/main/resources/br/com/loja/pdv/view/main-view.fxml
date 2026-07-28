@@ -11,6 +11,7 @@
         <Tab fx:id="vendasTab" text="Venda"><content><fx:include source="venda-view.fxml"/></content></Tab>
         <Tab fx:id="historicoTab" text="Histórico"><content><fx:include source="historico-venda-view.fxml"/></content></Tab>
         <Tab fx:id="relatoriosTab" text="Relatórios"><content><fx:include source="relatorio-view.fxml"/></content></Tab>
+        <Tab fx:id="backupTab" text="Backup"><content><fx:include source="backup-view.fxml"/></content></Tab>
         <Tab fx:id="produtosTab" text="Produtos"><content><fx:include source="produto-view.fxml"/></content></Tab>
         <Tab fx:id="estoqueTab" text="Estoque"><content><fx:include source="estoque-view.fxml"/></content></Tab>
         <Tab fx:id="caixaTab" text="Caixa"><content><fx:include source="caixa-view.fxml"/></content></Tab>

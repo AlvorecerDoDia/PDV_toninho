@@ -10,6 +10,7 @@ import br.com.loja.pdv.controller.VendaController;
 import br.com.loja.pdv.controller.PagamentoController;
 import br.com.loja.pdv.controller.HistoricoVendaController;
 import br.com.loja.pdv.controller.RelatorioController;
+import br.com.loja.pdv.controller.BackupController;
 import br.com.loja.pdv.domain.model.CarrinhoVenda;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
@@ -27,10 +28,12 @@ import br.com.loja.pdv.service.CaixaService;
 import br.com.loja.pdv.service.PagamentoService;
 import br.com.loja.pdv.service.VendaService;
 import br.com.loja.pdv.service.RelatorioService;
+import br.com.loja.pdv.service.BackupService;
 import br.com.loja.pdv.infrastructure.security.PasswordHasher;
 import br.com.loja.pdv.infrastructure.printing.FormatadorComprovante;
 import br.com.loja.pdv.infrastructure.printing.ImpressoraWindows;
 import br.com.loja.pdv.infrastructure.reporting.ExportadorCsv;
+import br.com.loja.pdv.infrastructure.backup.GerenciadorBackup;
 import br.com.loja.pdv.service.ProdutoService;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -110,6 +113,12 @@ class ProdutoFxmlTest {
                                 new RelatorioService(
                                         new SQLiteRelatorioRepository(database), session),
                                 userService, productService, new ExportadorCsv());
+                    }
+                    if (type == BackupController.class) {
+                        return new BackupController(new BackupService(
+                                new GerenciadorBackup(
+                                        database, tempDirectory.resolve("backups")),
+                                session));
                     }
                     if (type == ProdutoController.class) {
                         return new ProdutoController(productService);

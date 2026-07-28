@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.loja.pdv.controller.BackupController" spacing="10">
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+    <Label text="Backup e restauração" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+    <Label fx:id="mensagemLabel" wrapText="true"/>
+    <HBox spacing="8">
+        <Button text="Criar backup agora" onAction="#createBackup"/>
+        <Button text="Restaurar selecionado" onAction="#restoreSelected"/>
+        <Button text="Escolher arquivo externo" onAction="#chooseAndRestore"/>
+        <Button text="Atualizar lista" onAction="#refresh"/>
+    </HBox>
+    <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="arquivoColumn" text="Arquivo" prefWidth="520"/>
+            <TableColumn fx:id="dataColumn" text="Data" prefWidth="190"/>
+        </columns>
+    </TableView>
+    <Label text="A restauração cria uma cópia de segurança do banco atual antes de substituir os dados."/>
+</VBox>

@@ -29,6 +29,10 @@ public final class Database {
         return new Database(DEFAULT_DATABASE_FILE);
     }
 
+    public Path getDatabaseFile() {
+        return databaseFile;
+    }
+
     public Connection getConnection() throws SQLException {
         createDataDirectory();
         Connection connection = DriverManager.getConnection(url);

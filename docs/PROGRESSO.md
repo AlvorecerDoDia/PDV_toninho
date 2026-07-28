@@ -151,6 +151,19 @@
 - Commit: `feat: implementa relatórios básicos do pdv`.
 - Pendências reais: backup e restauração segura.
 
+## Backup e restauração do banco
+
+- Funcionalidade: criação manual e automática de cópias consistentes do banco SQLite, listagem, retenção e restauração segura.
+- Segurança: validação de integridade antes da restauração, cópia preventiva do banco atual, arquivo temporário e substituição atômica quando suportada.
+- Recuperação: remoção dos arquivos auxiliares WAL/SHM e reaplicação das migrações após restaurar uma cópia válida.
+- Interface: aba administrativa para criar, atualizar, restaurar e abrir a pasta de backups.
+- Automação: cópia realizada ao encerrar normalmente a aplicação.
+- Testes criados: criação consistente, restauração, cópia preventiva, rejeição de arquivo inválido, retenção e diretório inacessível.
+- Testes executados: `mvn clean test`.
+- Resultado: 93 testes aprovados, sem falhas ou erros.
+- Commit: `feat: implementa backup e restauração do banco`.
+- Pendências reais: auditoria completa, logs e tratamento centralizado de erros.
+
 ## Próxima funcionalidade
 
-Implementar backup e restauração do banco.
+Implementar auditoria completa, logs e tratamento centralizado de erros.
