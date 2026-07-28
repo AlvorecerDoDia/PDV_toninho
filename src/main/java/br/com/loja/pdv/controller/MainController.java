@@ -10,6 +10,7 @@ import javafx.scene.control.TabPane;
 
 public final class MainController {
     @FXML private TabPane tabs;
+    @FXML private Tab vendasTab;
     @FXML private Tab produtosTab;
     @FXML private Tab estoqueTab;
     @FXML private Tab caixaTab;
@@ -25,6 +26,7 @@ public final class MainController {
     private void initialize() {
         Usuario usuario = sessao.atual().orElseThrow();
         usuarioLabel.setText(usuario.getNome() + " — " + usuario.getPerfil());
+        if (!usuario.getPerfil().permite(Permissao.VENDAS)) tabs.getTabs().remove(vendasTab);
         if (!usuario.getPerfil().permite(Permissao.PRODUTOS)) tabs.getTabs().remove(produtosTab);
         if (!usuario.getPerfil().permite(Permissao.ESTOQUE)) tabs.getTabs().remove(estoqueTab);
         if (!usuario.getPerfil().permite(Permissao.CAIXA)) tabs.getTabs().remove(caixaTab);

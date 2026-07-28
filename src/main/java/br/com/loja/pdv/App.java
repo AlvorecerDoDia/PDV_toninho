@@ -96,6 +96,7 @@ public class App extends Application {
         SQLiteProdutoRepository products = new SQLiteProdutoRepository(database);
         ProdutoService productService = new ProdutoService(products);
         if (type == MainController.class) return new MainController(session);
+        if (type == VendaController.class) return new VendaController(productService, session);
         if (type == ProdutoController.class) return new ProdutoController(productService);
         if (type == EstoqueController.class) {
             return new EstoqueController(

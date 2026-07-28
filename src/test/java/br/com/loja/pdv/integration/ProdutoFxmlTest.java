@@ -6,6 +6,7 @@ import br.com.loja.pdv.controller.EstoqueController;
 import br.com.loja.pdv.controller.MainController;
 import br.com.loja.pdv.controller.UsuarioController;
 import br.com.loja.pdv.controller.CaixaController;
+import br.com.loja.pdv.controller.VendaController;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
 import br.com.loja.pdv.repository.sqlite.SQLiteProdutoRepository;
@@ -71,6 +72,9 @@ class ProdutoFxmlTest {
                 );
                 loader.setControllerFactory(type -> {
                     if (type == MainController.class) return new MainController(session);
+                    if (type == VendaController.class) {
+                        return new VendaController(productService, session);
+                    }
                     if (type == ProdutoController.class) {
                         return new ProdutoController(productService);
                     }

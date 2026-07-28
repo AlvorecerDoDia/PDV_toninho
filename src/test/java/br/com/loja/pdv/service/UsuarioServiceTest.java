@@ -80,6 +80,21 @@ class UsuarioServiceTest {
     }
 
     @Test
+    void devePermitirDescontoSomenteParaPerfilAutorizado() {
+        Usuario operador = usuarios.criar(
+                "Operador", "operador", "SenhaForte1".toCharArray(),
+                PerfilUsuario.OPERADOR, false);
+        sessao.iniciar(operador);
+        assertThrows(ValidationException.class, () -> sessao.exigir(Permissao.DESCONTOS));
+
+        Usuario gerente = usuarios.criar(
+                "Gerente", "gerente", "SenhaForte2".toCharArray(),
+                PerfilUsuario.GERENTE, false);
+        sessao.iniciar(gerente);
+        assertDoesNotThrow(() -> sessao.exigir(Permissao.DESCONTOS));
+    }
+
+    @Test
     void deveImpedirSegundoAdministradorInicial() {
         usuarios.criarAdministradorInicial("SenhaForte1".toCharArray());
         assertThrows(ValidationException.class, () ->

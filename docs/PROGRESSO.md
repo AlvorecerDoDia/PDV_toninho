@@ -79,6 +79,20 @@
 - Commit: `feat: implementa abertura e movimentações de caixa`.
 - Pendências reais: carrinho e tela de venda.
 
+## Carrinho e tela de venda
+
+- Funcionalidade: montagem do carrinho em memória e operação da tela de venda.
+- Resultado: inclusão por código de barras ou pesquisa, acúmulo de produto repetido, alteração de quantidade, remoção, limpeza, subtotal, desconto autorizado e total.
+- Regras: produto inexistente ou inativo é recusado, quantidades precisam ser positivas, o estoque disponível é respeitado e o desconto não pode ser negativo nem superar o subtotal.
+- Permissões: acesso exige permissão de vendas e aplicação de desconto exige autorização específica.
+- Interface: aba de venda com foco inicial no código de barras e atalhos F2, F4, Delete, F6 e Esc.
+- Testes criados: produto adicionado e repetido, quantidade, remoção, limpeza, subtotal, desconto, produto inexistente, produto inativo, estoque insuficiente e carrinho vazio.
+- Testes executados: `mvn clean test` e `mvn clean package`.
+- Resultado: 58 testes aprovados, sem falhas ou erros; ambos os comandos concluíram com `BUILD SUCCESS`.
+- Teste de integração: FXML principal carregado com a tela de venda e todos os controllers.
+- Commit: `feat: implementa carrinho e tela de venda`.
+- Pendências reais: pagamentos e finalização transacional da venda.
+
 ## Próxima funcionalidade
 
-Implementar carrinho e tela de venda.
+Implementar pagamentos e finalização transacional de vendas.
