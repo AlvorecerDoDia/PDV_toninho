@@ -1,45 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Operação central do PDV: pesquisa, carrinho, desconto e pagamento. -->
+<!-- Fluxo de venda organizado por entrada, carrinho e recebimento. -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox fx:id="root" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="br.com.loja.pdv.controller.VendaController" spacing="10">
-    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-    <Label text="Venda" styleClass="page-title"/>
-    <Label fx:id="mensagemLabel" wrapText="true"/>
-    <HBox spacing="8">
-        <TextField fx:id="codigoField" promptText="Código de barras" onAction="#addByBarcode"
-                   prefWidth="260"/>
-        <Button text="Adicionar" onAction="#addByBarcode"/>
-        <TextField fx:id="pesquisaField" promptText="Pesquisar produto (F2)"
-                   HBox.hgrow="ALWAYS"/>
-        <ComboBox fx:id="resultadoCombo" prefWidth="280"/>
-        <Button text="Adicionar selecionado" onAction="#addSelected"/>
+      fx:controller="br.com.loja.pdv.controller.VendaController" styleClass="page-shell">
+    <VBox styleClass="page-header">
+        <Label text="Nova venda" styleClass="page-title"/>
+        <Label text="Adicione os produtos, confira os valores e finalize o recebimento."
+               styleClass="page-subtitle"/>
+    </VBox>
+    <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <HBox spacing="12" VBox.vgrow="ALWAYS">
+        <VBox spacing="10" HBox.hgrow="ALWAYS">
+            <VBox styleClass="card, card-compact">
+                <Label text="Adicionar produto" styleClass="section-title"/>
+                <VBox spacing="7">
+                    <HBox spacing="8" alignment="BOTTOM_LEFT">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Código de barras" styleClass="field-label"/>
+                            <TextField fx:id="codigoField" promptText="Leia ou digite o código"
+                                       onAction="#addByBarcode" HBox.hgrow="ALWAYS"/>
+                        </VBox>
+                        <Button text="Adicionar" onAction="#addByBarcode" styleClass="button, primary"/>
+                    </HBox>
+                    <HBox spacing="8" alignment="BOTTOM_LEFT">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Pesquisar no catálogo" styleClass="field-label"/>
+                            <TextField fx:id="pesquisaField" promptText="Nome do produto (F2)"
+                                       HBox.hgrow="ALWAYS"/>
+                        </VBox>
+                        <ComboBox fx:id="resultadoCombo" promptText="Selecione um resultado" prefWidth="245"/>
+                        <Button text="Incluir selecionado" onAction="#addSelected"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <VBox spacing="8" VBox.vgrow="ALWAYS" styleClass="card">
+                <HBox alignment="CENTER_LEFT">
+                    <VBox spacing="1">
+                        <Label text="Itens da venda" styleClass="section-title"/>
+                        <Label text="Selecione uma linha para alterar ou remover." styleClass="hint"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <TextField fx:id="quantidadeField" promptText="Quantidade (F4)" prefWidth="130"/>
+                    <Button text="Alterar quantidade" onAction="#changeQuantity"/>
+                </HBox>
+                <TableView fx:id="itensTable" VBox.vgrow="ALWAYS">
+                    <placeholder><Label text="Nenhum produto adicionado."/></placeholder>
+                    <columns>
+                        <TableColumn fx:id="produtoColumn" text="Produto" prefWidth="360"/>
+                        <TableColumn fx:id="quantidadeColumn" text="Quantidade" prefWidth="100"/>
+                        <TableColumn fx:id="unitarioColumn" text="Unitário" prefWidth="120"/>
+                        <TableColumn fx:id="subtotalColumn" text="Subtotal" prefWidth="125"/>
+                    </columns>
+                </TableView>
+                <HBox spacing="8">
+                    <Button text="Remover item" onAction="#removeSelected"/>
+                    <Button text="Limpar carrinho" onAction="#clearCart" styleClass="button, ghost"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <TextField fx:id="descontoField" promptText="Desconto (F6)" prefWidth="135"/>
+                    <Button text="Aplicar desconto" onAction="#applyDiscount"/>
+                </HBox>
+            </VBox>
+        </VBox>
+
+        <VBox spacing="10" prefWidth="350" minWidth="330" maxWidth="380">
+            <VBox styleClass="card, total-card">
+                <Label text="RESUMO DA VENDA" styleClass="section-eyebrow"/>
+                <HBox spacing="8">
+                    <VBox HBox.hgrow="ALWAYS" styleClass="metric-card">
+                        <Label text="SUBTOTAL" styleClass="metric-label"/>
+                        <Label fx:id="subtotalLabel" styleClass="metric-value"/>
+                    </VBox>
+                    <VBox HBox.hgrow="ALWAYS" styleClass="metric-card">
+                        <Label text="DESCONTO" styleClass="metric-label"/>
+                        <Label fx:id="descontoLabel" styleClass="metric-value"/>
+                    </VBox>
+                </HBox>
+                <Label text="TOTAL A RECEBER" styleClass="metric-label"/>
+                <Label fx:id="totalLabel" styleClass="total-value"/>
+            </VBox>
+            <VBox VBox.vgrow="ALWAYS" styleClass="card">
+                <fx:include fx:id="pagamentoPane" source="pagamento-view.fxml"/>
+            </VBox>
+            <Label text="Atalhos: F2 pesquisar | F4 quantidade | Delete remover | F6 desconto | F10 pagamento | Esc cancelar entrada"
+                   wrapText="true" styleClass="shortcut-banner"/>
+        </VBox>
     </HBox>
-    <TableView fx:id="itensTable" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="produtoColumn" text="Produto" prefWidth="420"/>
-            <TableColumn fx:id="quantidadeColumn" text="Quantidade" prefWidth="110"/>
-            <TableColumn fx:id="unitarioColumn" text="Unitário" prefWidth="130"/>
-            <TableColumn fx:id="subtotalColumn" text="Subtotal" prefWidth="140"/>
-        </columns>
-    </TableView>
-    <HBox spacing="8">
-        <TextField fx:id="quantidadeField" promptText="Quantidade (F4)"/>
-        <Button text="Alterar quantidade" onAction="#changeQuantity"/>
-        <Button text="Remover (Delete)" onAction="#removeSelected"/>
-        <Button text="Limpar carrinho" onAction="#clearCart"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <TextField fx:id="descontoField" promptText="Desconto (F6)"/>
-        <Button text="Aplicar desconto" onAction="#applyDiscount"/>
-    </HBox>
-    <HBox alignment="CENTER_RIGHT" spacing="18">
-        <Label text="Subtotal:"/><Label fx:id="subtotalLabel"/>
-        <Label text="Desconto:"/><Label fx:id="descontoLabel"/>
-        <Label text="TOTAL:" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-        <Label fx:id="totalLabel" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-    </HBox>
-    <fx:include fx:id="pagamentoPane" source="pagamento-view.fxml"/>
-    <Label text="Atalhos: F2 pesquisar • F4 quantidade • Delete remover • F6 desconto • F10 pagamento • Esc cancelar entrada"/>
 </VBox>

@@ -9,7 +9,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 
-/** Deriva e verifica hashes PBKDF2-SHA256 com salt aleatório por senha. */
+/** Deriva e verifica hashes PBKDF2-SHA256 com salt aleatorio por senha. */
 public final class PasswordHasher {
     private static final int ITERATIONS = 210_000;
     private static final int KEY_LENGTH = 256;
@@ -17,8 +17,8 @@ public final class PasswordHasher {
     private final SecureRandom random = new SecureRandom();
 
     public String hash(char[] password) {
-        // Cada senha recebe salt exclusivo; o formato salvo inclui os parâmetros
-        // necessários para futuras verificações sem armazenar a senha original.
+        // Cada senha recebe salt exclusivo; o formato salvo inclui os parametros
+        // necessarios para futuras verificacoes sem armazenar a senha original.
         byte[] salt = new byte[SALT_LENGTH];
         random.nextBytes(salt);
         byte[] hash = derive(password, salt, ITERATIONS);

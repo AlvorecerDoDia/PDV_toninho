@@ -6,7 +6,7 @@ import br.com.loja.pdv.domain.model.LinhaRelatorio;
 
 import java.util.List;
 
-/** Contrato das consultas consolidadas usadas nos relatórios. */
+/** Contrato das consultas consolidadas usadas nos relatorios. */
 public interface RelatorioRepository {
     List<LinhaRelatorio> gerar(TipoRelatorio tipo, FiltroRelatorio filtro);
 }

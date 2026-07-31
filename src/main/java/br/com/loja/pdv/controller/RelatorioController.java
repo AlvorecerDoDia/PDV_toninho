@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
-/** Aplica filtros, exibe resultados e exporta relatórios para CSV. */
+/** Aplica filtros, exibe resultados e exporta relatorios para CSV. */
 public final class RelatorioController {
     private static final NumberFormat CURRENCY =
             NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));

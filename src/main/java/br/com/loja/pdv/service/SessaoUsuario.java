@@ -7,7 +7,7 @@ import br.com.loja.pdv.exception.ValidationException;
 import java.util.Optional;
 
 /**
- * Mantém o usuário autenticado em memória e verifica suas permissões.
+ * Mantem o usuario autenticado em memoria e verifica suas permissoes.
  */
 public final class SessaoUsuario {
     private Usuario usuario;

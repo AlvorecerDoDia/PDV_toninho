@@ -2,7 +2,7 @@ package br.com.loja.pdv.util;
 
 import java.math.BigDecimal;
 
-/** Converte valores monetários entre BigDecimal e centavos inteiros sem arredondar. */
+/** Converte valores monetarios entre BigDecimal e centavos inteiros sem arredondar. */
 public final class MoneyUtils {
 
     private MoneyUtils() {

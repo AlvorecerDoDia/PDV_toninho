@@ -10,7 +10,7 @@ import br.com.loja.pdv.repository.RelatorioRepository;
 import java.util.List;
 
 /**
- * Valida acesso e período antes de solicitar a geração dos relatórios.
+ * Valida acesso e periodo antes de solicitar a geracao dos relatorios.
  */
 public final class RelatorioService {
     private final RelatorioRepository repository;

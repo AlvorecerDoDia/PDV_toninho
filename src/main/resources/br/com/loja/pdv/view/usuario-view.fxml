@@ -1,29 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Gestão de usuários, perfis, situação e redefinição de senha. -->
+<!-- Usuarios com formulario, permissoes e lista em areas separadas. -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="br.com.loja.pdv.controller.UsuarioController">
-    <top><VBox spacing="8"><padding><Insets top="16" right="16" bottom="8" left="16"/></padding>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.loja.pdv.controller.UsuarioController" styleClass="page-shell">
+    <VBox styleClass="page-header">
         <Label text="Usuários e permissões" styleClass="page-title"/>
-        <Label fx:id="mensagemLabel"/>
-    </VBox></top>
-    <left><GridPane hgap="10" vgap="10" prefWidth="390"><padding><Insets top="8" right="16" bottom="16" left="16"/></padding>
-        <Label text="Nome" GridPane.rowIndex="0"/><TextField fx:id="nomeField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-        <Label text="Login" GridPane.rowIndex="1"/><TextField fx:id="loginField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-        <Label text="Senha" GridPane.rowIndex="2"/><PasswordField fx:id="senhaField" promptText="Obrigatória no cadastro" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-        <Label text="Perfil" GridPane.rowIndex="3"/><ComboBox fx:id="perfilCombo" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-        <CheckBox fx:id="ativoCheck" text="Usuário ativo" selected="true" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
-        <HBox spacing="8" GridPane.rowIndex="5" GridPane.columnSpan="2">
-            <Button text="Salvar" onAction="#save" styleClass="button, primary"/>
-            <Button text="Limpar" onAction="#clear"/>
-        </HBox>
-    </GridPane></left>
-    <center><TableView fx:id="tabela"><columns>
-        <TableColumn fx:id="nomeColumn" text="Nome" prefWidth="220"/>
-        <TableColumn fx:id="loginColumn" text="Login" prefWidth="150"/>
-        <TableColumn fx:id="perfilColumn" text="Perfil" prefWidth="150"/>
-        <TableColumn fx:id="statusColumn" text="Status" prefWidth="90"/>
-    </columns><BorderPane.margin><Insets top="8" right="16" bottom="16" left="0"/></BorderPane.margin></TableView></center>
-</BorderPane>
+        <Label text="Cadastre pessoas e limite o acesso conforme a função exercida."
+               styleClass="page-subtitle"/>
+    </VBox>
+    <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <SplitPane dividerPositions="0.38" VBox.vgrow="ALWAYS">
+        <items>
+            <VBox spacing="10" styleClass="card">
+                <VBox spacing="1">
+                    <Label text="Dados de acesso" styleClass="section-title"/>
+                    <Label text="Ao selecionar um usuário, seus dados aparecem aqui." styleClass="hint"/>
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="Nome" styleClass="field-label"/>
+                    <TextField fx:id="nomeField" promptText="Nome completo"/>
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="Login" styleClass="field-label"/>
+                    <TextField fx:id="loginField" promptText="Identificação para entrar"/>
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="Senha" styleClass="field-label"/>
+                    <PasswordField fx:id="senhaField" promptText="Obrigatória no cadastro"/>
+                    <Label text="Ao editar, deixe em branco para manter a senha atual." styleClass="field-hint"/>
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="Perfil de acesso" styleClass="field-label"/>
+                    <ComboBox fx:id="perfilCombo" maxWidth="Infinity"/>
+                </VBox>
+                <CheckBox fx:id="ativoCheck" text="Usuário pode acessar o sistema" selected="true"/>
+                <HBox spacing="8">
+                    <Button text="Salvar usuário" onAction="#save" styleClass="button, primary"/>
+                    <Button text="Limpar formulário" onAction="#clear" styleClass="button, ghost"/>
+                </HBox>
+            </VBox>
+            <VBox spacing="8" styleClass="card">
+                <VBox spacing="1">
+                    <Label text="Usuários cadastrados" styleClass="section-title"/>
+                    <Label text="Selecione uma linha para consultar ou editar." styleClass="hint"/>
+                </VBox>
+                <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
+                    <placeholder><Label text="Nenhum usuário cadastrado."/></placeholder>
+                    <columns>
+                        <TableColumn fx:id="nomeColumn" text="Nome" prefWidth="240"/>
+                        <TableColumn fx:id="loginColumn" text="Login" prefWidth="155"/>
+                        <TableColumn fx:id="perfilColumn" text="Perfil" prefWidth="165"/>
+                        <TableColumn fx:id="statusColumn" text="Situação" prefWidth="100"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </items>
+    </SplitPane>
+</VBox>

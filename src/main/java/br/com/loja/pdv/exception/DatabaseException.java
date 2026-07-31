@@ -1,6 +1,6 @@
 package br.com.loja.pdv.exception;
 
-/** Sinaliza falha técnica de persistência sem expor SQL ao usuário. */
+/** Sinaliza falha tecnica de persistencia sem expor SQL ao usuario. */
 public class DatabaseException extends RuntimeException {
 
     public DatabaseException(String message) {

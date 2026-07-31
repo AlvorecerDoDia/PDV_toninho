@@ -4,7 +4,7 @@ import br.com.loja.pdv.domain.enums.FormaPagamento;
 
 import java.time.LocalDate;
 
-/** Filtros opcionais e período obrigatório usados pelas consultas de relatório. */
+/** Filtros opcionais e periodo obrigatorio usados pelas consultas de relatorio. */
 public record FiltroRelatorio(
         LocalDate inicio,
         LocalDate fim,

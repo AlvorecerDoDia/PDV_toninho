@@ -5,7 +5,7 @@ import br.com.loja.pdv.domain.model.Produto;
 import java.util.List;
 import java.util.Optional;
 
-/** Contrato CRUD e de pesquisa do catálogo de produtos. */
+/** Contrato CRUD e de pesquisa do catalogo de produtos. */
 public interface ProdutoRepository {
 
     Produto salvar(Produto produto);

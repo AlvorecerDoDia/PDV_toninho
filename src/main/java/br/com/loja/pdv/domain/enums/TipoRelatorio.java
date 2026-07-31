@@ -1,6 +1,6 @@
 package br.com.loja.pdv.domain.enums;
 
-/** Consultas consolidadas disponíveis na tela de relatórios. */
+/** Consultas consolidadas disponiveis na tela de relatorios. */
 public enum TipoRelatorio {
     VENDAS_POR_DIA,
     VENDAS_POR_PERIODO,

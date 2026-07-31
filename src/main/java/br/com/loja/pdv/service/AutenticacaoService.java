@@ -6,7 +6,7 @@ import br.com.loja.pdv.infrastructure.security.PasswordHasher;
 import br.com.loja.pdv.repository.UsuarioRepository;
 
 /**
- * Autentica usuários ativos e mantém a sessão da aplicação sincronizada.
+ * Autentica usuarios ativos e mantem a sessao da aplicacao sincronizada.
  */
 public final class AutenticacaoService {
     private final UsuarioRepository repository;

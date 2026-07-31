@@ -1,4 +1,4 @@
--- Usuários locais, perfis de acesso e credenciais armazenadas por hash.
+-- Usuarios locais, perfis de acesso e credenciais armazenadas por hash.
 CREATE TABLE usuario (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,

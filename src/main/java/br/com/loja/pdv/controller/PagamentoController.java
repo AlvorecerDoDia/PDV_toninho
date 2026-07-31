@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
-/** Gerencia as formas de pagamento antes de solicitar a finalização da venda. */
+/** Gerencia as formas de pagamento antes de solicitar a finalizacao da venda. */
 public final class PagamentoController {
     private static final NumberFormat CURRENCY =
             NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));

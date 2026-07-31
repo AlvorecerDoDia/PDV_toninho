@@ -1,5 +1,5 @@
-// Declara apenas os módulos usados em execução e abre ao FXML os pacotes
-// cujos controladores e campos são acessados por reflexão.
+// Declara apenas os modulos usados em execucao e abre ao FXML os pacotes
+// cujos controladores e campos sao acessados por reflexao.
 module br.com.loja.pdv {
     requires javafx.controls;
     requires javafx.fxml;

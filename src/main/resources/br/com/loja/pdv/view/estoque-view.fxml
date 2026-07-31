@@ -1,32 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Registro e consulta das movimentações de estoque. -->
+<!-- Movimentacao de estoque com saldo e historico em areas separadas. -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="br.com.loja.pdv.controller.EstoqueController">
-    <top><VBox spacing="8"><padding><Insets top="16" right="16" bottom="8" left="16"/></padding>
-        <Label text="Controle de estoque" styleClass="page-title"/>
-        <Label fx:id="mensagemLabel"/>
-    </VBox></top>
-    <left><GridPane hgap="10" vgap="10" prefWidth="390"><padding><Insets top="8" right="16" bottom="16" left="16"/></padding>
-        <Label text="Produto" GridPane.rowIndex="0"/><ComboBox fx:id="produtoCombo" prefWidth="240" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-        <Label fx:id="saldoLabel" text="Saldo: —" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
-        <Label text="Tipo" GridPane.rowIndex="2"/><ComboBox fx:id="tipoCombo" prefWidth="240" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-        <Label text="Quantidade" GridPane.rowIndex="3"/><TextField fx:id="quantidadeField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-        <Label text="Motivo" GridPane.rowIndex="4"/><TextArea fx:id="motivoArea" prefRowCount="3" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-        <Button text="Registrar movimentação" onAction="#register" styleClass="button, primary"
-                GridPane.rowIndex="5" GridPane.columnSpan="2"/>
-    </GridPane></left>
-    <center><VBox spacing="8"><padding><Insets top="8" right="16" bottom="16" left="0"/></padding>
-        <HBox spacing="8"><Label text="De"/><DatePicker fx:id="inicioPicker"/><Label text="Até"/>
-            <DatePicker fx:id="fimPicker"/><Button text="Filtrar" onAction="#refresh"/></HBox>
-        <TableView fx:id="historicoTable" VBox.vgrow="ALWAYS"><columns>
-            <TableColumn fx:id="dataColumn" text="Data" prefWidth="140"/>
-            <TableColumn fx:id="tipoColumn" text="Tipo" prefWidth="140"/>
-            <TableColumn fx:id="quantidadeColumn" text="Qtd." prefWidth="60"/>
-            <TableColumn fx:id="saldoColumn" text="Saldo" prefWidth="100"/>
-            <TableColumn fx:id="motivoColumn" text="Motivo" prefWidth="220"/>
-        </columns></TableView>
-    </VBox></center>
-</BorderPane>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.loja.pdv.controller.EstoqueController" styleClass="page-shell">
+    <VBox styleClass="page-header">
+        <Label text="Estoque" styleClass="page-title"/>
+        <Label text="Registre entradas, ajustes, perdas e devoluções com motivo rastreável."
+               styleClass="page-subtitle"/>
+    </VBox>
+    <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <SplitPane dividerPositions="0.36" VBox.vgrow="ALWAYS">
+        <items>
+            <VBox spacing="10" styleClass="card">
+                <VBox spacing="1">
+                    <Label text="Nova movimentação" styleClass="section-title"/>
+                    <Label text="Confira o produto e o saldo antes de registrar." styleClass="hint"/>
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="Produto" styleClass="field-label"/>
+                    <ComboBox fx:id="produtoCombo" maxWidth="Infinity"/>
+                </VBox>
+                <Label fx:id="saldoLabel" text="Saldo atual: --" styleClass="balance-chip"/>
+                <VBox spacing="4">
+                    <Label text="Tipo de movimentação" styleClass="field-label"/>
+                    <ComboBox fx:id="tipoCombo" maxWidth="Infinity"/>
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="Quantidade" styleClass="field-label"/>
+                    <TextField fx:id="quantidadeField" promptText="Informe a quantidade"/>
+                </VBox>
+                <VBox spacing="4" VBox.vgrow="ALWAYS">
+                    <Label text="Motivo" styleClass="field-label"/>
+                    <TextArea fx:id="motivoArea" promptText="Explique a origem da movimentação"
+                              prefRowCount="4" wrapText="true" VBox.vgrow="ALWAYS"/>
+                </VBox>
+                <Button text="Registrar movimentação" onAction="#register"
+                        styleClass="button, primary" maxWidth="Infinity"/>
+            </VBox>
+            <VBox spacing="9" styleClass="card">
+                <HBox alignment="CENTER_LEFT">
+                    <VBox spacing="1">
+                        <Label text="Histórico" styleClass="section-title"/>
+                        <Label text="Use o período para localizar movimentações." styleClass="hint"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="De" styleClass="field-label"/>
+                    <DatePicker fx:id="inicioPicker"/>
+                    <Label text="Até" styleClass="field-label"/>
+                    <DatePicker fx:id="fimPicker"/>
+                    <Button text="Aplicar filtro" onAction="#refresh"/>
+                </HBox>
+                <TableView fx:id="historicoTable" VBox.vgrow="ALWAYS">
+                    <placeholder><Label text="Nenhuma movimentação no período."/></placeholder>
+                    <columns>
+                        <TableColumn fx:id="dataColumn" text="Data" prefWidth="145"/>
+                        <TableColumn fx:id="tipoColumn" text="Tipo" prefWidth="145"/>
+                        <TableColumn fx:id="quantidadeColumn" text="Qtd." prefWidth="65"/>
+                        <TableColumn fx:id="saldoColumn" text="Saldo" prefWidth="90"/>
+                        <TableColumn fx:id="motivoColumn" text="Motivo" prefWidth="260"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </items>
+    </SplitPane>
+</VBox>

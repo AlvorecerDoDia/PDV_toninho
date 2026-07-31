@@ -1,4 +1,4 @@
--- Estrutura principal do catálogo e controle do saldo atual.
+-- Estrutura principal do catalogo e controle do saldo atual.
 CREATE TABLE IF NOT EXISTS produto (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     codigo_barras TEXT UNIQUE,

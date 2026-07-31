@@ -9,7 +9,7 @@ pagamentos, comprovantes, cancelamentos, relatórios, auditoria e backups.
 
 ## Funcionalidades
 
-- cadastro, pesquisa, edição, ativação e desativação de produtos;
+- cadastro com quantidade inicial, pesquisa, edição, ativação e desativação de produtos;
 - estoque transacional com entradas, ajustes, perdas, saídas e devoluções;
 - perfis Administrador, Gerente e Operador, com senha armazenada por hash;
 - abertura, suprimento, sangria e fechamento de caixa;
@@ -176,6 +176,12 @@ Classes e interfaces têm documentação resumida, enquanto comentários interno
 ficam concentrados nas regras menos óbvias, como transações de venda, estoque e
 caixa, migrações, senhas e restauração de backup. Os arquivos FXML, CSS, SQL e o
 script de empacotamento também identificam o propósito de suas seções.
+
+## Interface redesenhada
+
+A interface usa navegação lateral, cartões por tarefa, hierarquia clara de ações
+e áreas separadas para operações destrutivas. As decisões de usabilidade e as
+heurísticas aplicadas estão documentadas em `docs/REDESIGN_INTERFACE.md`.
 
 ## Solução de problemas
 

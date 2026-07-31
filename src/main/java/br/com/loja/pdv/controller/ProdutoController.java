@@ -8,18 +8,20 @@ import javafx.scene.control.*;
 
 import java.math.BigDecimal;
 
-/** Controla o formulário e a tabela do cadastro de produtos. */
+/** Controla o formulario e a tabela do cadastro de produtos. */
 public final class ProdutoController {
     @FXML private TextField codigoField;
     @FXML private TextField nomeField;
     @FXML private TextField custoField;
     @FXML private TextField vendaField;
+    @FXML private TextField quantidadeField;
     @FXML private TextField minimoField;
     @FXML private TextField pesquisaField;
     @FXML private TableView<Produto> tabela;
     @FXML private TableColumn<Produto, String> nomeColumn;
     @FXML private TableColumn<Produto, String> codigoColumn;
     @FXML private TableColumn<Produto, String> vendaColumn;
+    @FXML private TableColumn<Produto, String> estoqueColumn;
     @FXML private TableColumn<Produto, String> statusColumn;
     @FXML private Label mensagemLabel;
     @FXML private Button desativarButton;
@@ -35,12 +37,14 @@ public final class ProdutoController {
     @FXML
     private void initialize() {
         UiFormatters.moeda(custoField, vendaField);
-        UiFormatters.inteiro(minimoField);
+        UiFormatters.inteiro(quantidadeField, minimoField);
         nomeColumn.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getNome()));
         codigoColumn.setCellValueFactory(row -> new SimpleStringProperty(
                 row.getValue().getCodigoBarras() == null ? "" : row.getValue().getCodigoBarras()));
         vendaColumn.setCellValueFactory(row -> new SimpleStringProperty(
                 "R$ " + row.getValue().getPrecoVenda().toPlainString().replace('.', ',')));
+        estoqueColumn.setCellValueFactory(row -> new SimpleStringProperty(
+                Integer.toString(row.getValue().getQuantidadeEstoque())));
         statusColumn.setCellValueFactory(row -> new SimpleStringProperty(
                 row.getValue().isAtivo() ? "Ativo" : "Inativo"));
         tabela.getSelectionModel().selectedItemProperty().addListener(
@@ -63,7 +67,8 @@ public final class ProdutoController {
             produto.setNome(nomeField.getText());
             produto.setPrecoCusto(new BigDecimal(custoField.getText().replace(',', '.')));
             produto.setPrecoVenda(new BigDecimal(vendaField.getText().replace(',', '.')));
-            produto.setEstoqueMinimo(Integer.parseInt(minimoField.getText()));
+            produto.setQuantidadeEstoque(parseInteger(quantidadeField, "quantidade inicial"));
+            produto.setEstoqueMinimo(parseInteger(minimoField, "estoque minimo"));
             if (selected == null) service.cadastrar(produto); else service.atualizar(produto);
             message("Produto salvo com sucesso.", false);
             clear();
@@ -96,7 +101,9 @@ public final class ProdutoController {
         selected = null;
         tabela.getSelectionModel().clearSelection();
         codigoField.clear(); nomeField.clear(); custoField.clear(); vendaField.clear();
-        minimoField.clear();
+        quantidadeField.setText("0");
+        quantidadeField.setDisable(false);
+        minimoField.setText("0");
         desativarButton.setDisable(true);
         reativarButton.setDisable(true);
     }
@@ -108,9 +115,18 @@ public final class ProdutoController {
         nomeField.setText(produto.getNome());
         custoField.setText(produto.getPrecoCusto().toPlainString());
         vendaField.setText(produto.getPrecoVenda().toPlainString());
+        quantidadeField.setText(Integer.toString(produto.getQuantidadeEstoque()));
+        quantidadeField.setDisable(true);
         minimoField.setText(Integer.toString(produto.getEstoqueMinimo()));
         desativarButton.setDisable(!produto.isAtivo());
         reativarButton.setDisable(produto.isAtivo());
+    }
+
+    private int parseInteger(TextField field, String name) {
+        if (field.getText() == null || field.getText().isBlank()) {
+            throw new NumberFormatException("Informe " + name + ".");
+        }
+        return Integer.parseInt(field.getText());
     }
 
     private void refresh() {

@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Gerencia usuários, credenciais e a configuração segura do acesso administrativo inicial.
+ * Gerencia usuarios, credenciais e a configuracao segura do acesso administrativo inicial.
  */
 public final class UsuarioService {
     private static final char[] SENHA_ADMIN_INICIAL = "admin".toCharArray();
@@ -64,14 +64,14 @@ public final class UsuarioService {
 
     public boolean configurarAdministradorInicialPadrao() {
         if (repository.contar() == 0) {
-            // "admin" é temporária e obriga a troca logo após o primeiro acesso.
+            // "admin" e temporaria e obriga a troca logo apos o primeiro acesso.
             criarSemValidarSenha(
                     "Administrador", "admin", SENHA_ADMIN_INICIAL,
                     PerfilUsuario.ADMINISTRADOR, true);
             return true;
         }
-        // Atualiza instalações antigas somente enquanto a troca inicial ainda está
-        // pendente; uma senha que o administrador já escolheu nunca é sobrescrita.
+        // Atualiza instalacoes antigas somente enquanto a troca inicial ainda esta
+        // pendente; uma senha que o administrador ja escolheu nunca e sobrescrita.
         return repository.buscarPorLogin("admin")
                 .filter(usuario -> usuario.getPerfil() == PerfilUsuario.ADMINISTRADOR)
                 .filter(Usuario::isAlterarSenha)

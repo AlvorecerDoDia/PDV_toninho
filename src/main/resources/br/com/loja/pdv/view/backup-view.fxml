@@ -1,25 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Administração de cópias de segurança e restauração do banco local. -->
+<!-- Backup com criacao e restauracao visualmente separadas. -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="br.com.loja.pdv.controller.BackupController" spacing="10">
-    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-    <Label text="Backup e restauração" styleClass="page-title"/>
-    <Label fx:id="mensagemLabel" wrapText="true"/>
-    <HBox spacing="8">
-        <Button text="Criar backup agora" onAction="#createBackup" styleClass="button, primary"/>
-        <Button text="Restaurar selecionado" onAction="#restoreSelected" styleClass="button, danger"/>
-        <Button text="Escolher arquivo externo" onAction="#chooseAndRestore"/>
-        <Button text="Atualizar lista" onAction="#refresh"/>
+      fx:controller="br.com.loja.pdv.controller.BackupController" styleClass="page-shell">
+    <VBox styleClass="page-header">
+        <Label text="Backup e restauração" styleClass="page-title"/>
+        <Label text="Proteja os dados da loja e recupere uma cópia quando necessário."
+               styleClass="page-subtitle"/>
+    </VBox>
+    <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <Label text="Antes de restaurar, o sistema valida o arquivo e cria uma cópia de segurança do banco atual."
+           wrapText="true" styleClass="info-banner"/>
+    <HBox spacing="12">
+        <VBox spacing="8" HBox.hgrow="ALWAYS" styleClass="card">
+            <Label text="Criar uma cópia" styleClass="section-title"/>
+            <Label text="Gere um backup antes de atualizações ou alterações importantes."
+                   wrapText="true" styleClass="hint"/>
+            <Button text="Criar backup agora" onAction="#createBackup"
+                    styleClass="button, primary" maxWidth="Infinity"/>
+        </VBox>
+        <VBox spacing="8" HBox.hgrow="ALWAYS" styleClass="card, card-danger">
+            <Label text="Restaurar dados" styleClass="section-title"/>
+            <Label text="A restauração substitui os dados atuais e exige confirmação."
+                   wrapText="true" styleClass="hint"/>
+            <HBox spacing="8">
+                <Button text="Restaurar selecionado" onAction="#restoreSelected"
+                        styleClass="button, danger" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                <Button text="Escolher arquivo externo" onAction="#chooseAndRestore"
+                        HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            </HBox>
+        </VBox>
     </HBox>
-    <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="arquivoColumn" text="Arquivo" prefWidth="520"/>
-            <TableColumn fx:id="dataColumn" text="Data" prefWidth="190"/>
-        </columns>
-    </TableView>
-    <Label text="A restauração cria uma cópia de segurança do banco atual antes de substituir os dados."
-           styleClass="hint"/>
+    <VBox spacing="8" VBox.vgrow="ALWAYS" styleClass="card">
+        <HBox alignment="CENTER_LEFT">
+            <VBox spacing="1">
+                <Label text="Cópias disponíveis" styleClass="section-title"/>
+                <Label text="Selecione uma cópia para restaurar." styleClass="hint"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Atualizar lista" onAction="#refresh" styleClass="button, ghost"/>
+        </HBox>
+        <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
+            <placeholder><Label text="Nenhum backup encontrado."/></placeholder>
+            <columns>
+                <TableColumn fx:id="arquivoColumn" text="Arquivo" prefWidth="570"/>
+                <TableColumn fx:id="dataColumn" text="Data de criação" prefWidth="195"/>
+            </columns>
+        </TableView>
+    </VBox>
 </VBox>

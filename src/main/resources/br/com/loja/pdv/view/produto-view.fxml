@@ -1,38 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Cadastro, edição e consulta do catálogo de produtos. -->
+<!-- Cadastro e consulta do catalogo com tarefas separadas. -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="br.com.loja.pdv.controller.ProdutoController">
-    <top><VBox spacing="8"><padding><Insets top="16" right="16" bottom="8" left="16"/></padding>
-        <Label text="Cadastro de produtos" styleClass="page-title"/>
-        <Label fx:id="mensagemLabel"/>
-    </VBox></top>
-    <left><GridPane hgap="10" vgap="10" prefWidth="360"><padding><Insets top="8" right="16" bottom="16" left="16"/></padding>
-        <Label text="Código de barras" GridPane.rowIndex="0"/><TextField fx:id="codigoField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-        <Label text="Nome *" GridPane.rowIndex="1"/><TextField fx:id="nomeField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-        <Label text="Preço de custo *" GridPane.rowIndex="2"/><TextField fx:id="custoField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-        <Label text="Preço de venda *" GridPane.rowIndex="3"/><TextField fx:id="vendaField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-        <Label text="Estoque mínimo *" GridPane.rowIndex="4"/><TextField fx:id="minimoField" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-        <HBox spacing="8" GridPane.rowIndex="5" GridPane.columnSpan="2">
-            <Button text="Salvar" onAction="#save" styleClass="button, primary"/>
-            <Button text="Editar" onAction="#save"/>
-            <Button text="Limpar" onAction="#clear"/>
-            <Button fx:id="desativarButton" text="Desativar" disable="true"
-                    onAction="#deactivate" styleClass="button, danger"/>
-            <Button fx:id="reativarButton" text="Reativar" disable="true" onAction="#reactivate"/>
-        </HBox>
-    </GridPane></left>
-    <center><VBox spacing="8"><padding><Insets top="8" right="16" bottom="16" left="0"/></padding>
-        <TextField fx:id="pesquisaField" promptText="Pesquisar por nome ou código"/>
-        <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
-            <columns>
-                <TableColumn fx:id="nomeColumn" text="Nome" prefWidth="230"/>
-                <TableColumn fx:id="codigoColumn" text="Código" prefWidth="140"/>
-                <TableColumn fx:id="vendaColumn" text="Venda" prefWidth="100"/>
-                <TableColumn fx:id="statusColumn" text="Status" prefWidth="80"/>
-            </columns>
-        </TableView>
-    </VBox></center>
-</BorderPane>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.loja.pdv.controller.ProdutoController" styleClass="page-shell">
+    <VBox styleClass="page-header">
+        <Label text="Produtos" styleClass="page-title"/>
+        <Label text="Cadastre novos itens e mantenha o catálogo disponível para venda."
+               styleClass="page-subtitle"/>
+    </VBox>
+    <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <SplitPane dividerPositions="0.38" VBox.vgrow="ALWAYS">
+        <items>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
+                <VBox spacing="10" styleClass="card">
+                    <VBox spacing="1">
+                        <Label text="Dados do produto" styleClass="section-title"/>
+                        <Label text="Campos marcados com * são obrigatórios." styleClass="hint"/>
+                    </VBox>
+                    <VBox spacing="4">
+                        <Label text="Código de barras" styleClass="field-label"/>
+                        <TextField fx:id="codigoField" promptText="Opcional"/>
+                    </VBox>
+                    <VBox spacing="4">
+                        <Label text="Nome *" styleClass="field-label"/>
+                        <TextField fx:id="nomeField" promptText="Nome usado na venda"/>
+                    </VBox>
+                    <HBox spacing="8">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Preço de custo *" styleClass="field-label"/>
+                            <TextField fx:id="custoField" promptText="0,00"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Preço de venda *" styleClass="field-label"/>
+                            <TextField fx:id="vendaField" promptText="0,00"/>
+                        </VBox>
+                    </HBox>
+                    <HBox spacing="8">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Quantidade inicial *" styleClass="field-label"/>
+                            <TextField fx:id="quantidadeField" text="0" promptText="0"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS">
+                            <Label text="Estoque mínimo *" styleClass="field-label"/>
+                            <TextField fx:id="minimoField" text="0" promptText="0"/>
+                        </VBox>
+                    </HBox>
+                    <Label text="A quantidade inicial pode ser informada somente no cadastro. Depois, use a tela Estoque para registrar alterações de saldo."
+                           wrapText="true" styleClass="field-hint"/>
+                    <HBox spacing="8">
+                        <Button text="Salvar produto" onAction="#save" styleClass="button, primary"/>
+                        <Button text="Limpar formulário" onAction="#clear" styleClass="button, ghost"/>
+                    </HBox>
+                    <Separator/>
+                    <VBox spacing="6" styleClass="card-danger">
+                        <Label text="Situação do produto" styleClass="section-title"/>
+                        <Label text="Desativar remove o item das novas vendas, sem apagar o histórico."
+                               wrapText="true" styleClass="hint"/>
+                        <HBox spacing="8">
+                            <Button fx:id="desativarButton" text="Desativar selecionado" disable="true"
+                                    onAction="#deactivate" styleClass="button, danger"/>
+                            <Button fx:id="reativarButton" text="Reativar selecionado" disable="true"
+                                    onAction="#reactivate"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </ScrollPane>
+            <VBox spacing="9" styleClass="card">
+                <VBox spacing="1">
+                    <Label text="Catálogo" styleClass="section-title"/>
+                    <Label text="Selecione uma linha para editar seus dados." styleClass="hint"/>
+                </VBox>
+                <TextField fx:id="pesquisaField" promptText="Pesquisar por nome ou código"/>
+                <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
+                    <placeholder><Label text="Nenhum produto encontrado."/></placeholder>
+                    <columns>
+                        <TableColumn fx:id="nomeColumn" text="Nome" prefWidth="230"/>
+                        <TableColumn fx:id="codigoColumn" text="Código" prefWidth="135"/>
+                        <TableColumn fx:id="vendaColumn" text="Preço" prefWidth="95"/>
+                        <TableColumn fx:id="estoqueColumn" text="Estoque" prefWidth="80"/>
+                        <TableColumn fx:id="statusColumn" text="Situação" prefWidth="85"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </items>
+    </SplitPane>
+</VBox>

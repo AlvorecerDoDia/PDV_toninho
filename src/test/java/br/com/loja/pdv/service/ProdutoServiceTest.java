@@ -17,7 +17,7 @@ class ProdutoServiceTest {
     private final ProdutoService service = new ProdutoService(new CapturingRepository());
 
     @Test
-    void deveNormalizarNomeEEstoqueNoCadastro() {
+    void deveNormalizarNomeEPreservarEstoqueInicialNoCadastro() {
         Produto produto = validProduct();
         produto.setNome("  Café   Especial  ");
         produto.setQuantidadeEstoque(50);
@@ -25,7 +25,7 @@ class ProdutoServiceTest {
         Produto saved = service.cadastrar(produto);
 
         assertEquals("Café Especial", saved.getNome());
-        assertEquals(0, saved.getQuantidadeEstoque());
+        assertEquals(50, saved.getQuantidadeEstoque());
     }
 
     @Test
@@ -40,6 +40,14 @@ class ProdutoServiceTest {
     void deveImpedirPrecosNegativos() {
         Produto produto = validProduct();
         produto.setPrecoVenda(new BigDecimal("-0.01"));
+
+        assertThrows(ValidationException.class, () -> service.cadastrar(produto));
+    }
+
+    @Test
+    void deveImpedirQuantidadeInicialNegativa() {
+        Produto produto = validProduct();
+        produto.setQuantidadeEstoque(-1);
 
         assertThrows(ValidationException.class, () -> service.cadastrar(produto));
     }

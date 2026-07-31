@@ -36,12 +36,15 @@ class SQLiteProdutoRepositoryTest {
 
     @Test
     void deveCadastrarBuscarPorIdECodigo() {
-        Produto saved = service.cadastrar(produto("789", "Café", "10.25", "15.90"));
+        Produto novo = produto("789", "Café", "10.25", "15.90");
+        novo.setQuantidadeEstoque(12);
+        Produto saved = service.cadastrar(novo);
 
         assertTrue(saved.getId() > 0);
         assertEquals("Café", service.buscarPorId(saved.getId()).getNome());
         assertEquals(saved.getId(), service.buscarPorCodigoBarras("789").orElseThrow().getId());
         assertEquals(new BigDecimal("15.90"), saved.getPrecoVenda());
+        assertEquals(12, service.buscarPorId(saved.getId()).getQuantidadeEstoque());
     }
 
     @Test
@@ -72,7 +75,9 @@ class SQLiteProdutoRepositoryTest {
 
     @Test
     void deveAtualizarSemAlterarEstoqueOuCriacao() {
-        Produto saved = service.cadastrar(produto("1", "Leite", "4.00", "6.00"));
+        Produto novo = produto("1", "Leite", "4.00", "6.00");
+        novo.setQuantidadeEstoque(7);
+        Produto saved = service.cadastrar(novo);
         saved.setNome("Leite Integral");
         saved.setPrecoVenda(new BigDecimal("6.50"));
         saved.setQuantidadeEstoque(999);
@@ -82,7 +87,7 @@ class SQLiteProdutoRepositoryTest {
 
         assertEquals("Leite Integral", updated.getNome());
         assertEquals(new BigDecimal("6.50"), updated.getPrecoVenda());
-        assertEquals(0, updated.getQuantidadeEstoque());
+        assertEquals(7, updated.getQuantidadeEstoque());
     }
 
     @Test

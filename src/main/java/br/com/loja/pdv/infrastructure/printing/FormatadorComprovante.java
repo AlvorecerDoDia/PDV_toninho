@@ -9,7 +9,7 @@ import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-/** Constrói o texto do comprovante usando apenas valores históricos da venda. */
+/** Constroi o texto do comprovante usando apenas valores historicos da venda. */
 public final class FormatadorComprovante {
     private static final NumberFormat CURRENCY =
             NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));

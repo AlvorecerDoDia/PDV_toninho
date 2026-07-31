@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Aplica as regras de abertura, movimentação e fechamento do caixa.
+ * Aplica as regras de abertura, movimentacao e fechamento do caixa.
  */
 public final class CaixaService {
     private final CaixaRepository repository;

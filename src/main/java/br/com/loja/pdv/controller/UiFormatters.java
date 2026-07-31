@@ -3,7 +3,7 @@ package br.com.loja.pdv.controller;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 
-/** Instala filtros de entrada reutilizáveis nos campos JavaFX. */
+/** Instala filtros de entrada reutilizaveis nos campos JavaFX. */
 public final class UiFormatters {
     private UiFormatters() {}
 

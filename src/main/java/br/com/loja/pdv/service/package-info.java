@@ -1,5 +1,5 @@
 /**
- * Casos de uso e regras de negócio do PDV. Serviços validam permissões e
- * entradas antes de delegar a persistência aos repositórios.
+ * Casos de uso e regras de negocio do PDV. Servicos validam permissoes e
+ * entradas antes de delegar a persistencia aos repositorios.
  */
 package br.com.loja.pdv.service;

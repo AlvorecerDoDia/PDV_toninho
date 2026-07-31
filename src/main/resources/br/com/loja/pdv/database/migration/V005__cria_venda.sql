@@ -1,4 +1,4 @@
--- Cabeçalho, itens e pagamentos que preservam os valores históricos da venda.
+-- Cabecalho, itens e pagamentos que preservam os valores historicos da venda.
 CREATE TABLE venda (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     numero TEXT NOT NULL UNIQUE,

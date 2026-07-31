@@ -7,7 +7,7 @@ import br.com.loja.pdv.exception.ValidationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Converte falhas técnicas em mensagens seguras e registra os detalhes no log. */
+/** Converte falhas tecnicas em mensagens seguras e registra os detalhes no log. */
 public final class ErrorHandler {
     private static final Logger LOGGER = Logger.getLogger(ErrorHandler.class.getName());
 

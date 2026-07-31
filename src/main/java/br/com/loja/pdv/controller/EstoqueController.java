@@ -13,7 +13,7 @@ import javafx.util.StringConverter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-/** Liga os campos de estoque ao histórico e às regras do serviço. */
+/** Liga os campos de estoque ao historico e as regras do servico. */
 public final class EstoqueController {
     @FXML private ComboBox<Produto> produtoCombo;
     @FXML private ComboBox<TipoMovimentacaoEstoque> tipoCombo;

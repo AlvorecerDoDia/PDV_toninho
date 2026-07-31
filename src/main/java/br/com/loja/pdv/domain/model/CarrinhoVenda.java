@@ -10,7 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Agregado em memória que calcula itens, subtotal, desconto e total da venda. */
+/** Agregado em memoria que calcula itens, subtotal, desconto e total da venda. */
 public final class CarrinhoVenda {
     private final Map<Long, ItemCarrinho> itens = new LinkedHashMap<>();
     private BigDecimal desconto = BigDecimal.ZERO.setScale(2);

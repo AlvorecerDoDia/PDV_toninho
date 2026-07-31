@@ -3,7 +3,7 @@ package br.com.loja.pdv.domain.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/** Produto vendável, incluindo preços, estoque atual e limite mínimo. */
+/** Produto vendavel, incluindo precos, estoque atual e limite minimo. */
 public class Produto {
 
     private Long id;

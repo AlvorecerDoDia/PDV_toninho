@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
-/** Serializa linhas de relatório em CSV UTF-8 compatível com planilhas. */
+/** Serializa linhas de relatorio em CSV UTF-8 compativel com planilhas. */
 public final class ExportadorCsv {
     private static final NumberFormat DECIMAL =
             NumberFormat.getNumberInstance(Locale.of("pt", "BR"));

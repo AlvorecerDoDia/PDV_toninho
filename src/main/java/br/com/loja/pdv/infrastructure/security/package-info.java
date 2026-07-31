@@ -1,4 +1,4 @@
 /**
- * Funções de segurança, especialmente derivação e verificação de senhas.
+ * Funcoes de seguranca, especialmente derivacao e verificacao de senhas.
  */
 package br.com.loja.pdv.infrastructure.security;

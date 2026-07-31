@@ -2,7 +2,7 @@ package br.com.loja.pdv.domain.model;
 
 import java.time.LocalDateTime;
 
-/** Evidência de uma ação crítica com autor, entidade e valores relevantes. */
+/** Evidencia de uma acao critica com autor, entidade e valores relevantes. */
 public class RegistroAuditoria {
     private Long id;
     private Long usuarioId;

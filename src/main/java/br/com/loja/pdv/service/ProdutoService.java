@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Centraliza cadastro, edição, consulta e inativação de produtos.
+ * Centraliza cadastro, edicao, consulta e inativacao de produtos.
  */
 public final class ProdutoService {
 
@@ -44,7 +44,6 @@ public final class ProdutoService {
         normalizeAndValidate(produto);
         LocalDateTime now = LocalDateTime.now(clock);
         produto.setId(null);
-        produto.setQuantidadeEstoque(0);
         produto.setAtivo(true);
         produto.setCriadoEm(now);
         produto.setAtualizadoEm(now);
@@ -112,6 +111,9 @@ public final class ProdutoService {
         produto.setCodigoBarras(normalizeBarcode(produto.getCodigoBarras()));
         produto.setPrecoCusto(validateMoney(produto.getPrecoCusto(), "preço de custo"));
         produto.setPrecoVenda(validateMoney(produto.getPrecoVenda(), "preço de venda"));
+        if (produto.getQuantidadeEstoque() < 0) {
+            throw new ValidationException("A quantidade inicial não pode ser negativa.");
+        }
         if (produto.getEstoqueMinimo() < 0) {
             throw new ValidationException("O estoque mínimo não pode ser negativo.");
         }

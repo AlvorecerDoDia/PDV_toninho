@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-/** Contrato transacional de caixas e suas movimentações financeiras. */
+/** Contrato transacional de caixas e suas movimentacoes financeiras. */
 public interface CaixaRepository {
     Caixa abrir(Caixa caixa, MovimentacaoCaixa abertura);
     Optional<Caixa> buscarPorId(long id);

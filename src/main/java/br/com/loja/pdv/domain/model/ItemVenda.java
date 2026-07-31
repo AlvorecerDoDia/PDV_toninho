@@ -2,7 +2,7 @@ package br.com.loja.pdv.domain.model;
 
 import java.math.BigDecimal;
 
-/** Item persistido com nome, custo e preço históricos da venda. */
+/** Item persistido com nome, custo e preco historicos da venda. */
 public class ItemVenda {
     private Long id;
     private Long vendaId;

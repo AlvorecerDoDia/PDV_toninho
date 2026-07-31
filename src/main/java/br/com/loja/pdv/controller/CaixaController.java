@@ -12,7 +12,7 @@ import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-/** Coordena a tela de abertura, movimentações e fechamento de caixa. */
+/** Coordena a tela de abertura, movimentacoes e fechamento de caixa. */
 public final class CaixaController {
     private static final NumberFormat CURRENCY =
             NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));

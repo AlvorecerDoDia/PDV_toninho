@@ -1,41 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Pesquisa, segunda via e cancelamento de vendas concluídas. -->
+<!-- Consulta de vendas com acoes comuns e cancelamento separados. -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="br.com.loja.pdv.controller.HistoricoVendaController" spacing="8">
-    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-    <Label text="Histórico de vendas" styleClass="page-title"/>
-    <Label fx:id="mensagemLabel" wrapText="true"/>
-    <HBox spacing="8">
-        <TextField fx:id="numeroField" promptText="Número da venda"/>
-        <DatePicker fx:id="inicioPicker"/>
-        <DatePicker fx:id="fimPicker"/>
-        <ComboBox fx:id="operadorCombo" promptText="Todos os operadores" prefWidth="220"/>
-        <Button text="Pesquisar" onAction="#search"/>
-        <Button text="Limpar filtros" onAction="#clearFilters"/>
-    </HBox>
-    <TableView fx:id="vendasTable" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="numeroColumn" text="Número" prefWidth="230"/>
-            <TableColumn fx:id="dataColumn" text="Data" prefWidth="150"/>
-            <TableColumn fx:id="operadorColumn" text="Operador" prefWidth="100"/>
-            <TableColumn fx:id="totalColumn" text="Total" prefWidth="120"/>
-            <TableColumn fx:id="statusColumn" text="Status" prefWidth="120"/>
-        </columns>
-    </TableView>
-    <SplitPane dividerPositions="0.6" prefHeight="150">
-        <TextArea fx:id="itensArea" editable="false" promptText="Itens"/>
-        <TextArea fx:id="pagamentosArea" editable="false" promptText="Pagamentos"/>
+      fx:controller="br.com.loja.pdv.controller.HistoricoVendaController" styleClass="page-shell">
+    <VBox styleClass="page-header">
+        <Label text="Histórico de vendas" styleClass="page-title"/>
+        <Label text="Localize vendas, consulte detalhes e emita comprovantes."
+               styleClass="page-subtitle"/>
+    </VBox>
+    <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <VBox spacing="8" styleClass="card, card-compact">
+        <Label text="Filtros" styleClass="section-title"/>
+        <HBox spacing="8">
+            <VBox spacing="4">
+                <Label text="Número da venda" styleClass="field-label"/>
+                <TextField fx:id="numeroField" promptText="Opcional" prefWidth="190"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Data inicial" styleClass="field-label"/>
+                <DatePicker fx:id="inicioPicker"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Data final" styleClass="field-label"/>
+                <DatePicker fx:id="fimPicker"/>
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Operador" styleClass="field-label"/>
+                <ComboBox fx:id="operadorCombo" promptText="Todos os operadores" maxWidth="Infinity"/>
+            </VBox>
+            <Button text="Pesquisar" onAction="#search" styleClass="button, primary">
+                <HBox.margin><Insets top="21"/></HBox.margin>
+            </Button>
+            <Button text="Limpar" onAction="#clearFilters" styleClass="button, ghost">
+                <HBox.margin><Insets top="21"/></HBox.margin>
+            </Button>
+        </HBox>
+    </VBox>
+    <SplitPane dividerPositions="0.63" VBox.vgrow="ALWAYS">
+        <items>
+            <VBox spacing="8" styleClass="card">
+                <Label text="Resultados" styleClass="section-title"/>
+                <TableView fx:id="vendasTable" VBox.vgrow="ALWAYS">
+                    <placeholder><Label text="Nenhuma venda encontrada."/></placeholder>
+                    <columns>
+                        <TableColumn fx:id="numeroColumn" text="Número" prefWidth="220"/>
+                        <TableColumn fx:id="dataColumn" text="Data" prefWidth="150"/>
+                        <TableColumn fx:id="operadorColumn" text="Operador" prefWidth="115"/>
+                        <TableColumn fx:id="totalColumn" text="Total" prefWidth="110"/>
+                        <TableColumn fx:id="statusColumn" text="Situação" prefWidth="115"/>
+                    </columns>
+                </TableView>
+                <HBox spacing="8">
+                    <Button text="Visualizar comprovante" onAction="#previewReceipt"/>
+                    <Button text="Imprimir" onAction="#printReceipt"/>
+                    <Button text="Segunda via" onAction="#printSecondCopy"/>
+                </HBox>
+            </VBox>
+            <VBox spacing="9">
+                <VBox spacing="8" VBox.vgrow="ALWAYS" styleClass="card">
+                    <Label text="Detalhes da venda selecionada" styleClass="section-title"/>
+                    <Label text="Itens" styleClass="field-label"/>
+                    <TextArea fx:id="itensArea" editable="false" promptText="Selecione uma venda"
+                              wrapText="true" VBox.vgrow="ALWAYS"/>
+                    <Label text="Pagamentos" styleClass="field-label"/>
+                    <TextArea fx:id="pagamentosArea" editable="false" promptText="Selecione uma venda"
+                              wrapText="true" prefRowCount="3"/>
+                </VBox>
+                <VBox spacing="7" styleClass="card, card-danger">
+                    <Label text="Cancelar venda" styleClass="section-title"/>
+                    <Label text="O cancelamento estorna estoque e caixa e não pode ser desfeito."
+                           wrapText="true" styleClass="hint"/>
+                    <TextField fx:id="motivoField" promptText="Informe o motivo obrigatório"/>
+                    <Button text="Cancelar venda selecionada" onAction="#cancelSelected"
+                            styleClass="button, danger" maxWidth="Infinity"/>
+                </VBox>
+            </VBox>
+        </items>
     </SplitPane>
-    <HBox spacing="8">
-        <Button text="Visualizar comprovante" onAction="#previewReceipt"/>
-        <Button text="Imprimir" onAction="#printReceipt"/>
-        <Button text="Segunda via" onAction="#printSecondCopy"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <TextField fx:id="motivoField" promptText="Motivo obrigatório do cancelamento"
-                   HBox.hgrow="ALWAYS"/>
-        <Button text="Cancelar venda selecionada" onAction="#cancelSelected"/>
-    </HBox>
 </VBox>

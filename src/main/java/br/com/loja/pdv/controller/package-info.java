@@ -1,5 +1,5 @@
 /**
- * Controllers JavaFX responsáveis por traduzir ações das telas em chamadas
- * aos serviços. Esta camada não executa SQL nem concentra regras de negócio.
+ * Controllers JavaFX responsaveis por traduzir acoes das telas em chamadas
+ * aos servicos. Esta camada nao executa SQL nem concentra regras de negocio.
  */
 package br.com.loja.pdv.controller;

@@ -1,6 +1,6 @@
 package br.com.loja.pdv.domain.enums;
 
-/** Tipos que determinam se uma movimentação soma ou subtrai estoque. */
+/** Tipos que determinam se uma movimentacao soma ou subtrai estoque. */
 public enum TipoMovimentacaoEstoque {
     ENTRADA(1, false),
     AJUSTE_POSITIVO(1, true),

@@ -8,7 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
-/** Autentica o usuário e conduz a troca obrigatória da senha temporária. */
+/** Autentica o usuario e conduz a troca obrigatoria da senha temporaria. */
 public final class LoginController {
     @FXML private TextField loginField;
     @FXML private PasswordField senhaField;

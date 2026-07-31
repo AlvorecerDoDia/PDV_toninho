@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Valida entradas, saídas e ajustes de estoque antes de persistir cada movimentação.
+ * Valida entradas, saidas e ajustes de estoque antes de persistir cada movimentacao.
  */
 public final class EstoqueService {
     private final EstoqueRepository estoqueRepository;

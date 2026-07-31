@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Agregado persistido que reúne cabeçalho, itens e pagamentos da venda. */
+/** Agregado persistido que reune cabecalho, itens e pagamentos da venda. */
 public class Venda {
     private Long id;
     private String numero;

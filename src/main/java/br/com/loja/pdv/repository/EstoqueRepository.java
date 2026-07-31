@@ -5,7 +5,7 @@ import br.com.loja.pdv.domain.model.MovimentacaoEstoque;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** Contrato de alteração atômica e consulta do estoque. */
+/** Contrato de alteracao atomica e consulta do estoque. */
 public interface EstoqueRepository {
     MovimentacaoEstoque registrar(MovimentacaoEstoque movimentacao);
     int buscarSaldo(long produtoId);

@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * Coordena criação, retenção e restauração de backups conforme as permissões do usuário.
+ * Coordena criacao, retencao e restauracao de backups conforme as permissoes do usuario.
  */
 public final class BackupService {
     private static final int RETENCAO_PADRAO = 20;

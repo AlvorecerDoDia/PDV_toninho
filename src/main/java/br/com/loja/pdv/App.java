@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Monta as dependências e controla a troca entre login e tela principal. */
+/** Monta as dependencias e controla a troca entre login e tela principal. */
 public class App extends Application {
     private Database database;
     private UsuarioService userService;
@@ -91,9 +91,10 @@ public class App extends Application {
             }
             throw unconfigured(type);
         });
-        stage.setScene(new Scene(loader.load(), 460, 360));
-        stage.setMinWidth(460);
-        stage.setMinHeight(360);
+        stage.setScene(new Scene(loader.load(), 760, 520));
+        stage.setMinWidth(720);
+        stage.setMinHeight(480);
+        stage.centerOnScreen();
     }
 
     private void showMainUnchecked(Stage stage) {
@@ -107,9 +108,9 @@ public class App extends Application {
     private void showMain(Stage stage) throws IOException {
         FXMLLoader loader = loader("/br/com/loja/pdv/view/main-view.fxml");
         loader.setControllerFactory(type -> createMainController(type));
-        stage.setScene(new Scene(loader.load(), 1280, 720));
-        stage.setMinWidth(1024);
-        stage.setMinHeight(640);
+        stage.setScene(new Scene(loader.load(), 1366, 768));
+        stage.setMinWidth(1180);
+        stage.setMinHeight(700);
         stage.centerOnScreen();
     }
 

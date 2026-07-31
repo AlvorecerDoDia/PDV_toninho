@@ -1,32 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Composição dos pagamentos, valor recebido e troco da venda. -->
+<!-- Composicao dos pagamentos e conclusao da venda. -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="br.com.loja.pdv.controller.PagamentoController" spacing="8"
-      styleClass="payment-panel">
-    <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
-    <Label text="Pagamentos (F10)" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-    <Label fx:id="mensagemLabel" wrapText="true"/>
-    <HBox spacing="8">
-        <ComboBox fx:id="formaCombo" prefWidth="180"/>
-        <TextField fx:id="valorField" promptText="Valor" onAction="#addPayment"/>
-        <Button text="Adicionar pagamento" onAction="#addPayment"/>
-        <Button text="Remover" onAction="#removePayment"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button text="Finalizar venda" onAction="#finishSale"
-                styleClass="button, primary"/>
-    </HBox>
-    <TableView fx:id="pagamentosTable" prefHeight="105">
+      fx:controller="br.com.loja.pdv.controller.PagamentoController"
+      styleClass="payment-panel" VBox.vgrow="ALWAYS">
+    <VBox spacing="1">
+        <Label text="Recebimento" styleClass="section-title"/>
+        <Label text="Informe uma ou mais formas de pagamento." styleClass="hint"/>
+    </VBox>
+    <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <GridPane hgap="8" vgap="6">
+        <Label text="Forma" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <Label text="Valor" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <ComboBox fx:id="formaCombo" prefWidth="165" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="valorField" promptText="0,00" onAction="#addPayment"
+                   GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <Button text="Adicionar" onAction="#addPayment" styleClass="button, primary"
+                GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+    </GridPane>
+    <TableView fx:id="pagamentosTable" VBox.vgrow="ALWAYS" prefHeight="130">
+        <placeholder><Label text="Nenhum pagamento informado."/></placeholder>
         <columns>
-            <TableColumn fx:id="formaColumn" text="Forma" prefWidth="220"/>
-            <TableColumn fx:id="valorColumn" text="Valor" prefWidth="150"/>
+            <TableColumn fx:id="formaColumn" text="Forma" prefWidth="175"/>
+            <TableColumn fx:id="valorColumn" text="Valor" prefWidth="120"/>
         </columns>
     </TableView>
-    <HBox alignment="CENTER_RIGHT" spacing="16">
-        <Label text="Recebido:"/><Label fx:id="recebidoLabel"/>
-        <Label text="Restante:"/><Label fx:id="restanteLabel"/>
-        <Label text="Troco:"/><Label fx:id="trocoLabel" style="-fx-font-weight: bold;"/>
+    <HBox>
+        <Button text="Remover selecionado" onAction="#removePayment" styleClass="button, ghost"/>
     </HBox>
+    <GridPane hgap="8" vgap="5">
+        <Label text="Recebido" styleClass="metric-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <Label fx:id="recebidoLabel" styleClass="metric-value" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        <Label text="Restante" styleClass="metric-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <Label fx:id="restanteLabel" styleClass="metric-value" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        <Label text="Troco" styleClass="metric-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <Label fx:id="trocoLabel" styleClass="metric-value" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+    </GridPane>
+    <Button text="Finalizar venda (F10)" onAction="#finishSale"
+            styleClass="button, success" maxWidth="Infinity"/>
 </VBox>

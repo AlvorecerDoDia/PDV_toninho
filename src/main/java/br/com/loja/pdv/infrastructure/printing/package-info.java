@@ -1,4 +1,4 @@
 /**
- * Formatação e envio do comprovante não fiscal à impressora padrão do Windows.
+ * Formatacao e envio do comprovante nao fiscal a impressora padrao do Windows.
  */
 package br.com.loja.pdv.infrastructure.printing;

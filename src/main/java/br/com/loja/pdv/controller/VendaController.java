@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-/** Mantém a interação rápida com o carrinho e os atalhos da tela de venda. */
+/** Mantem a interacao rapida com o carrinho e os atalhos da tela de venda. */
 public final class VendaController {
     private static final NumberFormat CURRENCY =
             NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
