@@ -22,16 +22,19 @@ public final class GerenciadorBackup {
     private final Path backupDirectory;
     private final Clock clock;
 
+    /** Recebe o banco de origem e a pasta onde as copias serao mantidas. */
     public GerenciadorBackup(Database database, Path backupDirectory) {
         this(database, backupDirectory, Clock.systemDefaultZone());
     }
 
+    /** Variante usada pelos testes para controlar o relogio. */
     GerenciadorBackup(Database database, Path backupDirectory, Clock clock) {
         this.database = database;
         this.backupDirectory = backupDirectory.toAbsolutePath().normalize();
         this.clock = clock;
     }
 
+    /** Cria uma copia consistente do SQLite e devolve o caminho gerado. */
     public Path criar(String prefix) {
         try {
             Files.createDirectories(backupDirectory);
@@ -55,6 +58,7 @@ public final class GerenciadorBackup {
         }
     }
 
+    /** Valida o arquivo, cria uma copia de seguranca e substitui o banco de forma atomica. */
     public Path restaurar(Path source) {
         Path normalized = source == null ? null : source.toAbsolutePath().normalize();
         if (normalized == null || !Files.isRegularFile(normalized)) {
@@ -95,6 +99,7 @@ public final class GerenciadorBackup {
         }
     }
 
+    /** Mantem somente a quantidade mais recente de backups configurada. */
     public void aplicarRetencao(int quantidade) {
         if (quantidade < 1) throw new IllegalArgumentException("Retenção inválida.");
         try {
@@ -113,6 +118,7 @@ public final class GerenciadorBackup {
         }
     }
 
+    /** Lista arquivos de banco ordenados do mais recente para o mais antigo. */
     public List<Path> listar() {
         try {
             if (!Files.isDirectory(backupDirectory)) return List.of();
@@ -126,6 +132,7 @@ public final class GerenciadorBackup {
         }
     }
 
+    /** Abre o arquivo como SQLite e executa a verificacao de integridade. */
     private void validar(Path file) {
         try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + file);
              Statement statement = connection.createStatement();
@@ -146,6 +153,7 @@ public final class GerenciadorBackup {
         }
     }
 
+    /** Le a data do arquivo e transforma falhas de IO em erro de dominio. */
     private FileTime lastModified(Path path) {
         try {
             return Files.getLastModifiedTime(path);
@@ -154,6 +162,7 @@ public final class GerenciadorBackup {
         }
     }
 
+    /** Remove arquivos WAL e SHM que pertenciam ao banco anterior. */
     private void deleteSidecars(Path target) throws IOException {
         // WAL e SHM pertencem ao banco anterior e nao podem acompanhar a restauracao.
         Files.deleteIfExists(Path.of(target + "-wal"));

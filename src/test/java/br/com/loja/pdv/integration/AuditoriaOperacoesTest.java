@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/** Testa a integracao entre interface, servicos e banco em um fluxo proximo do uso real. */
 class AuditoriaOperacoesTest {
     @TempDir Path tempDirectory;
     private Database database;
@@ -42,6 +43,7 @@ class AuditoriaOperacoesTest {
                 new SQLiteAuditoriaRepository(database), sessao);
     }
 
+    /** Verifica o cenario: deve auditar preco estoque caixa eusuario sem senha ou hash. */
     @Test
     void deveAuditarPrecoEstoqueCaixaEUsuarioSemSenhaOuHash() {
         SQLiteProdutoRepository produtos = new SQLiteProdutoRepository(database);

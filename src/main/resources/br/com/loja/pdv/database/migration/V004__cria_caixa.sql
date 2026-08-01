@@ -1,4 +1,5 @@
 -- Sessoes de caixa e lancamentos financeiros vinculados ao operador.
+-- Cada migracao e executada uma unica vez e registrada em schema_version.
 CREATE TABLE caixa (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     usuario_id INTEGER NOT NULL,

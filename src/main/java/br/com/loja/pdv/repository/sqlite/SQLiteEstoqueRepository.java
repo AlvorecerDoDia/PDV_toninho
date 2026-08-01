@@ -18,10 +18,12 @@ public final class SQLiteEstoqueRepository implements EstoqueRepository {
 
     private final Database database;
 
+    /** Recebe a configuracao de banco usada para abrir conexoes em cada operacao. */
     public SQLiteEstoqueRepository(Database database) {
         this.database = database;
     }
 
+    /** Bloqueia o produto, calcula o novo saldo e grava tudo na mesma transacao. */
     @Override
     public MovimentacaoEstoque registrar(MovimentacaoEstoque movimentacao) {
         try (Connection connection = database.getConnection()) {
@@ -51,6 +53,7 @@ public final class SQLiteEstoqueRepository implements EstoqueRepository {
         }
     }
 
+    /** Consulta somente a quantidade atual do produto. */
     @Override
     public int buscarSaldo(long produtoId) {
         try (Connection connection = database.getConnection()) {
@@ -60,6 +63,7 @@ public final class SQLiteEstoqueRepository implements EstoqueRepository {
         }
     }
 
+    /** Pesquisa movimentacoes por produto e periodo. */
     @Override
     public List<MovimentacaoEstoque> listar(
             long produtoId, LocalDateTime inicio, LocalDateTime fim) {
@@ -85,6 +89,7 @@ public final class SQLiteEstoqueRepository implements EstoqueRepository {
         }
     }
 
+    /** Le o saldo atual dentro da conexao transacional. */
     private int readBalance(Connection connection, long produtoId) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(
                 "SELECT quantidade_estoque FROM produto WHERE id = ?")) {
@@ -98,6 +103,7 @@ public final class SQLiteEstoqueRepository implements EstoqueRepository {
         }
     }
 
+    /** Atualiza o saldo do produto e a data da ultima alteracao. */
     private void updateBalance(
             Connection connection, long produtoId, int balance, LocalDateTime timestamp)
             throws SQLException {
@@ -111,6 +117,7 @@ public final class SQLiteEstoqueRepository implements EstoqueRepository {
         }
     }
 
+    /** Grava o historico com os saldos anterior e posterior. */
     private void insertMovement(Connection connection, MovimentacaoEstoque movement)
             throws SQLException {
         String sql = """
@@ -137,6 +144,7 @@ public final class SQLiteEstoqueRepository implements EstoqueRepository {
         }
     }
 
+    /** Converte uma linha JDBC em movimentacao de estoque. */
     private MovimentacaoEstoque map(ResultSet resultSet) throws SQLException {
         MovimentacaoEstoque movement = new MovimentacaoEstoque();
         movement.setId(resultSet.getLong("id"));
@@ -152,17 +160,20 @@ public final class SQLiteEstoqueRepository implements EstoqueRepository {
         return movement;
     }
 
+    /** Grava venda opcional como NULL quando nao existe. */
     private void setNullableLong(PreparedStatement statement, int index, Long value)
             throws SQLException {
         if (value == null) statement.setNull(index, Types.BIGINT);
         else statement.setLong(index, value);
     }
 
+    /** Le identificadores opcionais corretamente. */
     private Long nullableLong(ResultSet resultSet, String column) throws SQLException {
         long value = resultSet.getLong(column);
         return resultSet.wasNull() ? null : value;
     }
 
+    /** Desfaz a transacao sem perder a excecao principal. */
     private void rollback(Connection connection, Exception cause) {
         try {
             connection.rollback();

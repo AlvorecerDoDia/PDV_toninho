@@ -21,6 +21,7 @@ import java.util.Locale;
 
 /** Mantem a interacao rapida com o carrinho e os atalhos da tela de venda. */
 public final class VendaController {
+    // Formatador unico para manter valores monetarios consistentes na tela.
     private static final NumberFormat CURRENCY =
             NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
 
@@ -45,10 +46,12 @@ public final class VendaController {
     private final SessaoUsuario sessao;
     private final CarrinhoVenda carrinho;
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     public VendaController(ProdutoService produtos, SessaoUsuario sessao) {
         this(produtos, sessao, new CarrinhoVenda());
     }
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     public VendaController(
             ProdutoService produtos, SessaoUsuario sessao, CarrinhoVenda carrinho) {
         this.produtos = produtos;
@@ -56,6 +59,7 @@ public final class VendaController {
         this.carrinho = carrinho;
     }
 
+    /** Configura tabela, busca, atalhos e integracao com o painel de pagamentos. */
     @FXML
     private void initialize() {
         UiFormatters.inteiro(quantidadeField);
@@ -89,6 +93,7 @@ public final class VendaController {
         Platform.runLater(codigoField::requestFocus);
     }
 
+    /** Localiza um produto pelo codigo e adiciona a quantidade padrao ao carrinho. */
     @FXML
     private void addByBarcode() {
         execute(() -> {
@@ -101,6 +106,7 @@ public final class VendaController {
         });
     }
 
+    /** Atualiza as sugestoes de produto conforme o texto digitado. */
     @FXML
     private void search() {
         try {
@@ -113,6 +119,7 @@ public final class VendaController {
         }
     }
 
+    /** Adiciona ao carrinho o produto escolhido na lista de resultados. */
     @FXML
     private void addSelected() {
         execute(() -> {
@@ -123,6 +130,7 @@ public final class VendaController {
         });
     }
 
+    /** Altera a quantidade do item selecionado respeitando o estoque disponivel. */
     @FXML
     private void changeQuantity() {
         execute(() -> {
@@ -133,6 +141,7 @@ public final class VendaController {
         });
     }
 
+    /** Remove do carrinho o item atualmente selecionado. */
     @FXML
     private void removeSelected() {
         execute(() -> {
@@ -143,6 +152,7 @@ public final class VendaController {
         });
     }
 
+    /** Confirma e remove todos os itens e descontos da venda em andamento. */
     @FXML
     private void clearCart() {
         carrinho.limpar();
@@ -151,6 +161,7 @@ public final class VendaController {
         codigoField.requestFocus();
     }
 
+    /** Converte e aplica o desconto informado ao carrinho. */
     @FXML
     private void applyDiscount() {
         execute(() -> {
@@ -160,6 +171,7 @@ public final class VendaController {
         });
     }
 
+    /** Registra atalhos de teclado para acelerar a operacao no caixa. */
     private void installShortcuts() {
         root.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.F2) pesquisaField.requestFocus();
@@ -173,6 +185,7 @@ public final class VendaController {
         });
     }
 
+    /** Limpa a entrada que esta em foco sem apagar a venda inteira. */
     private void cancelCurrentInput() {
         pesquisaField.clear();
         quantidadeField.clear();
@@ -182,12 +195,14 @@ public final class VendaController {
         message("", false);
     }
 
+    /** Retorna o item selecionado ou gera uma validacao clara. */
     private ItemCarrinho selectedItem() {
         ItemCarrinho item = itensTable.getSelectionModel().getSelectedItem();
         if (item == null) throw new ValidationException("Selecione um item do carrinho.");
         return item;
     }
 
+    /** Executa uma acao do carrinho, atualiza a tela e trata erros de validacao. */
     private void execute(Action action) {
         try {
             message(action.run(), false);
@@ -197,6 +212,7 @@ public final class VendaController {
         }
     }
 
+    /** Sincroniza tabela, totais e painel de pagamento com o estado do carrinho. */
     private void refresh() {
         itensTable.getItems().setAll(carrinho.getItens());
         subtotalLabel.setText(CURRENCY.format(carrinho.getSubtotal()));
@@ -205,12 +221,14 @@ public final class VendaController {
         pagamentoPaneController.refreshTotals();
     }
 
+    /** Limpa o fluxo visual e mostra o numero da venda concluida. */
     private void saleFinalized(String message) {
         refresh();
         message(message, false);
         codigoField.requestFocus();
     }
 
+    /** Converte o desconto digitado para BigDecimal. */
     private BigDecimal parseMoney(String text) {
         String normalized = text == null ? "" : text.strip();
         if (normalized.contains(",")) {
@@ -219,13 +237,16 @@ public final class VendaController {
         return new BigDecimal(normalized);
     }
 
+    /** Mostra feedback operacional sem interromper a leitura do codigo de barras. */
     private void message(String text, boolean error) {
         mensagemLabel.setText(text == null ? "Ocorreu um erro." : text);
         mensagemLabel.setStyle(error ? "-fx-text-fill: #b91c1c;" : "-fx-text-fill: #166534;");
     }
 
+    /** Representa uma alteracao do carrinho que devolve feedback para a tela. */
     @FunctionalInterface
     private interface Action {
+        /** Executa a alteracao solicitada. */
         String run();
     }
 }

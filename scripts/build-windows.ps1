@@ -8,14 +8,16 @@ $projectRoot = Split-Path -Parent $PSScriptRoot
 
 Push-Location $projectRoot
 try {
-    # Compila e testa antes de preparar qualquer distribuicao.    & ".\mvnw.cmd" clean package
+    # Compila e testa antes de preparar qualquer distribuicao.
+    & ".\mvnw.cmd" clean package
     if ($LASTEXITCODE -ne 0) {
         throw "A compilação Maven falhou."
     }
 
     $packageInput = Join-Path $projectRoot "target\package-input"
     New-Item -ItemType Directory -Path $packageInput -Force | Out-Null
-    # O jpackage recebe o JAR da aplicacao e todas as dependencias de execucao.    & ".\mvnw.cmd" dependency:copy-dependencies `
+    # O jpackage recebe o JAR da aplicacao e todas as dependencias de execucao.
+    & ".\mvnw.cmd" dependency:copy-dependencies `
         "-DincludeScope=runtime" `
         "-DoutputDirectory=$packageInput"
     if ($LASTEXITCODE -ne 0) {
@@ -25,7 +27,8 @@ try {
         -Destination $packageInput -Force
 
     $jpackage = $null
-    # Prioriza o JDK explicitamente configurado e usa o PATH como alternativa.    if ($env:JAVA_HOME) {
+    # Prioriza o JDK explicitamente configurado e usa o PATH como alternativa.
+    if ($env:JAVA_HOME) {
         $candidate = Join-Path $env:JAVA_HOME "bin\jpackage.exe"
         if (Test-Path -LiteralPath $candidate) {
             $jpackage = $candidate
@@ -42,7 +45,8 @@ try {
     }
 
     $packageType = if ($Installer) { "exe" } else { "app-image" }
-    # PdvLauncher evita a inicializacao especial do JavaFX ao abrir o executavel.    $arguments = @(
+    # PdvLauncher evita a inicializacao especial do JavaFX ao abrir o executavel.
+    $arguments = @(
         "--type", $packageType,
         "--name", "PDV Toninho",
         "--app-version", "1.0.0",

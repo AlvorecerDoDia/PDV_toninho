@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 /** Evidencia de uma acao critica com autor, entidade e valores relevantes. */
 public class RegistroAuditoria {
+    // O registro preserva quem fez a acao e quais valores foram alterados.
     private Long id;
     private Long usuarioId;
     private String acao;

@@ -18,10 +18,12 @@ import java.util.Optional;
 public final class SQLiteUsuarioRepository implements UsuarioRepository {
     private final Database database;
 
+    /** Recebe a configuracao de banco usada para abrir conexoes em cada operacao. */
     public SQLiteUsuarioRepository(Database database) {
         this.database = database;
     }
 
+    /** Insere usuario com senha ja transformada em hash. */
     @Override
     public Usuario salvar(Usuario usuario) {
         String sql = """
@@ -43,6 +45,7 @@ public final class SQLiteUsuarioRepository implements UsuarioRepository {
         }
     }
 
+    /** Atualiza dados, perfil, status e credencial do usuario. */
     @Override
     public void atualizar(Usuario usuario) {
         String sql = """
@@ -81,10 +84,12 @@ public final class SQLiteUsuarioRepository implements UsuarioRepository {
         }
     }
 
+    /** Executa consulta que retorna no maximo um usuario. */
     private Optional<Usuario> one(String sql, Binder binder) {
         return list(sql, binder).stream().findFirst();
     }
 
+    /** Executa consulta de varios usuarios. */
     private List<Usuario> list(String sql, Binder binder) {
         try (Connection connection = database.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -99,6 +104,7 @@ public final class SQLiteUsuarioRepository implements UsuarioRepository {
         }
     }
 
+    /** Preenche os parametros comuns do usuario. */
     private void bind(PreparedStatement statement, Usuario usuario) throws SQLException {
         statement.setString(1, usuario.getNome());
         statement.setString(2, usuario.getLogin());
@@ -110,6 +116,7 @@ public final class SQLiteUsuarioRepository implements UsuarioRepository {
         statement.setString(8, usuario.getAtualizadoEm().toString());
     }
 
+    /** Converte uma linha JDBC em Usuario. */
     private Usuario map(ResultSet resultSet) throws SQLException {
         Usuario usuario = new Usuario();
         usuario.setId(resultSet.getLong("id"));
@@ -124,6 +131,7 @@ public final class SQLiteUsuarioRepository implements UsuarioRepository {
         return usuario;
     }
 
+    /** Traduz login duplicado e outras falhas do banco. */
     private RuntimeException translate(SQLException exception) {
         if (exception.getErrorCode() == 19) {
             return new ValidationException("Já existe um usuário com esse login.");
@@ -131,7 +139,10 @@ public final class SQLiteUsuarioRepository implements UsuarioRepository {
         return new DatabaseException("Não foi possível salvar o usuário.", exception);
     }
 
-    @FunctionalInterface private interface Binder {
+    /** Configura os parametros de uma consulta reutilizavel. */
+    @FunctionalInterface
+    private interface Binder {
+        /** Preenche os parametros antes da execucao. */
         void bind(PreparedStatement statement) throws SQLException;
     }
 }

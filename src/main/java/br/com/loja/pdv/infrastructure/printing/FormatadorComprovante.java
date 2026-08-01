@@ -18,11 +18,13 @@ public final class FormatadorComprovante {
     private static final String SEPARATOR = "----------------------------------------";
     private final String storeName;
 
+    /** Define o nome da loja exibido no cabecalho do comprovante. */
     public FormatadorComprovante(String storeName) {
         String normalized = storeName == null ? "" : storeName.strip();
         this.storeName = normalized.isEmpty() ? "PDV Toninho" : normalized;
     }
 
+    /** Monta todo o comprovante nao fiscal a partir dos dados historicos da venda. */
     public String formatar(Venda venda, boolean segundaVia) {
         if (venda == null) throw new IllegalArgumentException("A venda é obrigatória.");
         StringBuilder receipt = new StringBuilder();
@@ -56,6 +58,7 @@ public final class FormatadorComprovante {
         return receipt.toString();
     }
 
+    /** Acrescenta quantidade, nome, preco unitario e subtotal de um item. */
     private void appendItem(StringBuilder receipt, ItemVenda item) {
         receipt.append(item.getProdutoNome()).append('\n');
         receipt.append(item.getQuantidade()).append(" x ")
@@ -63,14 +66,17 @@ public final class FormatadorComprovante {
                 .append(" = ").append(CURRENCY.format(item.getSubtotal())).append('\n');
     }
 
+    /** Acrescenta uma forma de pagamento e seu valor. */
     private void appendPayment(StringBuilder receipt, Pagamento payment) {
         receipt.append(line(payment.getForma().name(), payment.getValor()));
     }
 
+    /** Cria uma linha de largura fixa para separar secoes do comprovante. */
     private String line(String label, BigDecimal value) {
         return "%-22s %17s%n".formatted(label, CURRENCY.format(value));
     }
 
+    /** Centraliza um texto curto respeitando a largura da bobina. */
     private String center(String text) {
         int width = 40;
         if (text.length() >= width) return text;

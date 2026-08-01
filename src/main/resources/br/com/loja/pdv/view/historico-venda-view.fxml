@@ -42,6 +42,7 @@
         <items>
             <VBox spacing="8" styleClass="card">
                 <Label text="Resultados" styleClass="section-title"/>
+                <!-- Selecao da venda controla os detalhes e as acoes abaixo. -->
                 <TableView fx:id="vendasTable" VBox.vgrow="ALWAYS">
                     <placeholder><Label text="Nenhuma venda encontrada."/></placeholder>
                     <columns>
@@ -52,6 +53,7 @@
                         <TableColumn fx:id="statusColumn" text="Situação" prefWidth="115"/>
                     </columns>
                 </TableView>
+                <!-- Impressao e cancelamento ficam separados por um espacador flexivel. -->
                 <HBox spacing="8">
                     <Button text="Visualizar comprovante" onAction="#previewReceipt"/>
                     <Button text="Imprimir" onAction="#printReceipt"/>

@@ -13,10 +13,12 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/** Testa um componente de infraestrutura com recursos controlados pelo teste. */
 class FormatadorComprovanteTest {
     private final FormatadorComprovante formatter =
             new FormatadorComprovante("Loja Toninho");
 
+    /** Verifica o cenario: deve formatar comprovante nao fiscal completo. */
     @Test
     void deveFormatarComprovanteNaoFiscalCompleto() {
         String text = formatter.formatar(sale(), false);
@@ -32,6 +34,7 @@ class FormatadorComprovanteTest {
         assertFalse(text.contains("SEGUNDA VIA"));
     }
 
+    /** Verifica o cenario: deve identificar segunda via. */
     @Test
     void deveIdentificarSegundaVia() {
         String text = formatter.formatar(sale(), true);
@@ -39,6 +42,7 @@ class FormatadorComprovanteTest {
         assertTrue(text.contains("COMPROVANTE NÃO FISCAL"));
     }
 
+    /** Verifica o cenario: deve usar valores historicos dos itens. */
     @Test
     void deveUsarValoresHistoricosDosItens() {
         Venda sale = sale();

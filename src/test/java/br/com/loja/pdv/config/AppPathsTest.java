@@ -7,9 +7,11 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/** Testa a configuracao e o comportamento esperado deste componente. */
 class AppPathsTest {
     @TempDir Path tempDirectory;
 
+    /** Verifica o cenario: deve manter dados fora da pasta do programa. */
     @Test
     void deveManterDadosForaDaPastaDoPrograma() {
         String previous = System.getProperty(AppPaths.HOME_PROPERTY);

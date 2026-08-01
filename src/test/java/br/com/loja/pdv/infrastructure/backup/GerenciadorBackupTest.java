@@ -17,6 +17,7 @@ import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Testa um componente de infraestrutura com recursos controlados pelo teste. */
 class GerenciadorBackupTest {
     @TempDir Path tempDirectory;
     private Database database;
@@ -30,6 +31,7 @@ class GerenciadorBackupTest {
         insertProduct("Original");
     }
 
+    /** Verifica o cenario: deve criar backup consistente. */
     @Test
     void deveCriarBackupConsistente() throws Exception {
         Path backup = manager.criar("manual");
@@ -38,6 +40,7 @@ class GerenciadorBackupTest {
         assertEquals(1, countProducts(new Database(backup)));
     }
 
+    /** Verifica o cenario: deve restaurar ecriar copia de seguranca anterior. */
     @Test
     void deveRestaurarECriarCopiaDeSegurancaAnterior() throws Exception {
         Path backup = manager.criar("base");
@@ -49,6 +52,7 @@ class GerenciadorBackupTest {
         assertEquals(2, countProducts(new Database(safety)));
     }
 
+    /** Verifica o cenario: deve recusar arquivo invalido. */
     @Test
     void deveRecusarArquivoInvalido() throws Exception {
         Path invalid = tempDirectory.resolve("invalido.db");
@@ -56,6 +60,7 @@ class GerenciadorBackupTest {
         assertThrows(DatabaseException.class, () -> manager.restaurar(invalid));
     }
 
+    /** Verifica o cenario: deve aplicar retencao dos backups mais recentes. */
     @Test
     void deveAplicarRetencaoDosBackupsMaisRecentes() throws Exception {
         Path first = manager.criar("primeiro");
@@ -69,6 +74,7 @@ class GerenciadorBackupTest {
         assertFalse(Files.exists(first));
     }
 
+    /** Verifica o cenario: deve informar erro quando diretorio nao pode ser criado. */
     @Test
     void deveInformarErroQuandoDiretorioNaoPodeSerCriado() throws Exception {
         Path occupied = tempDirectory.resolve("arquivo-no-lugar-da-pasta");

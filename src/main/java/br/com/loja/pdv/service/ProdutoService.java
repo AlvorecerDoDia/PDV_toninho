@@ -21,18 +21,22 @@ public final class ProdutoService {
     private final Clock clock;
     private final AuditoriaService auditoria;
 
+    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public ProdutoService(ProdutoRepository repository) {
         this(repository, null, Clock.systemDefaultZone());
     }
 
+    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public ProdutoService(ProdutoRepository repository, AuditoriaService auditoria) {
         this(repository, auditoria, Clock.systemDefaultZone());
     }
 
+    /** Variante usada pelos testes sem auditoria e com relogio controlado. */
     ProdutoService(ProdutoRepository repository, Clock clock) {
         this(repository, null, clock);
     }
 
+    /** Construtor completo que recebe repositorio, auditoria e relogio. */
     ProdutoService(
             ProdutoRepository repository, AuditoriaService auditoria, Clock clock) {
         this.repository = repository;
@@ -40,6 +44,7 @@ public final class ProdutoService {
         this.clock = clock;
     }
 
+    /** Normaliza os campos, valida a quantidade inicial e prepara datas do novo produto. */
     public Produto cadastrar(Produto produto) {
         normalizeAndValidate(produto);
         LocalDateTime now = LocalDateTime.now(clock);
@@ -50,6 +55,7 @@ public final class ProdutoService {
         return repository.salvar(produto);
     }
 
+    /** Atualiza dados cadastrais preservando o saldo controlado pelo estoque. */
     public void atualizar(Produto produto) {
         if (produto == null || produto.getId() == null || produto.getId() <= 0) {
             throw new ValidationException("Selecione um produto válido para atualizar.");
@@ -70,34 +76,41 @@ public final class ProdutoService {
         }
     }
 
+    /** Retorna o produto ou gera erro quando ele nao existe. */
     public Produto buscarPorId(long id) {
         return repository.buscarPorId(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado."));
     }
 
+    /** Normaliza o codigo antes de consultar o repositorio. */
     public Optional<Produto> buscarPorCodigoBarras(String codigo) {
         String normalized = normalizeBarcode(codigo);
         return normalized == null ? Optional.empty() : repository.buscarPorCodigoBarras(normalized);
     }
 
+    /** Retorna produtos disponiveis para venda. */
     public List<Produto> listarAtivos() {
         return repository.listarAtivos();
     }
 
+    /** Normaliza o termo e delega a pesquisa textual. */
     public List<Produto> pesquisar(String termo) {
         return repository.pesquisar(termo == null ? "" : termo.strip());
     }
 
+    /** Exige permissao e retira o produto das vendas futuras. */
     public void desativar(long id) {
         buscarPorId(id);
         repository.desativar(id);
     }
 
+    /** Exige permissao e disponibiliza novamente o produto. */
     public void reativar(long id) {
         buscarPorId(id);
         repository.reativar(id);
     }
 
+    /** Aplica todas as regras comuns de nome, codigo, precos e estoque minimo. */
     private void normalizeAndValidate(Produto produto) {
         if (produto == null) {
             throw new ValidationException("O produto é obrigatório.");
@@ -119,6 +132,7 @@ public final class ProdutoService {
         }
     }
 
+    /** Converte codigo vazio em NULL e remove espacos externos. */
     private String normalizeBarcode(String barcode) {
         if (barcode == null || barcode.isBlank()) {
             return null;
@@ -126,6 +140,7 @@ public final class ProdutoService {
         return barcode.strip();
     }
 
+    /** Exige valor monetario nao negativo com duas casas exatas. */
     private BigDecimal validateMoney(BigDecimal value, String field) {
         if (value == null || value.signum() < 0) {
             throw new ValidationException("O " + field + " não pode ser negativo.");
@@ -137,6 +152,7 @@ public final class ProdutoService {
         }
     }
 
+    /** Monta uma representacao curta dos precos para auditoria. */
     private String prices(Produto produto) {
         return "custo=" + produto.getPrecoCusto().toPlainString()
                 + "; venda=" + produto.getPrecoVenda().toPlainString();

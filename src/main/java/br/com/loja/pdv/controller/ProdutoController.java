@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 
 /** Controla o formulario e a tabela do cadastro de produtos. */
 public final class ProdutoController {
+    // Componentes declarados no FXML e preenchidos automaticamente pelo JavaFX.
     @FXML private TextField codigoField;
     @FXML private TextField nomeField;
     @FXML private TextField custoField;
@@ -27,13 +28,16 @@ public final class ProdutoController {
     @FXML private Button desativarButton;
     @FXML private Button reativarButton;
 
+    // O servico concentra regras; selected define se o formulario cria ou edita.
     private final ProdutoService service;
     private Produto selected;
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     public ProdutoController(ProdutoService service) {
         this.service = service;
     }
 
+    /** Configura campos, tabela, selecao e pesquisa do cadastro de produtos. */
     @FXML
     private void initialize() {
         UiFormatters.moeda(custoField, vendaField);
@@ -59,6 +63,7 @@ public final class ProdutoController {
         refresh();
     }
 
+    /** Cria ou atualiza um produto conforme a existencia de uma selecao atual. */
     @FXML
     private void save() {
         try {
@@ -81,6 +86,7 @@ public final class ProdutoController {
     @FXML private void deactivate() { changeStatus(false); }
     @FXML private void reactivate() { changeStatus(true); }
 
+    /** Ativa ou desativa o produto selecionado com confirmacao quando necessario. */
     private void changeStatus(boolean active) {
         if (selected == null) return;
         if (!active && !confirm(
@@ -96,6 +102,7 @@ public final class ProdutoController {
         }
     }
 
+    /** Volta o formulario ao modo de novo cadastro. */
     @FXML
     private void clear() {
         selected = null;
@@ -108,6 +115,7 @@ public final class ProdutoController {
         reativarButton.setDisable(true);
     }
 
+    /** Preenche o formulario com o produto escolhido e bloqueia a quantidade em edicoes. */
     private void select(Produto produto) {
         selected = produto;
         if (produto == null) return;
@@ -122,6 +130,7 @@ public final class ProdutoController {
         reativarButton.setDisable(produto.isAtivo());
     }
 
+    /** Converte a quantidade para inteiro e gera uma validacao amigavel em caso de erro. */
     private int parseInteger(TextField field, String name) {
         if (field.getText() == null || field.getText().isBlank()) {
             throw new NumberFormatException("Informe " + name + ".");
@@ -129,15 +138,18 @@ public final class ProdutoController {
         return Integer.parseInt(field.getText());
     }
 
+    /** Executa a pesquisa atual e substitui os itens exibidos na tabela. */
     private void refresh() {
         tabela.getItems().setAll(service.pesquisar(pesquisaField.getText()));
     }
 
+    /** Apresenta o resultado da operacao dentro do cartao de cadastro. */
     private void message(String text, boolean error) {
         mensagemLabel.setText(text == null ? "Ocorreu um erro." : text);
         mensagemLabel.setStyle(error ? "-fx-text-fill: #b91c1c;" : "-fx-text-fill: #166534;");
     }
 
+    /** Solicita confirmacao antes de retirar um produto do fluxo de vendas. */
     private boolean confirm(String title, String text) {
         Alert alert = new Alert(
                 Alert.AlertType.CONFIRMATION, text, ButtonType.YES, ButtonType.NO);

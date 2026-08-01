@@ -26,11 +26,13 @@ public final class UsuarioController {
     private final SessaoUsuario sessao;
     private Usuario selected;
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     public UsuarioController(UsuarioService service, SessaoUsuario sessao) {
         this.service = service;
         this.sessao = sessao;
     }
 
+    /** Configura perfis, colunas e selecao da tabela de usuarios. */
     @FXML
     private void initialize() {
         perfilCombo.getItems().setAll(PerfilUsuario.values());
@@ -43,6 +45,7 @@ public final class UsuarioController {
         refresh();
     }
 
+    /** Cria um usuario novo ou atualiza os dados do usuario selecionado. */
     @FXML
     private void save() {
         try {
@@ -72,7 +75,9 @@ public final class UsuarioController {
         perfilCombo.setValue(PerfilUsuario.OPERADOR);
         ativoCheck.setSelected(true);
     }
+    /** Recarrega todos os usuarios persistidos. */
     private void refresh() { tabela.getItems().setAll(service.listar()); }
+    /** Preenche o formulario e protege o campo de senha durante a edicao. */
     private void select(Usuario usuario) {
         selected = usuario;
         if (usuario == null) return;

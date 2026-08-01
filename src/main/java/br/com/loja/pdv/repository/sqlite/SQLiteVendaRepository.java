@@ -19,12 +19,15 @@ import java.util.Optional;
 
 /** Executa venda e cancelamento como transacoes completas do SQLite. */
 public final class SQLiteVendaRepository implements VendaRepository {
+    // Uma nova conexao e aberta por operacao para manter o repositorio sem estado.
     private final Database database;
 
+    /** Recebe a configuracao de banco usada para abrir conexoes em cada operacao. */
     public SQLiteVendaRepository(Database database) {
         this.database = database;
     }
 
+    /** Persiste venda, itens, pagamentos, estoque e caixa na mesma transacao. */
     @Override
     public Venda finalizar(Venda venda) {
         try (Connection connection = database.getConnection()) {
@@ -58,18 +61,21 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Consulta uma venda pelo identificador. */
     @Override
     public Optional<Venda> buscarPorId(long id) {
         return findSale("SELECT * FROM venda WHERE id = ?",
                 statement -> statement.setLong(1, id));
     }
 
+    /** Consulta uma venda pelo numero publico. */
     @Override
     public Optional<Venda> buscarPorNumero(String numero) {
         return findSale("SELECT * FROM venda WHERE numero = ?",
                 statement -> statement.setString(1, numero));
     }
 
+    /** Pesquisa vendas usando filtros opcionais. */
     @Override
     public List<Venda> listar(
             LocalDateTime inicio, LocalDateTime fim, Long operadorId) {
@@ -100,6 +106,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Retorna os itens historicos de uma venda. */
     @Override
     public List<ItemVenda> listarItens(long vendaId) {
         try (Connection connection = database.getConnection();
@@ -116,6 +123,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Estorna estoque e caixa, marca a venda e registra auditoria na mesma transacao. */
     @Override
     public Venda cancelar(
             long vendaId, long usuarioId, String motivo, LocalDateTime canceladoEm) {
@@ -156,6 +164,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Executa a consulta base e monta a venda com pagamentos. */
     private Optional<Venda> findSale(String sql, StatementBinder binder) {
         try (Connection connection = database.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -168,6 +177,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Executa a consulta base e monta a venda com pagamentos. */
     private Venda findSale(Connection connection, long vendaId) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(
                 "SELECT * FROM venda WHERE id = ?")) {
@@ -179,6 +189,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Le todos os itens associados a uma venda. */
     private List<ItemVenda> listItems(Connection connection, long vendaId) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(
                 "SELECT * FROM item_venda WHERE venda_id = ? ORDER BY id")) {
@@ -191,6 +202,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Atualiza status, data e motivo do cancelamento. */
     private void markCanceled(
             Connection connection, long vendaId, String motivo, LocalDateTime canceledAt)
             throws SQLException {
@@ -208,6 +220,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Devolve ao estoque as quantidades de todos os itens. */
     private void restoreStock(
             Connection connection, Venda venda, ItemVenda item, long usuarioId,
             String motivo, LocalDateTime canceledAt) throws SQLException {
@@ -251,6 +264,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Calcula quanto dinheiro permaneceu no caixa depois do troco. */
     private BigDecimal cashRetained(Connection connection, Venda venda) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT COALESCE(SUM(valor_centavos), 0)
@@ -264,6 +278,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Registra a movimentacao inversa quando o cancelamento afeta dinheiro. */
     private void reverseCash(
             Connection connection, Venda venda, long usuarioId, String motivo,
             LocalDateTime canceledAt, BigDecimal value) throws SQLException {
@@ -297,6 +312,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Registra os dados essenciais do cancelamento para rastreabilidade. */
     private void insertCancellationAudit(
             Connection connection, Venda venda, long usuarioId, String motivo,
             LocalDateTime canceledAt) throws SQLException {
@@ -315,6 +331,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Registra descontos aplicados durante a venda. */
     private void insertDiscountAudit(Connection connection, Venda venda)
             throws SQLException {
         if (venda.getDesconto().signum() == 0) return;
@@ -336,6 +353,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Confirma que a venda esta vinculada a um caixa ainda aberto. */
     private void ensureOpenCashRegister(Connection connection, Venda venda) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
                 SELECT 1 FROM caixa
@@ -351,6 +369,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Bloqueia produtos, valida saldo e copia precos historicos para os itens. */
     private void validateAndCaptureStock(Connection connection, Venda venda) throws SQLException {
         String sql = """
                 SELECT nome, preco_custo_centavos, preco_venda_centavos,
@@ -383,6 +402,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Insere o cabecalho da venda e recupera sua chave. */
     private void insertSale(Connection connection, Venda venda) throws SQLException {
         String sql = """
                 INSERT INTO venda (
@@ -409,6 +429,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Insere um item com nome, custo e preco capturados no momento da venda. */
     private void insertItem(Connection connection, long vendaId, ItemVenda item)
             throws SQLException {
         String sql = """
@@ -434,6 +455,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Insere uma parcela de pagamento. */
     private void insertPayment(Connection connection, long vendaId, Pagamento payment)
             throws SQLException {
         String sql = """
@@ -454,6 +476,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Baixa o saldo e grava o historico de saida para cada item. */
     private void reduceStockAndRegisterMovement(
             Connection connection, Venda venda, ItemVenda item) throws SQLException {
         int previous;
@@ -497,6 +520,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Registra no caixa apenas a parte recebida em dinheiro. */
     private void insertCashMovement(Connection connection, Venda venda) throws SQLException {
         BigDecimal received = venda.getPagamentos().stream()
                 .filter(payment -> payment.getForma()
@@ -519,6 +543,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Converte a linha JDBC no cabecalho da venda. */
     private Venda mapSale(ResultSet resultSet) throws SQLException {
         Venda venda = new Venda();
         venda.setId(resultSet.getLong("id"));
@@ -537,6 +562,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         return venda;
     }
 
+    /** Converte a linha JDBC em item historico. */
     private ItemVenda mapItem(ResultSet resultSet) throws SQLException {
         ItemVenda item = new ItemVenda();
         item.setId(resultSet.getLong("id"));
@@ -552,6 +578,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         return item;
     }
 
+    /** Desfaz toda a venda ou cancelamento quando qualquer etapa falha. */
     private void rollback(Connection connection, Exception cause) {
         try {
             connection.rollback();
@@ -560,8 +587,10 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
+    /** Permite configurar PreparedStatements sem duplicar o fluxo de consulta. */
     @FunctionalInterface
     private interface StatementBinder {
+        /** Preenche os parametros antes de executar a consulta. */
         void bind(PreparedStatement statement) throws SQLException;
     }
 }

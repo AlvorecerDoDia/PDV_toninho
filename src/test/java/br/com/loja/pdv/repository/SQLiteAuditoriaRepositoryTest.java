@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Testa a persistencia SQLite usando um banco temporario e isolado. */
 class SQLiteAuditoriaRepositoryTest {
     @TempDir Path tempDirectory;
     private SQLiteAuditoriaRepository repository;
@@ -24,6 +25,7 @@ class SQLiteAuditoriaRepositoryTest {
         repository = new SQLiteAuditoriaRepository(database);
     }
 
+    /** Verifica o cenario: deve salvar elistar registro sem dados sensiveis. */
     @Test
     void deveSalvarEListarRegistroSemDadosSensiveis() {
         RegistroAuditoria registro = new RegistroAuditoria();

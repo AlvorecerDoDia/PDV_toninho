@@ -21,20 +21,24 @@ public final class UsuarioService {
     private final Clock clock;
     private final AuditoriaService auditoria;
 
+    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public UsuarioService(UsuarioRepository repository, PasswordHasher hasher) {
         this(repository, hasher, null, Clock.systemDefaultZone());
     }
 
+    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public UsuarioService(
             UsuarioRepository repository, PasswordHasher hasher,
             AuditoriaService auditoria) {
         this(repository, hasher, auditoria, Clock.systemDefaultZone());
     }
 
+    /** Variante usada pelos testes sem auditoria e com relogio controlado. */
     UsuarioService(UsuarioRepository repository, PasswordHasher hasher, Clock clock) {
         this(repository, hasher, null, clock);
     }
 
+    /** Construtor completo que recebe persistencia, seguranca, auditoria e relogio. */
     UsuarioService(
             UsuarioRepository repository, PasswordHasher hasher,
             AuditoriaService auditoria, Clock clock) {
@@ -44,6 +48,7 @@ public final class UsuarioService {
         this.clock = clock;
     }
 
+    /** Valida permissao, senha e dados antes de criar um usuario. */
     public Usuario criar(
             String nome, String login, char[] senha, PerfilUsuario perfil, boolean alterarSenha) {
         validatePassword(senha);
@@ -55,6 +60,7 @@ public final class UsuarioService {
                 alterarSenha);
     }
 
+    /** Cria a primeira conta administrativa quando o banco esta vazio. */
     public Usuario criarAdministradorInicial(char[] senha) {
         if (repository.contar() != 0) {
             throw new ValidationException("O administrador inicial já foi criado.");
@@ -62,6 +68,7 @@ public final class UsuarioService {
         return criar("Administrador", "admin", senha, PerfilUsuario.ADMINISTRADOR, true);
     }
 
+    /** Garante a credencial temporaria somente enquanto a troca ainda e obrigatoria. */
     public boolean configurarAdministradorInicialPadrao() {
         if (repository.contar() == 0) {
             // "admin" e temporaria e obriga a troca logo apos o primeiro acesso.
@@ -86,6 +93,7 @@ public final class UsuarioService {
                 .orElse(false);
     }
 
+    /** Altera dados e perfil sem exigir uma nova senha. */
     public void atualizar(long id, String nome, String login, PerfilUsuario perfil, boolean ativo) {
         Usuario usuario = buscar(id);
         String anterior = safeValues(usuario);
@@ -98,6 +106,7 @@ public final class UsuarioService {
         audit("ALTERACAO_USUARIO", id, anterior, safeValues(usuario));
     }
 
+    /** Valida e substitui o hash, removendo a obrigacao de troca. */
     public void trocarSenha(long id, char[] senha) {
         validatePassword(senha);
         Usuario usuario = buscar(id);
@@ -108,21 +117,25 @@ public final class UsuarioService {
         audit("TROCA_SENHA", id, null, "senha=alterada");
     }
 
+    /** Retorna o usuario ou informa que ele nao existe. */
     public Usuario buscar(long id) {
         return repository.buscarPorId(id)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
     }
 
+    /** Exige permissao administrativa e lista todas as contas. */
     public List<Usuario> listar() {
         return repository.listar();
     }
 
+    /** Aplica o tamanho minimo da senha antes do hash. */
     private void validatePassword(char[] senha) {
         if (senha == null || senha.length < 8) {
             throw new ValidationException("A senha deve ter pelo menos 8 caracteres.");
         }
     }
 
+    /** Compartilha a persistencia usada pelo cadastro e pelo administrador inicial. */
     private Usuario criarSemValidarSenha(
             String nome, String login, char[] senha,
             PerfilUsuario perfil, boolean alterarSenha) {
@@ -141,17 +154,20 @@ public final class UsuarioService {
         return salvo;
     }
 
+    /** Remove espacos e rejeita texto obrigatorio vazio. */
     private String normalizeRequired(String value, String field) {
         String normalized = value == null ? "" : value.strip().replaceAll("\\s+", " ");
         if (normalized.isEmpty()) throw new ValidationException("O " + field + " é obrigatório.");
         return normalized;
     }
 
+    /** Monta dados de auditoria sem incluir o hash da senha. */
     private String safeValues(Usuario usuario) {
         return "nome=" + usuario.getNome() + "; login=" + usuario.getLogin()
                 + "; perfil=" + usuario.getPerfil() + "; ativo=" + usuario.isAtivo();
     }
 
+    /** Registra criacao ou alteracao sem interromper a operacao principal. */
     private void audit(String action, Long id, String before, String after) {
         if (auditoria != null) {
             auditoria.registrar(action, "USUARIO", id, before, after);

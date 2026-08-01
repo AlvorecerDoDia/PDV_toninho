@@ -1,4 +1,5 @@
 -- Cabecalho, itens e pagamentos que preservam os valores historicos da venda.
+-- Cada migracao e executada uma unica vez e registrada em schema_version.
 CREATE TABLE venda (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     numero TEXT NOT NULL UNIQUE,

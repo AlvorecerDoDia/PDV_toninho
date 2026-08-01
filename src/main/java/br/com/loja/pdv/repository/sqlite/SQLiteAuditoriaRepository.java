@@ -14,10 +14,12 @@ import java.util.List;
 public final class SQLiteAuditoriaRepository implements AuditoriaRepository {
     private final Database database;
 
+    /** Recebe a configuracao de banco usada para abrir conexoes em cada operacao. */
     public SQLiteAuditoriaRepository(Database database) {
         this.database = database;
     }
 
+    /** Insere um registro de auditoria e devolve o identificador gerado. */
     @Override
     public RegistroAuditoria salvar(RegistroAuditoria registro) {
         String sql = """
@@ -46,6 +48,7 @@ public final class SQLiteAuditoriaRepository implements AuditoriaRepository {
         }
     }
 
+    /** Consulta os eventos mais recentes com limite seguro. */
     @Override
     public List<RegistroAuditoria> listarRecentes(int limite) {
         String sql = "SELECT * FROM auditoria ORDER BY criado_em DESC, id DESC LIMIT ?";
@@ -62,6 +65,7 @@ public final class SQLiteAuditoriaRepository implements AuditoriaRepository {
         }
     }
 
+    /** Converte a linha JDBC em um objeto de dominio. */
     private RegistroAuditoria map(ResultSet resultSet) throws SQLException {
         RegistroAuditoria registro = new RegistroAuditoria();
         registro.setId(resultSet.getLong("id"));
@@ -75,12 +79,14 @@ public final class SQLiteAuditoriaRepository implements AuditoriaRepository {
         return registro;
     }
 
+    /** Grava um identificador opcional usando NULL quando ausente. */
     private void setNullableLong(PreparedStatement statement, int index, Long value)
             throws SQLException {
         if (value == null) statement.setNull(index, Types.BIGINT);
         else statement.setLong(index, value);
     }
 
+    /** Le um inteiro opcional sem confundir NULL com zero. */
     private Long nullableLong(ResultSet resultSet, String column) throws SQLException {
         long value = resultSet.getLong(column);
         return resultSet.wasNull() ? null : value;

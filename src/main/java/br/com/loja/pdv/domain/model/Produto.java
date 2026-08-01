@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 /** Produto vendavel, incluindo precos, estoque atual e limite minimo. */
 public class Produto {
 
+    // Dados cadastrais e saldo atual persistidos na tabela produto.
     private Long id;
     private String codigoBarras;
     private String nome;

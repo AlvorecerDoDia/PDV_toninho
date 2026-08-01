@@ -22,9 +22,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Testa a integracao entre interface, servicos e banco em um fluxo proximo do uso real. */
 class FluxoCompletoPdvTest {
     @TempDir Path tempDirectory;
 
+    /** Verifica o cenario: deve executar fluxo completo do banco vazio ate restauracao. */
     @Test
     void deveExecutarFluxoCompletoDoBancoVazioAteRestauracao() {
         Database database = new Database(tempDirectory.resolve("data").resolve("pdv.db"));
@@ -117,6 +119,7 @@ class FluxoCompletoPdvTest {
                 caixas.buscarPorId(caixa.getId()).orElseThrow().getStatus());
     }
 
+    /** Verifica o cenario: deve manter venda salva quando impressora esta indisponivel. */
     @Test
     void deveManterVendaSalvaQuandoImpressoraEstaIndisponivel() {
         Venda venda = new Venda();

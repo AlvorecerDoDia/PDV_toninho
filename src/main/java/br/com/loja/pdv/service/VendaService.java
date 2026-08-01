@@ -29,12 +29,14 @@ public final class VendaService {
     private final PagamentoService pagamentos;
     private final Clock clock;
 
+    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public VendaService(
             VendaRepository vendas, ProdutoRepository produtos, CaixaRepository caixas,
             SessaoUsuario sessao, PagamentoService pagamentos) {
         this(vendas, produtos, caixas, sessao, pagamentos, Clock.systemDefaultZone());
     }
 
+    /** Variante usada pelos testes para controlar a data e o numero das vendas. */
     VendaService(
             VendaRepository vendas, ProdutoRepository produtos, CaixaRepository caixas,
             SessaoUsuario sessao, PagamentoService pagamentos, Clock clock) {
@@ -46,6 +48,7 @@ public final class VendaService {
         this.clock = clock;
     }
 
+    /** Valida sessao, caixa, carrinho e pagamentos antes da transacao de venda. */
     public Venda finalizar(CarrinhoVenda carrinho, List<Pagamento> formasPagamento) {
         sessao.exigir(Permissao.VENDAS);
         Usuario operador = sessao.atual().orElseThrow();
@@ -85,6 +88,7 @@ public final class VendaService {
         return finalized;
     }
 
+    /** Consulta uma venda pelo numero visivel ao operador. */
     public Venda buscarPorNumero(String numero) {
         sessao.exigir(Permissao.RELATORIOS);
         String normalized = numero == null ? "" : numero.strip().toUpperCase();
@@ -98,6 +102,7 @@ public final class VendaService {
         return venda;
     }
 
+    /** Valida o periodo e consulta vendas conforme os filtros. */
     public List<Venda> listar(LocalDate inicio, LocalDate fim, Long operadorId) {
         sessao.exigir(Permissao.RELATORIOS);
         if (inicio == null || fim == null || inicio.isAfter(fim)) {
@@ -111,6 +116,7 @@ public final class VendaService {
                 operadorId);
     }
 
+    /** Recarrega a venda com itens para comprovante e historico. */
     public Venda detalhar(long vendaId) {
         sessao.exigir(Permissao.RELATORIOS);
         Venda venda = vendas.buscarPorId(vendaId)
@@ -119,6 +125,7 @@ public final class VendaService {
         return venda;
     }
 
+    /** Exige permissao e motivo antes de iniciar o estorno transacional. */
     public Venda cancelar(long vendaId, String motivo) {
         sessao.exigir(Permissao.CANCELAMENTOS);
         Usuario usuario = sessao.atual().orElseThrow();
@@ -130,6 +137,7 @@ public final class VendaService {
                 vendaId, usuario.getId(), normalized, LocalDateTime.now(clock));
     }
 
+    /** Copia valores atuais do carrinho para o modelo historico da venda. */
     private ItemVenda toSaleItem(ItemCarrinho cartItem) {
         Produto current = produtos.buscarPorId(cartItem.getProduto().getId())
                 .orElseThrow(() -> new ValidationException("Produto não encontrado."));
@@ -153,6 +161,7 @@ public final class VendaService {
         return item;
     }
 
+    /** Gera um numero unico, legivel e independente do identificador do banco. */
     private String createNumber(LocalDateTime timestamp) {
         return "V" + timestamp.format(NUMBER_DATE) + "-"
                 + UUID.randomUUID().toString().substring(0, 8).toUpperCase();

@@ -11,8 +11,10 @@ import java.util.logging.Logger;
 public final class ErrorHandler {
     private static final Logger LOGGER = Logger.getLogger(ErrorHandler.class.getName());
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     private ErrorHandler() {}
 
+    /** Transforma excecoes conhecidas em textos seguros para o usuario final. */
     public static String mensagem(Throwable error) {
         if (error instanceof ValidationException) {
             LOGGER.log(Level.FINE, "Validação recusada: {0}", error.getMessage());
@@ -34,12 +36,14 @@ public final class ErrorHandler {
         return "Ocorreu um erro inesperado. Consulte o log ou tente novamente.";
     }
 
+    /** Registra no log qualquer erro que escape dos fluxos normais da interface. */
     public static void registrarInesperado(
             Thread thread, Throwable error) {
         LOGGER.log(Level.SEVERE,
                 "Erro não tratado na thread " + thread.getName(), error);
     }
 
+    /** Evita mostrar mensagens vazias ou detalhes tecnicos ao operador. */
     private static String safe(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
     }

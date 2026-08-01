@@ -14,6 +14,7 @@
     <SplitPane dividerPositions="0.38" VBox.vgrow="ALWAYS">
         <items>
             <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
+                <!-- Cadastro novo ou edicao do produto selecionado. -->
                 <VBox spacing="10" styleClass="card">
                     <VBox spacing="1">
                         <Label text="Dados do produto" styleClass="section-title"/>

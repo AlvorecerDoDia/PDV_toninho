@@ -15,10 +15,12 @@ public final class BackupService {
     private final SessaoUsuario sessao;
     private final AuditoriaService auditoria;
 
+    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public BackupService(GerenciadorBackup gerenciador, SessaoUsuario sessao) {
         this(gerenciador, sessao, null);
     }
 
+    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public BackupService(
             GerenciadorBackup gerenciador, SessaoUsuario sessao,
             AuditoriaService auditoria) {
@@ -27,6 +29,7 @@ public final class BackupService {
         this.auditoria = auditoria;
     }
 
+    /** Exige permissao e cria um backup identificado como manual. */
     public Path criarManual() {
         sessao.exigir(Permissao.BACKUP);
         Path backup = gerenciador.criar("manual");
@@ -34,12 +37,14 @@ public final class BackupService {
         return backup;
     }
 
+    /** Cria uma copia durante o encerramento e aplica a retencao padrao. */
     public Path criarAutomatico() {
         Path backup = gerenciador.criar("automatico");
         gerenciador.aplicarRetencao(RETENCAO_PADRAO);
         return backup;
     }
 
+    /** Exige permissao de backup antes de substituir o banco. */
     public Path restaurar(Path arquivo) {
         sessao.exigir(Permissao.BACKUP);
         Path seguranca = gerenciador.restaurar(arquivo);
@@ -52,6 +57,7 @@ public final class BackupService {
         return seguranca;
     }
 
+    /** Lista as copias existentes para a interface. */
     public List<Path> listar() {
         sessao.exigir(Permissao.BACKUP);
         return gerenciador.listar();

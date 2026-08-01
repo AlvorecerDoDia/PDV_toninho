@@ -16,11 +16,13 @@ public final class RelatorioService {
     private final RelatorioRepository repository;
     private final SessaoUsuario sessao;
 
+    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public RelatorioService(RelatorioRepository repository, SessaoUsuario sessao) {
         this.repository = repository;
         this.sessao = sessao;
     }
 
+    /** Valida permissao e intervalo antes de consultar o relatorio. */
     public List<LinhaRelatorio> gerar(TipoRelatorio tipo, FiltroRelatorio filtro) {
         sessao.exigir(Permissao.RELATORIOS);
         if (tipo == null) throw new ValidationException("Selecione um relatório.");

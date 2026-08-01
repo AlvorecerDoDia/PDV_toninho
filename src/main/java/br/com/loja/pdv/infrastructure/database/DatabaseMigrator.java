@@ -33,6 +33,7 @@ public final class DatabaseMigrator {
 
     private final Database database;
 
+    /** Recebe o banco no qual as migracoes serao aplicadas. */
     public DatabaseMigrator(Database database) {
         if (database == null) {
             throw new IllegalArgumentException("O banco é obrigatório.");
@@ -40,6 +41,7 @@ public final class DatabaseMigrator {
         this.database = database;
     }
 
+    /** Executa migracoes ainda nao aplicadas dentro de uma unica transacao. */
     public void migrate() {
         try (Connection connection = database.getConnection()) {
             connection.setAutoCommit(false);
@@ -67,6 +69,7 @@ public final class DatabaseMigrator {
         }
     }
 
+    /** Garante a existencia da tabela que controla as versoes aplicadas. */
     private void createSchemaVersionTable(Connection connection) throws SQLException {
         String sql = """
                 CREATE TABLE IF NOT EXISTS schema_version (
@@ -80,6 +83,7 @@ public final class DatabaseMigrator {
         }
     }
 
+    /** Le do banco todas as versoes executadas anteriormente. */
     private Set<Integer> readAppliedVersions(Connection connection) throws SQLException {
         Set<Integer> versions = new TreeSet<>();
         try (Statement statement = connection.createStatement();
@@ -92,6 +96,7 @@ public final class DatabaseMigrator {
         return versions;
     }
 
+    /** Interrompe a inicializacao quando o banco possui versao desconhecida. */
     private void validateAppliedVersions(Set<Integer> appliedVersions) {
         // Impede abrir com codigo antigo um banco ja alterado por uma versao futura.
         Set<Integer> knownVersions = new TreeSet<>();
@@ -103,6 +108,7 @@ public final class DatabaseMigrator {
         }
     }
 
+    /** Executa o script e registra sua versao somente depois do sucesso. */
     private void applyMigration(Connection connection, Migration migration)
             throws SQLException, IOException {
         for (String command : splitCommands(readScript(migration.resource()))) {
@@ -123,6 +129,7 @@ public final class DatabaseMigrator {
         }
     }
 
+    /** Carrega um arquivo SQL empacotado nos recursos da aplicacao. */
     private String readScript(String resource) throws IOException {
         String path = MIGRATION_DIRECTORY + resource;
         try (InputStream input = DatabaseMigrator.class.getResourceAsStream(path)) {
@@ -133,6 +140,7 @@ public final class DatabaseMigrator {
         }
     }
 
+    /** Remove comentarios SQL e separa o script em comandos individuais. */
     private List<String> splitCommands(String script) {
         String commands = script.lines()
                 .map(String::strip)
@@ -145,6 +153,7 @@ public final class DatabaseMigrator {
                 .toList();
     }
 
+    /** Tenta desfazer a transacao sem esconder a causa original. */
     private void rollback(Connection connection, Exception cause) {
         try {
             connection.rollback();
@@ -153,6 +162,7 @@ public final class DatabaseMigrator {
         }
     }
 
+    /** Preserva erros de banco existentes ou envolve outras excecoes. */
     private DatabaseException asDatabaseException(Exception exception) {
         if (exception instanceof DatabaseException databaseException) {
             return databaseException;
@@ -160,6 +170,7 @@ public final class DatabaseMigrator {
         return new DatabaseException("Não foi possível executar as migrações do banco.", exception);
     }
 
+    /** Descreve uma versao e o arquivo SQL correspondente. */
     private record Migration(int version, String description, String resource) {
     }
 }

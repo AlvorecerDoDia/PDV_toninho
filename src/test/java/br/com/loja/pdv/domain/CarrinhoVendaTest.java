@@ -10,8 +10,10 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Testa regras puras do modelo de dominio. */
 class CarrinhoVendaTest {
 
+    /** Verifica o cenario: deve adicionar produto. */
     @Test
     void deveAdicionarProduto() {
         CarrinhoVenda carrinho = new CarrinhoVenda();
@@ -21,6 +23,7 @@ class CarrinhoVendaTest {
         assertEquals(new BigDecimal("25.00"), carrinho.getTotal());
     }
 
+    /** Verifica o cenario: deve acumular produto repetido. */
     @Test
     void deveAcumularProdutoRepetido() {
         CarrinhoVenda carrinho = new CarrinhoVenda();
@@ -31,6 +34,7 @@ class CarrinhoVendaTest {
         assertEquals(5, carrinho.getItens().getFirst().getQuantidade());
     }
 
+    /** Verifica o cenario: deve alterar quantidade. */
     @Test
     void deveAlterarQuantidade() {
         CarrinhoVenda carrinho = cartWithOneItem();
@@ -38,6 +42,7 @@ class CarrinhoVendaTest {
         assertEquals(4, carrinho.getItens().getFirst().getQuantidade());
     }
 
+    /** Verifica o cenario: deve remover item elimpar carrinho. */
     @Test
     void deveRemoverItemELimparCarrinho() {
         CarrinhoVenda carrinho = cartWithOneItem();
@@ -50,6 +55,7 @@ class CarrinhoVendaTest {
         assertTrue(carrinho.isVazio());
     }
 
+    /** Verifica o cenario: deve calcular subtotal desconto etotal. */
     @Test
     void deveCalcularSubtotalDescontoETotal() {
         CarrinhoVenda carrinho = new CarrinhoVenda();
@@ -61,6 +67,7 @@ class CarrinhoVendaTest {
         assertEquals(new BigDecimal("30.00"), carrinho.getTotal());
     }
 
+    /** Verifica o cenario: deve impedir desconto maior que subtotal ou invalido. */
     @Test
     void deveImpedirDescontoMaiorQueSubtotalOuInvalido() {
         CarrinhoVenda carrinho = cartWithOneItem();
@@ -72,6 +79,7 @@ class CarrinhoVendaTest {
                 carrinho.aplicarDesconto(new BigDecimal("1.001")));
     }
 
+    /** Verifica o cenario: deve impedir produto inexistente ou inativo. */
     @Test
     void deveImpedirProdutoInexistenteOuInativo() {
         CarrinhoVenda carrinho = new CarrinhoVenda();
@@ -80,6 +88,7 @@ class CarrinhoVendaTest {
                 carrinho.adicionar(product(1, "Inativo", "10.00", 5, false), 1));
     }
 
+    /** Verifica o cenario: deve impedir quantidade invalida. */
     @Test
     void deveImpedirQuantidadeInvalida() {
         CarrinhoVenda carrinho = new CarrinhoVenda();
@@ -89,6 +98,7 @@ class CarrinhoVendaTest {
         assertThrows(ValidationException.class, () -> carrinho.alterarQuantidade(1, -1));
     }
 
+    /** Verifica o cenario: deve impedir estoque insuficiente ao adicionar ou acumular. */
     @Test
     void deveImpedirEstoqueInsuficienteAoAdicionarOuAcumular() {
         CarrinhoVenda carrinho = new CarrinhoVenda();
@@ -99,6 +109,7 @@ class CarrinhoVendaTest {
         assertThrows(ValidationException.class, () -> carrinho.alterarQuantidade(1, 4));
     }
 
+    /** Verifica o cenario: deve iniciar vazio. */
     @Test
     void deveIniciarVazio() {
         CarrinhoVenda carrinho = new CarrinhoVenda();

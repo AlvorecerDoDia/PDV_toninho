@@ -15,11 +15,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/** Testa um componente de infraestrutura com recursos controlados pelo teste. */
 class DatabaseTest {
 
     @TempDir
     Path tempDirectory;
 
+    /** Verifica o cenario: deve criar diretorio inexistente econfigurar conexao. */
     @Test
     void deveCriarDiretorioInexistenteEConfigurarConexao() throws Exception {
         Path databaseFile = tempDirectory.resolve("inexistente").resolve("teste.db");
@@ -35,6 +37,7 @@ class DatabaseTest {
         assertTrue(Files.exists(databaseFile));
     }
 
+    /** Verifica o cenario: deve informar erro quando diretorio nao pode ser criado. */
     @Test
     void deveInformarErroQuandoDiretorioNaoPodeSerCriado() throws IOException {
         Path regularFile = tempDirectory.resolve("arquivo");

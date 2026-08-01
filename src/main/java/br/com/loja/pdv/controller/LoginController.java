@@ -19,6 +19,7 @@ public final class LoginController {
     private final UsuarioService usuarios;
     private final Runnable onSuccess;
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     public LoginController(
             AutenticacaoService autenticacao, UsuarioService usuarios, Runnable onSuccess) {
         this.autenticacao = autenticacao;
@@ -26,6 +27,7 @@ public final class LoginController {
         this.onSuccess = onSuccess;
     }
 
+    /** Autentica as credenciais e, quando necessario, conclui a troca da senha temporaria. */
     @FXML
     private void login() {
         try {

@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/** Testa a persistencia SQLite usando um banco temporario e isolado. */
 class SQLiteProdutoRepositoryTest {
 
     @TempDir
@@ -34,6 +35,7 @@ class SQLiteProdutoRepositoryTest {
         service = new ProdutoService(new SQLiteProdutoRepository(database));
     }
 
+    /** Verifica o cenario: deve cadastrar buscar por id ecodigo. */
     @Test
     void deveCadastrarBuscarPorIdECodigo() {
         Produto novo = produto("789", "Café", "10.25", "15.90");
@@ -47,6 +49,7 @@ class SQLiteProdutoRepositoryTest {
         assertEquals(12, service.buscarPorId(saved.getId()).getQuantidadeEstoque());
     }
 
+    /** Verifica o cenario: deve cadastrar sem codigo de barras. */
     @Test
     void deveCadastrarSemCodigoDeBarras() {
         Produto saved = service.cadastrar(produto("  ", "Arroz", "5.00", "8.00"));
@@ -55,6 +58,7 @@ class SQLiteProdutoRepositoryTest {
         assertTrue(service.buscarPorCodigoBarras(" ").isEmpty());
     }
 
+    /** Verifica o cenario: deve impedir codigo de barras duplicado. */
     @Test
     void deveImpedirCodigoDeBarrasDuplicado() {
         service.cadastrar(produto("123", "Produto A", "1.00", "2.00"));
@@ -65,6 +69,7 @@ class SQLiteProdutoRepositoryTest {
         );
     }
 
+    /** Verifica o cenario: deve pesquisar por nome normalizado. */
     @Test
     void devePesquisarPorNomeNormalizado() {
         service.cadastrar(produto(null, "Café Torrado", "10.00", "14.00"));
@@ -73,6 +78,7 @@ class SQLiteProdutoRepositoryTest {
         assertEquals(1, service.pesquisar("  café ").size());
     }
 
+    /** Verifica o cenario: deve atualizar sem alterar estoque ou criacao. */
     @Test
     void deveAtualizarSemAlterarEstoqueOuCriacao() {
         Produto novo = produto("1", "Leite", "4.00", "6.00");
@@ -90,6 +96,7 @@ class SQLiteProdutoRepositoryTest {
         assertEquals(7, updated.getQuantidadeEstoque());
     }
 
+    /** Verifica o cenario: deve desativar ereativar. */
     @Test
     void deveDesativarEReativar() {
         Produto saved = service.cadastrar(produto(null, "Farinha", "3.00", "5.00"));
@@ -102,6 +109,7 @@ class SQLiteProdutoRepositoryTest {
         assertTrue(service.buscarPorId(saved.getId()).isAtivo());
     }
 
+    /** Verifica o cenario: deve persistir apos reabrir repositorio. */
     @Test
     void devePersistirAposReabrirRepositorio() {
         Produto saved = service.cadastrar(produto("999", "Persistente", "1.23", "4.56"));

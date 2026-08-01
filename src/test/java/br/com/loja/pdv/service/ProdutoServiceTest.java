@@ -12,10 +12,12 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/** Testa regras de negocio sem depender da interface grafica. */
 class ProdutoServiceTest {
 
     private final ProdutoService service = new ProdutoService(new CapturingRepository());
 
+    /** Verifica o cenario: deve normalizar nome epreservar estoque inicial no cadastro. */
     @Test
     void deveNormalizarNomeEPreservarEstoqueInicialNoCadastro() {
         Produto produto = validProduct();
@@ -28,6 +30,7 @@ class ProdutoServiceTest {
         assertEquals(50, saved.getQuantidadeEstoque());
     }
 
+    /** Verifica o cenario: deve impedir nome vazio. */
     @Test
     void deveImpedirNomeVazio() {
         Produto produto = validProduct();
@@ -36,6 +39,7 @@ class ProdutoServiceTest {
         assertThrows(ValidationException.class, () -> service.cadastrar(produto));
     }
 
+    /** Verifica o cenario: deve impedir precos negativos. */
     @Test
     void deveImpedirPrecosNegativos() {
         Produto produto = validProduct();
@@ -44,6 +48,7 @@ class ProdutoServiceTest {
         assertThrows(ValidationException.class, () -> service.cadastrar(produto));
     }
 
+    /** Verifica o cenario: deve impedir quantidade inicial negativa. */
     @Test
     void deveImpedirQuantidadeInicialNegativa() {
         Produto produto = validProduct();
@@ -52,6 +57,7 @@ class ProdutoServiceTest {
         assertThrows(ValidationException.class, () -> service.cadastrar(produto));
     }
 
+    /** Verifica o cenario: deve impedir estoque minimo negativo. */
     @Test
     void deveImpedirEstoqueMinimoNegativo() {
         Produto produto = validProduct();

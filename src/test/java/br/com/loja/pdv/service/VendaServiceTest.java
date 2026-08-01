@@ -16,8 +16,10 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Testa regras de negocio sem depender da interface grafica. */
 class VendaServiceTest {
 
+    /** Verifica o cenario: deve impedir venda vazia. */
     @Test
     void deveImpedirVendaVazia() {
         Fixture fixture = new Fixture(PerfilUsuario.GERENTE);
@@ -25,6 +27,7 @@ class VendaServiceTest {
                 fixture.service.finalizar(new CarrinhoVenda(), List.of()));
     }
 
+    /** Verifica o cenario: deve bloquear desconto para operador. */
     @Test
     void deveBloquearDescontoParaOperador() {
         Fixture fixture = new Fixture(PerfilUsuario.OPERADOR);
@@ -37,6 +40,7 @@ class VendaServiceTest {
         assertFalse(cart.isVazio());
     }
 
+    /** Verifica o cenario: deve montar venda com dados historicos elimpar carrinho apos sucesso. */
     @Test
     void deveMontarVendaComDadosHistoricosELimparCarrinhoAposSucesso() {
         Fixture fixture = new Fixture(PerfilUsuario.GERENTE);

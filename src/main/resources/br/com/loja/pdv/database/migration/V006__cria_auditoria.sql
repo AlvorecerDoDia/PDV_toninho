@@ -1,4 +1,5 @@
 -- Registro das acoes administrativas e alteracoes sensiveis.
+-- Cada migracao e executada uma unica vez e registrada em schema_version.
 CREATE TABLE auditoria (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     usuario_id INTEGER,

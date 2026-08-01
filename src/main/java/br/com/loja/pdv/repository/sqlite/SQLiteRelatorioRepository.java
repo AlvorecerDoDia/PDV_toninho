@@ -18,10 +18,12 @@ import java.util.List;
 public final class SQLiteRelatorioRepository implements RelatorioRepository {
     private final Database database;
 
+    /** Recebe a configuracao de banco usada para abrir conexoes em cada operacao. */
     public SQLiteRelatorioRepository(Database database) {
         this.database = database;
     }
 
+    /** Seleciona a consulta SQL correspondente ao tipo de relatorio solicitado. */
     @Override
     public List<LinhaRelatorio> gerar(TipoRelatorio tipo, FiltroRelatorio filtro) {
         return switch (tipo) {
@@ -39,6 +41,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
         };
     }
 
+    /** Agrupa vendas concluidas por dia. */
     private List<LinhaRelatorio> vendasPorDia(FiltroRelatorio filter) {
         return query("""
                 SELECT date(v.criado_em) categoria, '' detalhe, COUNT(*) quantidade,
@@ -50,6 +53,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
                 """, filter, false, false);
     }
 
+    /** Retorna as vendas individuais do intervalo. */
     private List<LinhaRelatorio> vendasPorPeriodo(FiltroRelatorio filter) {
         return query("""
                 SELECT v.numero categoria, u.nome detalhe, 1 quantidade,
@@ -61,6 +65,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
                 """, filter, false, false);
     }
 
+    /** Agrupa quantidade e valor por operador. */
     private List<LinhaRelatorio> vendasPorOperador(FiltroRelatorio filter) {
         return query("""
                 SELECT u.nome categoria, u.login detalhe, COUNT(*) quantidade,
@@ -73,6 +78,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
                 """, filter, false, false);
     }
 
+    /** Agrupa recebimentos por forma de pagamento. */
     private List<LinhaRelatorio> pagamentos(FiltroRelatorio filter) {
         String sql = """
                 SELECT p.forma categoria, '' detalhe, COUNT(*) quantidade,
@@ -86,6 +92,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
         return query(sql, filter, true, false);
     }
 
+    /** Ordena produtos pela quantidade vendida. */
     private List<LinhaRelatorio> produtosMaisVendidos(FiltroRelatorio filter) {
         String sql = """
                 SELECT i.produto_nome categoria, CAST(i.produto_id AS TEXT) detalhe,
@@ -101,6 +108,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
         return query(sql, filter, false, true);
     }
 
+    /** Lista produtos cujo saldo atingiu o limite minimo. */
     private List<LinhaRelatorio> estoqueBaixo(FiltroRelatorio filter) {
         String sql = """
                 SELECT p.nome categoria,
@@ -121,6 +129,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
         }
     }
 
+    /** Resume entradas e saidas de estoque no periodo. */
     private List<LinhaRelatorio> movimentacoesEstoque(FiltroRelatorio filter) {
         String sql = """
                 SELECT p.nome categoria,
@@ -135,6 +144,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
         return query(sql, filter, false, true);
     }
 
+    /** Lista vendas que receberam desconto. */
     private List<LinhaRelatorio> descontos(FiltroRelatorio filter) {
         return query("""
                 SELECT v.numero categoria, u.nome detalhe, 1 quantidade,
@@ -147,6 +157,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
                 """, filter, false, false);
     }
 
+    /** Lista vendas canceladas e seus motivos. */
     private List<LinhaRelatorio> cancelamentos(FiltroRelatorio filter) {
         return query("""
                 SELECT v.numero categoria, v.motivo_cancelamento detalhe, 1 quantidade,
@@ -158,6 +169,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
                 """, filter, false, false);
     }
 
+    /** Mostra valores esperado, contado e diferenca dos caixas fechados. */
     private List<LinhaRelatorio> fechamentos(FiltroRelatorio filter) {
         return query("""
                 SELECT u.nome categoria,
@@ -172,6 +184,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
                 """, filter, false, false);
     }
 
+    /** Calcula receita, custo historico e margem estimada. */
     private List<LinhaRelatorio> lucro(FiltroRelatorio filter) {
         return query("""
                 WITH por_venda AS (
@@ -189,6 +202,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
                 """, filter, false, false);
     }
 
+    /** Executa a consulta preparada e converte cada linha no formato generico. */
     private List<LinhaRelatorio> query(
             String sql, FiltroRelatorio filter, boolean bindPayment, boolean bindProduct) {
         try (Connection connection = database.getConnection();
@@ -210,6 +224,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
         }
     }
 
+    /** Converte as colunas padronizadas em LinhaRelatorio. */
     private List<LinhaRelatorio> read(PreparedStatement statement) throws SQLException {
         try (ResultSet resultSet = statement.executeQuery()) {
             List<LinhaRelatorio> result = new ArrayList<>();
@@ -226,6 +241,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
         }
     }
 
+    /** Vincula identificador opcional ao PreparedStatement. */
     private void bindNullable(
             PreparedStatement statement, int nullIndex, int valueIndex, Long value)
             throws SQLException {
@@ -238,6 +254,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
         }
     }
 
+    /** Vincula texto opcional ao PreparedStatement. */
     private void bindNullableText(
             PreparedStatement statement, int nullIndex, int valueIndex, String value)
             throws SQLException {
@@ -250,16 +267,19 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
         }
     }
 
+    /** Le quantidade opcional sem transformar NULL em zero. */
     private Long nullableLong(ResultSet resultSet, String column) throws SQLException {
         long value = resultSet.getLong(column);
         return resultSet.wasNull() ? null : value;
     }
 
+    /** Le centavos opcionais e converte para valor monetario. */
     private BigDecimal nullableMoney(ResultSet resultSet, String column) throws SQLException {
         long value = resultSet.getLong(column);
         return resultSet.wasNull() ? null : MoneyUtils.fromCents(value);
     }
 
+    /** Converte texto ISO opcional para LocalDateTime. */
     private LocalDateTime nullableDateTime(ResultSet resultSet, String column)
             throws SQLException {
         String value = resultSet.getString(column);
@@ -267,6 +287,7 @@ public final class SQLiteRelatorioRepository implements RelatorioRepository {
         return LocalDateTime.parse(value);
     }
 
+    /** Padroniza mensagens de falha das consultas consolidadas. */
     private DatabaseException failure(SQLException exception) {
         return new DatabaseException("Não foi possível gerar o relatório.", exception);
     }

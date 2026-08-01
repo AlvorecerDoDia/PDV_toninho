@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/** Testa a integracao entre interface, servicos e banco em um fluxo proximo do uso real. */
 class LoginFxmlTest {
 
     @TempDir
@@ -40,6 +41,7 @@ class LoginFxmlTest {
         assertTrue(initialized.await(5, TimeUnit.SECONDS));
     }
 
+    /** Verifica o cenario: deve carregar tela de login sem erro. */
     @Test
     void deveCarregarTelaDeLoginSemErro() throws InterruptedException {
         Database database = new Database(tempDirectory.resolve("login-fxml.db"));

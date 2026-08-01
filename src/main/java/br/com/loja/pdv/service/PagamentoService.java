@@ -17,14 +17,17 @@ import java.util.List;
 public final class PagamentoService {
     private final Clock clock;
 
+    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public PagamentoService() {
         this(Clock.systemDefaultZone());
     }
 
+    /** Variante usada pelos testes para controlar a data dos pagamentos. */
     PagamentoService(Clock clock) {
         this.clock = clock;
     }
 
+    /** Cria uma parcela valida com valor positivo e horario atual. */
     public Pagamento criar(FormaPagamento forma, BigDecimal valor) {
         if (forma == null) throw new ValidationException("Informe a forma de pagamento.");
         Pagamento pagamento = new Pagamento();
@@ -34,6 +37,7 @@ public final class PagamentoService {
         return pagamento;
     }
 
+    /** Confirma cobertura do total e permite troco somente sobre dinheiro. */
     public BigDecimal validarECalcularTroco(
             BigDecimal total, List<Pagamento> pagamentos) {
         if (total == null || total.signum() < 0) {
@@ -61,6 +65,7 @@ public final class PagamentoService {
         return change;
     }
 
+    /** Soma todas as parcelas de pagamento. */
     public BigDecimal totalRecebido(List<Pagamento> pagamentos) {
         if (pagamentos == null) return BigDecimal.ZERO.setScale(2);
         return pagamentos.stream()
@@ -68,6 +73,7 @@ public final class PagamentoService {
                 .reduce(BigDecimal.ZERO.setScale(2), BigDecimal::add);
     }
 
+    /** Normaliza para duas casas e exige valor maior que zero. */
     private BigDecimal normalizePositive(BigDecimal value) {
         if (value == null || value.signum() <= 0) {
             throw new ValidationException("O valor do pagamento deve ser maior que zero.");

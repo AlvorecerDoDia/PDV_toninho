@@ -21,6 +21,7 @@ public final class ExportadorCsv {
     private static final DateTimeFormatter DATE_TIME =
             DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
+    /** Grava cabecalho e linhas de relatorio em CSV UTF-8. */
     public void exportar(
             Path destination, TipoRelatorio type, List<LinhaRelatorio> rows) {
         if (destination == null) throw new IllegalArgumentException("Escolha o arquivo CSV.");
@@ -54,10 +55,12 @@ public final class ExportadorCsv {
         }
     }
 
+    /** Converte valor monetario para texto brasileiro sem simbolo de moeda. */
     private String money(BigDecimal value) {
         return value == null ? "" : DECIMAL.format(value);
     }
 
+    /** Escapa aspas, separadores e prefixos que planilhas poderiam interpretar como formula. */
     private String csv(String value) {
         String safe = value == null ? "" : value;
         if (!safe.isEmpty() && "=+-@".indexOf(safe.charAt(0)) >= 0) safe = "'" + safe;

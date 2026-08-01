@@ -12,10 +12,12 @@ public enum TipoMovimentacaoCaixa {
 
     private final int sinal;
 
+    /** Guarda o sinal usado ao somar a movimentacao ao dinheiro esperado. */
     TipoMovimentacaoCaixa(int sinal) {
         this.sinal = sinal;
     }
 
+    /** Aplica o sinal da movimentacao ao saldo informado. */
     public BigDecimal aplicar(BigDecimal saldo, BigDecimal valor) {
         return saldo.add(valor.multiply(BigDecimal.valueOf(sinal)));
     }

@@ -48,6 +48,7 @@ public final class HistoricoVendaController {
     private final FormatadorComprovante formatador;
     private final ImpressoraComprovante impressora;
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     public HistoricoVendaController(
             VendaService vendas, UsuarioService usuarios, PagamentoRepository pagamentos,
             FormatadorComprovante formatador, ImpressoraComprovante impressora) {
@@ -58,6 +59,7 @@ public final class HistoricoVendaController {
         this.impressora = impressora;
     }
 
+    /** Configura filtros, colunas, selecao da tabela e dados iniciais. */
     @FXML
     private void initialize() {
         inicioPicker.setValue(LocalDate.now().minusMonths(1));
@@ -84,6 +86,7 @@ public final class HistoricoVendaController {
         clearDetails();
     }
 
+    /** Pesquisa vendas usando numero, periodo e operador como filtros opcionais. */
     @FXML
     private void search() {
         try {
@@ -105,6 +108,7 @@ public final class HistoricoVendaController {
         }
     }
 
+    /** Restaura os filtros para o estado padrao e executa nova consulta. */
     @FXML
     private void clearFilters() {
         numeroField.clear();
@@ -114,6 +118,7 @@ public final class HistoricoVendaController {
         search();
     }
 
+    /** Exige venda selecionada, motivo e confirmacao antes do cancelamento. */
     @FXML
     private void cancelSelected() {
         Venda selected = vendasTable.getSelectionModel().getSelectedItem();
@@ -138,6 +143,7 @@ public final class HistoricoVendaController {
         }
     }
 
+    /** Gera uma visualizacao do comprovante sem enviar para a impressora. */
     @FXML
     private void previewReceipt() {
         try {
@@ -148,16 +154,19 @@ public final class HistoricoVendaController {
         }
     }
 
+    /** Envia o comprovante original da venda selecionada para impressao. */
     @FXML
     private void printReceipt() {
         print(false);
     }
 
+    /** Imprime o comprovante identificado como segunda via. */
     @FXML
     private void printSecondCopy() {
         print(true);
     }
 
+    /** Carrega itens e pagamentos quando a selecao da tabela muda. */
     private void showDetails(Venda selected) {
         if (selected == null) {
             clearDetails();
@@ -180,6 +189,7 @@ public final class HistoricoVendaController {
         }
     }
 
+    /** Compartilha o fluxo de impressao entre original e segunda via. */
     private void print(boolean secondCopy) {
         try {
             Venda sale = detailedSelectedSale();
@@ -194,6 +204,7 @@ public final class HistoricoVendaController {
         }
     }
 
+    /** Recarrega a venda completa para garantir itens e pagamentos atuais. */
     private Venda detailedSelectedSale() {
         Venda selected = vendasTable.getSelectionModel().getSelectedItem();
         if (selected == null) throw new IllegalStateException("Selecione uma venda.");
@@ -202,6 +213,7 @@ public final class HistoricoVendaController {
         return detailed;
     }
 
+    /** Exibe o texto formatado em uma janela rolavel. */
     private boolean showReceipt(Venda sale, boolean secondCopy, boolean confirmation) {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle(secondCopy ? "Segunda via" : "Comprovante não fiscal");
@@ -226,16 +238,19 @@ public final class HistoricoVendaController {
         return false;
     }
 
+    /** Converte um item persistido em uma linha legivel para o painel de detalhes. */
     private String formatItem(ItemVenda item) {
         return item.getQuantidade() + " x " + item.getProdutoNome()
                 + " — " + CURRENCY.format(item.getSubtotal());
     }
 
+    /** Limpa os paineis quando nenhuma venda esta selecionada. */
     private void clearDetails() {
         itensArea.clear();
         pagamentosArea.clear();
     }
 
+    /** Exibe feedback local para pesquisa, impressao e cancelamento. */
     private void message(String text, boolean error) {
         mensagemLabel.setText(text == null ? "Ocorreu um erro." : text);
         mensagemLabel.setStyle(error ? "-fx-text-fill: #b91c1c;" : "-fx-text-fill: #166534;");

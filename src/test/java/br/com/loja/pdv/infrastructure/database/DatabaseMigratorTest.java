@@ -14,11 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/** Testa um componente de infraestrutura com recursos controlados pelo teste. */
 class DatabaseMigratorTest {
 
     @TempDir
     Path tempDirectory;
 
+    /** Verifica o cenario: deve criar banco vazio eexecutar migracoes. */
     @Test
     void deveCriarBancoVazioEExecutarMigracoes() throws Exception {
         Database database = database("vazio.db");
@@ -39,6 +41,7 @@ class DatabaseMigratorTest {
         }
     }
 
+    /** Verifica o cenario: deve reinicializar sem duplicar migracoes. */
     @Test
     void deveReinicializarSemDuplicarMigracoes() throws Exception {
         Database database = database("reinicializacao.db");
@@ -53,6 +56,7 @@ class DatabaseMigratorTest {
         }
     }
 
+    /** Verifica o cenario: deve aplicar restricoes check da tabela produto. */
     @Test
     void deveAplicarRestricoesCheckDaTabelaProduto() throws Exception {
         Database database = database("restricoes.db");
@@ -71,6 +75,7 @@ class DatabaseMigratorTest {
         }
     }
 
+    /** Verifica o cenario: deve manter chaves estrangeiras ativadas apos migracao. */
     @Test
     void deveManterChavesEstrangeirasAtivadasAposMigracao() throws Exception {
         Database database = database("foreign-key.db");
@@ -84,6 +89,7 @@ class DatabaseMigratorTest {
         }
     }
 
+    /** Verifica o cenario: deve recusar versao de esquema desconhecida. */
     @Test
     void deveRecusarVersaoDeEsquemaDesconhecida() throws Exception {
         Database database = database("versao-desconhecida.db");

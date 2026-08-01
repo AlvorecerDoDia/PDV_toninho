@@ -5,6 +5,7 @@
 <?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="br.com.loja.pdv.controller.BackupController" styleClass="page-shell">
+    <!-- Cabecalho explica o objetivo antes das acoes. -->
     <VBox styleClass="page-header">
         <Label text="Backup e restauração" styleClass="page-title"/>
         <Label text="Proteja os dados da loja e recupere uma cópia quando necessário."
@@ -13,6 +14,7 @@
     <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
     <Label text="Antes de restaurar, o sistema valida o arquivo e cria uma cópia de segurança do banco atual."
            wrapText="true" styleClass="info-banner"/>
+    <!-- Criacao e restauracao ficam em cartoes separados por nivel de risco. -->
     <HBox spacing="12">
         <VBox spacing="8" HBox.hgrow="ALWAYS" styleClass="card">
             <Label text="Criar uma cópia" styleClass="section-title"/>
@@ -33,6 +35,7 @@
             </HBox>
         </VBox>
     </HBox>
+    <!-- A tabela permite escolher a copia que sera restaurada. -->
     <VBox spacing="8" VBox.vgrow="ALWAYS" styleClass="card">
         <HBox alignment="CENTER_LEFT">
             <VBox spacing="1">

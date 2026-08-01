@@ -11,8 +11,10 @@
                styleClass="page-subtitle"/>
     </VBox>
     <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <!-- O painel esquerdo registra; o direito consulta o historico. -->
     <SplitPane dividerPositions="0.36" VBox.vgrow="ALWAYS">
         <items>
+            <!-- Formulario de uma nova movimentacao. -->
             <VBox spacing="10" styleClass="card">
                 <VBox spacing="1">
                     <Label text="Nova movimentação" styleClass="section-title"/>
@@ -39,6 +41,7 @@
                 <Button text="Registrar movimentação" onAction="#register"
                         styleClass="button, primary" maxWidth="Infinity"/>
             </VBox>
+            <!-- Consulta por produto e periodo. -->
             <VBox spacing="9" styleClass="card">
                 <HBox alignment="CENTER_LEFT">
                     <VBox spacing="1">

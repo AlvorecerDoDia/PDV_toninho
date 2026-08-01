@@ -6,6 +6,7 @@
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="br.com.loja.pdv.controller.LoginController"
             stylesheets="@../css/app.css" styleClass="login-root">
+    <!-- Identidade e contexto da aplicacao. -->
     <left>
         <VBox styleClass="login-brand">
             <Label text="PDV Toninho" styleClass="login-brand-title"/>
@@ -16,6 +17,7 @@
                    wrapText="true" styleClass="login-brand-text"/>
         </VBox>
     </left>
+    <!-- Cartao de credenciais e troca obrigatoria da senha inicial. -->
     <center>
         <StackPane styleClass="login-card-wrap">
             <VBox spacing="12" styleClass="card, login-card">

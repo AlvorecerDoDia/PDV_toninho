@@ -8,6 +8,7 @@ public final class ItemCarrinho {
     private int quantidade;
     private final BigDecimal precoUnitario;
 
+    /** Cria um item usando o preco atual do produto como preco capturado. */
     ItemCarrinho(Produto produto, int quantidade) {
         this.produto = produto;
         this.quantidade = quantidade;

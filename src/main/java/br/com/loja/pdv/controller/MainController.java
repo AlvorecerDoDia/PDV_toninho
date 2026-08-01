@@ -12,6 +12,7 @@ import javafx.scene.control.ToggleButton;
 
 /** Monta a navegacao permitida pelo perfil e exibe o estado da sessao. */
 public final class MainController {
+    // Abas reais ficam ocultas; o usuario navega pelos botoes laterais.
     @FXML private TabPane tabs;
     @FXML private Tab vendasTab;
     @FXML private Tab historicoTab;
@@ -38,11 +39,13 @@ public final class MainController {
     private final SessaoUsuario sessao;
     private final CaixaService caixaService;
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     public MainController(SessaoUsuario sessao, CaixaService caixaService) {
         this.sessao = sessao;
         this.caixaService = caixaService;
     }
 
+    /** Monta a navegacao conforme o perfil, seleciona a primeira area permitida e atualiza o caixa. */
     @FXML
     private void initialize() {
         Usuario usuario = sessao.atual().orElseThrow();
@@ -76,6 +79,7 @@ public final class MainController {
     @FXML private void showUsuarios() { selecionar(usuariosTab, usuariosNav); }
     @FXML private void showBackup() { selecionar(backupTab, backupNav); }
 
+    /** Remove da interface a aba e o botao que o perfil nao pode acessar. */
     private void configurarAcesso(
             Usuario usuario, Permissao permissao, Tab tab, ToggleButton navigation) {
         boolean permitido = usuario.getPerfil().permite(permissao);
@@ -87,6 +91,7 @@ public final class MainController {
     }
 
 
+    /** Oculta titulos de grupos que ficaram sem nenhuma opcao visivel. */
     private void atualizarSecoesDaNavegacao() {
         definirVisibilidade(consultasSection,
                 historicoNav.isManaged() || relatoriosNav.isManaged());
@@ -95,17 +100,20 @@ public final class MainController {
         definirVisibilidade(sistemaSection, backupNav.isManaged());
     }
 
+    /** Mantem visible e managed sincronizados para nao deixar espacos vazios. */
     private void definirVisibilidade(Label label, boolean visivel) {
         label.setVisible(visivel);
         label.setManaged(visivel);
     }
 
+    /** Seleciona uma aba pelo menu lateral e mantem o botao correspondente ativo. */
     private void selecionar(Tab tab, ToggleButton navigation) {
         if (!tabs.getTabs().contains(tab)) return;
         tabs.getSelectionModel().select(tab);
         navigation.setSelected(true);
     }
 
+    /** Escolhe uma tela valida mesmo para perfis com poucas permissoes. */
     private void selecionarPrimeiraAreaDisponivel() {
         if (tabs.getTabs().isEmpty()) return;
         Tab selecionada = tabs.getSelectionModel().getSelectedItem();
@@ -116,6 +124,7 @@ public final class MainController {
         sincronizarNavegacao(selecionada);
     }
 
+    /** Atualiza o menu quando a aba e alterada por codigo ou teclado. */
     private void sincronizarNavegacao(Tab tab) {
         if (tab == vendasTab) vendasNav.setSelected(true);
         else if (tab == caixaTab) caixaNav.setSelected(true);
@@ -127,6 +136,7 @@ public final class MainController {
         else if (tab == backupTab) backupNav.setSelected(true);
     }
 
+    /** Consulta o caixa atual e atualiza o texto e a classe visual do indicador. */
     private void atualizarIndicadorCaixa() {
         try {
             boolean aberto = caixaService.buscarCaixaAtual().isPresent();

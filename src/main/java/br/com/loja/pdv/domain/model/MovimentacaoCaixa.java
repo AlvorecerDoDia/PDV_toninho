@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 /** Registro imutavel apos persistencia de uma entrada ou saida do caixa. */
 public class MovimentacaoCaixa {
+    // Cada instancia representa um lancamento financeiro imutavel.
     private Long id;
     private long caixaId;
     private long usuarioId;

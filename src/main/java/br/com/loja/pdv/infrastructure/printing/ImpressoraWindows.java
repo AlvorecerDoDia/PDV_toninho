@@ -10,10 +10,12 @@ import java.nio.charset.StandardCharsets;
 public final class ImpressoraWindows implements ImpressoraComprovante {
     private final FormatadorComprovante formatador;
 
+    /** Recebe o formatador usado antes de enviar os dados para impressao. */
     public ImpressoraWindows(FormatadorComprovante formatador) {
         this.formatador = formatador;
     }
 
+    /** Formata o comprovante e o envia para a impressora padrao do sistema. */
     @Override
     public void imprimir(Venda venda, boolean segundaVia) {
         PrintService printer = PrintServiceLookup.lookupDefaultPrintService();

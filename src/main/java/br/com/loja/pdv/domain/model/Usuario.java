@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 /** Usuario autenticavel com perfil, status e hash de senha. */
 public class Usuario {
+    // A senha original nunca aparece aqui; somente o hash derivado e persistido.
     private Long id;
     private String nome;
     private String login;

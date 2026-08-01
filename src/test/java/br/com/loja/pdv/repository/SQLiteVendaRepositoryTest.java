@@ -29,6 +29,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Testa a persistencia SQLite usando um banco temporario e isolado. */
 class SQLiteVendaRepositoryTest {
     @TempDir Path tempDirectory;
     private Database database;
@@ -69,6 +70,7 @@ class SQLiteVendaRepositoryTest {
         product = products.buscarPorId(product.getId()).orElseThrow();
     }
 
+    /** Verifica o cenario: deve finalizar venda em dinheiro calcular troco eatualizar caixa. */
     @Test
     void deveFinalizarVendaEmDinheiroCalcularTrocoEAtualizarCaixa() {
         var cash = cashService.abrir(BigDecimal.ZERO);
@@ -84,6 +86,7 @@ class SQLiteVendaRepositoryTest {
         assertTrue(cart.isVazio());
     }
 
+    /** Verifica o cenario: deve finalizar venda pix sem movimentar dinheiro do caixa. */
     @Test
     void deveFinalizarVendaPixSemMovimentarDinheiroDoCaixa() {
         var cash = cashService.abrir(new BigDecimal("10.00"));
@@ -94,6 +97,7 @@ class SQLiteVendaRepositoryTest {
                 cashRegisters.buscarDinheiroEsperado(cash.getId()));
     }
 
+    /** Verifica o cenario: deve finalizar pagamento combinado com troco somente do dinheiro. */
     @Test
     void deveFinalizarPagamentoCombinadoComTrocoSomenteDoDinheiro() {
         var cash = cashService.abrir(BigDecimal.ZERO);
@@ -105,6 +109,7 @@ class SQLiteVendaRepositoryTest {
                 cashRegisters.buscarDinheiroEsperado(cash.getId()));
     }
 
+    /** Verifica o cenario: deve persistir itens pagamentos ecusto historico. */
     @Test
     void devePersistirItensPagamentosECustoHistorico() {
         cashService.abrir(BigDecimal.ZERO);
@@ -123,6 +128,7 @@ class SQLiteVendaRepositoryTest {
                 persistedPayments.getFirst().getForma());
     }
 
+    /** Verifica o cenario: deve auditar desconto na mesma transacao da venda. */
     @Test
     void deveAuditarDescontoNaMesmaTransacaoDaVenda() throws Exception {
         cashService.abrir(BigDecimal.ZERO);
@@ -143,6 +149,7 @@ class SQLiteVendaRepositoryTest {
         }
     }
 
+    /** Verifica o cenario: deve impedir venda sem caixa aberto. */
     @Test
     void deveImpedirVendaSemCaixaAberto() {
         CarrinhoVenda cart = cart(1);
@@ -153,6 +160,7 @@ class SQLiteVendaRepositoryTest {
         assertFalse(cart.isVazio());
     }
 
+    /** Verifica o cenario: deve impedir venda vazia. */
     @Test
     void deveImpedirVendaVazia() {
         cashService.abrir(BigDecimal.ZERO);
@@ -160,6 +168,7 @@ class SQLiteVendaRepositoryTest {
                 saleService.finalizar(new CarrinhoVenda(), List.of()));
     }
 
+    /** Verifica o cenario: deve verificar estoque novamente na finalizacao. */
     @Test
     void deveVerificarEstoqueNovamenteNaFinalizacao() {
         cashService.abrir(BigDecimal.ZERO);
@@ -173,6 +182,7 @@ class SQLiteVendaRepositoryTest {
         assertFalse(cart.isVazio());
     }
 
+    /** Verifica o cenario: deve fazer rollback total quando pagamento falhar. */
     @Test
     void deveFazerRollbackTotalQuandoPagamentoFalhar() throws Exception {
         var cash = cashService.abrir(BigDecimal.ZERO);
@@ -197,6 +207,7 @@ class SQLiteVendaRepositoryTest {
         assertFalse(cart.isVazio());
     }
 
+    /** Verifica o cenario: deve consultar venda por numero periodo eoperador. */
     @Test
     void deveConsultarVendaPorNumeroPeriodoEOperador() {
         cashService.abrir(BigDecimal.ZERO);
@@ -211,6 +222,7 @@ class SQLiteVendaRepositoryTest {
                 LocalDate.now(), LocalDate.now(), manager.getId() + 999).isEmpty());
     }
 
+    /** Verifica o cenario: deve cancelar venda devolver estoque estornar caixa eauditar. */
     @Test
     void deveCancelarVendaDevolverEstoqueEstornarCaixaEAuditar() throws Exception {
         var cash = cashService.abrir(BigDecimal.ZERO);
@@ -230,6 +242,7 @@ class SQLiteVendaRepositoryTest {
                 product.getId(), LocalDate.now(), LocalDate.now()).size());
     }
 
+    /** Verifica o cenario: deve impedir cancelamento duplicado emotivo vazio. */
     @Test
     void deveImpedirCancelamentoDuplicadoEMotivoVazio() {
         cashService.abrir(BigDecimal.ZERO);
@@ -242,6 +255,7 @@ class SQLiteVendaRepositoryTest {
                 saleService.cancelar(sale.getId(), "Nova tentativa"));
     }
 
+    /** Verifica o cenario: deve bloquear cancelamento sem permissao. */
     @Test
     void deveBloquearCancelamentoSemPermissao() {
         cashService.abrir(BigDecimal.ZERO);
@@ -258,6 +272,7 @@ class SQLiteVendaRepositoryTest {
                 operatorSales.cancelar(sale.getId(), "Sem permissão"));
     }
 
+    /** Verifica o cenario: deve recalcular diferenca ao cancelar venda de caixa fechado. */
     @Test
     void deveRecalcularDiferencaAoCancelarVendaDeCaixaFechado() {
         var cash = cashService.abrir(BigDecimal.ZERO);
@@ -273,6 +288,7 @@ class SQLiteVendaRepositoryTest {
         assertEquals(new BigDecimal("100.00"), closed.getDiferenca());
     }
 
+    /** Verifica o cenario: deve fazer rollback do cancelamento quando auditoria falhar. */
     @Test
     void deveFazerRollbackDoCancelamentoQuandoAuditoriaFalhar() throws Exception {
         var cash = cashService.abrir(BigDecimal.ZERO);

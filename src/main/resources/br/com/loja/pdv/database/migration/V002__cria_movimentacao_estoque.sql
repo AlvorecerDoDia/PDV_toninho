@@ -1,4 +1,5 @@
 -- Historico imutavel de entradas, saidas, perdas, ajustes e devolucoes.
+-- Cada migracao e executada uma unica vez e registrada em schema_version.
 CREATE TABLE movimentacao_estoque (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     produto_id INTEGER NOT NULL,

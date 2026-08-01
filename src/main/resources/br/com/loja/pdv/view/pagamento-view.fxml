@@ -20,6 +20,7 @@
         <Button text="Adicionar" onAction="#addPayment" styleClass="button, primary"
                 GridPane.rowIndex="1" GridPane.columnIndex="2"/>
     </GridPane>
+    <!-- Parcelas adicionadas podem ser conferidas e removidas. -->
     <TableView fx:id="pagamentosTable" VBox.vgrow="ALWAYS" prefHeight="130">
         <placeholder><Label text="Nenhum pagamento informado."/></placeholder>
         <columns>

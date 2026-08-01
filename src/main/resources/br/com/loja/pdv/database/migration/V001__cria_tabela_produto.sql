@@ -1,4 +1,5 @@
 -- Estrutura principal do catalogo e controle do saldo atual.
+-- Cada migracao e executada uma unica vez e registrada em schema_version.
 CREATE TABLE IF NOT EXISTS produto (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     codigo_barras TEXT UNIQUE,

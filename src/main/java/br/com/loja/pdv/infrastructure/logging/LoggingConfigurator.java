@@ -7,8 +7,10 @@ import java.util.logging.*;
 
 /** Instala os handlers de console e arquivo rotativo do java.util.logging. */
 public final class LoggingConfigurator {
+    /** Impede a criacao de instancias de uma classe formada apenas por funcoes utilitarias. */
     private LoggingConfigurator() {}
 
+    /** Cria a pasta de logs e instala saidas de console e arquivo rotativo. */
     public static void configurar(Path diretorio) {
         try {
             Files.createDirectories(diretorio);

@@ -22,10 +22,12 @@ public final class BackupController {
     @FXML private TableColumn<Path, String> dataColumn;
     private final BackupService service;
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     public BackupController(BackupService service) {
         this.service = service;
     }
 
+    /** Prepara as colunas da tabela e carrega a lista inicial de backups. */
     @FXML
     private void initialize() {
         arquivoColumn.setCellValueFactory(row ->
@@ -42,6 +44,7 @@ public final class BackupController {
         refresh();
     }
 
+    /** Solicita um backup manual e informa o arquivo criado ao usuario. */
     @FXML
     private void createBackup() {
         try {
@@ -53,6 +56,7 @@ public final class BackupController {
         }
     }
 
+    /** Valida a selecao da tabela antes de iniciar uma restauracao. */
     @FXML
     private void restoreSelected() {
         Path selected = tabela.getSelectionModel().getSelectedItem();
@@ -63,6 +67,7 @@ public final class BackupController {
         restore(selected);
     }
 
+    /** Abre o seletor de arquivos para restaurar um banco externo. */
     @FXML
     private void chooseAndRestore() {
         FileChooser chooser = new FileChooser();
@@ -73,6 +78,7 @@ public final class BackupController {
         if (file != null) restore(file.toPath());
     }
 
+    /** Recarrega a tabela a partir dos arquivos existentes na pasta de backups. */
     @FXML
     private void refresh() {
         try {
@@ -82,6 +88,7 @@ public final class BackupController {
         }
     }
 
+    /** Confirma a operacao destrutiva e delega a restauracao ao servico. */
     private void restore(Path file) {
         Alert confirmation = new Alert(
                 Alert.AlertType.CONFIRMATION,
@@ -98,6 +105,7 @@ public final class BackupController {
         }
     }
 
+    /** Mostra feedback de sucesso ou erro sem abrir uma janela adicional. */
     private void message(String text, boolean error) {
         mensagemLabel.setText(text == null ? "Ocorreu um erro." : text);
         mensagemLabel.setStyle(error ? "-fx-text-fill: #b91c1c;" : "-fx-text-fill: #166534;");

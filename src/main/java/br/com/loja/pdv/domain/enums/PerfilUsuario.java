@@ -18,10 +18,12 @@ public enum PerfilUsuario {
 
     private final Set<Permissao> permissions;
 
+    /** Associa ao perfil o conjunto imutavel de permissoes concedidas. */
     PerfilUsuario(Set<Permissao> permissions) {
         this.permissions = Set.copyOf(permissions);
     }
 
+    /** Verifica se este perfil contem a permissao solicitada. */
     public boolean permite(Permissao permissao) {
         return permissions.contains(permissao);
     }

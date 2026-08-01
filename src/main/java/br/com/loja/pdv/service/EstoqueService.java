@@ -22,11 +22,13 @@ public final class EstoqueService {
     private final SessaoUsuario sessao;
     private final AuditoriaService auditoria;
 
+    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public EstoqueService(
             EstoqueRepository estoqueRepository, ProdutoRepository produtoRepository) {
         this(estoqueRepository, produtoRepository, null, null, Clock.systemDefaultZone());
     }
 
+    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public EstoqueService(
             EstoqueRepository estoqueRepository, ProdutoRepository produtoRepository,
             SessaoUsuario sessao, AuditoriaService auditoria) {
@@ -48,6 +50,7 @@ public final class EstoqueService {
         this.clock = clock;
     }
 
+    /** Valida permissao, produto, quantidade e motivo antes de alterar o saldo. */
     public MovimentacaoEstoque registrar(
             long produtoId, TipoMovimentacaoEstoque tipo, int quantidade, String motivo) {
         Produto produto = produtoRepository.buscarPorId(produtoId)
@@ -84,10 +87,12 @@ public final class EstoqueService {
         return registrada;
     }
 
+    /** Consulta o saldo atual do produto. */
     public int buscarSaldo(long produtoId) {
         return estoqueRepository.buscarSaldo(produtoId);
     }
 
+    /** Consulta o historico de movimentacoes do produto no periodo. */
     public List<MovimentacaoEstoque> listar(
             long produtoId, LocalDate inicio, LocalDate fim) {
         if (inicio == null || fim == null || inicio.isAfter(fim)) {

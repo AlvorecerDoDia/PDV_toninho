@@ -9,6 +9,7 @@ import java.util.List;
 
 /** Agregado persistido que reune cabecalho, itens e pagamentos da venda. */
 public class Venda {
+    // Cabecalho e totais que identificam o estado persistido da venda.
     private Long id;
     private String numero;
     private long operadorId;

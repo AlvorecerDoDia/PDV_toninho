@@ -22,10 +22,12 @@ import java.util.Optional;
 public final class SQLiteCaixaRepository implements CaixaRepository {
     private final Database database;
 
+    /** Recebe a configuracao de banco usada para abrir conexoes em cada operacao. */
     public SQLiteCaixaRepository(Database database) {
         this.database = database;
     }
 
+    /** Insere o caixa e sua movimentacao de abertura na mesma transacao. */
     @Override
     public Caixa abrir(Caixa caixa, MovimentacaoCaixa abertura) {
         try (Connection connection = database.getConnection()) {
@@ -49,11 +51,13 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         }
     }
 
+    /** Consulta um caixa pelo identificador. */
     @Override
     public Optional<Caixa> buscarPorId(long id) {
         return findOne("SELECT * FROM caixa WHERE id = ?", id);
     }
 
+    /** Localiza o caixa aberto do operador informado. */
     @Override
     public Optional<Caixa> buscarAbertoPorUsuario(long usuarioId) {
         return findOne("""
@@ -63,6 +67,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
                 """, usuarioId);
     }
 
+    /** Insere uma movimentacao somente se o caixa ainda estiver aberto. */
     @Override
     public MovimentacaoCaixa registrar(MovimentacaoCaixa movimentacao) {
         try (Connection connection = database.getConnection()) {
@@ -87,6 +92,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         }
     }
 
+    /** Atualiza os valores finais e o status dentro de uma transacao. */
     @Override
     public Caixa fechar(long caixaId, BigDecimal valorContado, LocalDateTime fechadoEm) {
         try (Connection connection = database.getConnection()) {
@@ -119,6 +125,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         }
     }
 
+    /** Calcula no banco o dinheiro esperado a partir das movimentacoes. */
     @Override
     public BigDecimal buscarDinheiroEsperado(long caixaId) {
         try (Connection connection = database.getConnection()) {
@@ -129,6 +136,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         }
     }
 
+    /** Retorna o historico financeiro do caixa em ordem cronologica. */
     @Override
     public List<MovimentacaoCaixa> listarMovimentacoes(long caixaId) {
         String sql = """
@@ -148,6 +156,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         }
     }
 
+    /** Executa uma consulta de caixa que pode nao retornar resultado. */
     private Optional<Caixa> findOne(String sql, long parameter) {
         try (Connection connection = database.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -160,6 +169,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         }
     }
 
+    /** Insere o cabecalho do caixa e recupera sua chave gerada. */
     private void insertCashRegister(Connection connection, Caixa caixa) throws SQLException {
         String sql = """
                 INSERT INTO caixa (usuario_id, status, valor_abertura_centavos, aberto_em)
@@ -178,6 +188,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         }
     }
 
+    /** Persiste uma movimentacao financeira associada ao caixa. */
     private void insertMovement(Connection connection, MovimentacaoCaixa movement)
             throws SQLException {
         String sql = """
@@ -200,6 +211,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         }
     }
 
+    /** Bloqueia alteracoes em caixa fechado ou inexistente. */
     private void ensureOpen(Connection connection, long caixaId) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(
                 "SELECT status FROM caixa WHERE id = ?")) {
@@ -213,6 +225,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         }
     }
 
+    /** Confirma que o caixa informado existe antes de consultar agregados. */
     private void ensureExists(Connection connection, long caixaId) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(
                 "SELECT 1 FROM caixa WHERE id = ?")) {
@@ -223,6 +236,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         }
     }
 
+    /** Soma no SQL apenas os tipos que afetam o dinheiro fisico. */
     private BigDecimal expected(Connection connection, long caixaId) throws SQLException {
         String sql = """
                 SELECT COALESCE(SUM(CASE
@@ -239,6 +253,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         }
     }
 
+    /** Converte a linha JDBC em Caixa. */
     private Caixa mapCashRegister(ResultSet resultSet) throws SQLException {
         Caixa caixa = new Caixa();
         caixa.setId(resultSet.getLong("id"));
@@ -255,6 +270,7 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         return caixa;
     }
 
+    /** Converte a linha JDBC em MovimentacaoCaixa. */
     private MovimentacaoCaixa mapMovement(ResultSet resultSet) throws SQLException {
         MovimentacaoCaixa movement = new MovimentacaoCaixa();
         movement.setId(resultSet.getLong("id"));
@@ -267,22 +283,26 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
         return movement;
     }
 
+    /** Le centavos opcionais e converte para BigDecimal. */
     private BigDecimal nullableMoney(ResultSet resultSet, String column) throws SQLException {
         long cents = resultSet.getLong(column);
         return resultSet.wasNull() ? null : MoneyUtils.fromCents(cents);
     }
 
+    /** Traduz restricoes conhecidas do SQLite em excecoes de negocio. */
     private RuntimeException translate(String message, Exception exception) {
         if (exception instanceof RuntimeException runtimeException) return runtimeException;
         return new DatabaseException(message, exception);
     }
 
+    /** Identifica a violacao que indica caixa ja aberto para o operador. */
     private boolean isUniqueConstraint(Exception exception) {
         return exception instanceof SQLException sql
                 && sql.getMessage() != null
                 && sql.getMessage().contains("UNIQUE constraint failed");
     }
 
+    /** Desfaz a transacao e preserva falhas ocorridas durante o rollback. */
     private void rollback(Connection connection, Exception cause) {
         try {
             connection.rollback();

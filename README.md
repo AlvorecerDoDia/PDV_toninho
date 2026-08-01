@@ -169,13 +169,19 @@ Os FXML, CSS e scripts de migração ficam em
 `src/main/resources/br/com/loja/pdv`. Os testes unitários, de persistência,
 FXML e de fluxo completo ficam em `src/test/java/br/com/loja/pdv`.
 
+### Guia para estudar o projeto
+
+O arquivo [`docs/GUIA_DO_CODIGO.md`](docs/GUIA_DO_CODIGO.md) explica a arquitetura, os principais fluxos, as transações e uma ordem recomendada de leitura.
+
 ### Como o código está documentado
 
 Cada pacote possui um `package-info.java` explicando sua responsabilidade.
-Classes e interfaces têm documentação resumida, enquanto comentários internos
-ficam concentrados nas regras menos óbvias, como transações de venda, estoque e
-caixa, migrações, senhas e restauração de backup. Os arquivos FXML, CSS, SQL e o
-script de empacotamento também identificam o propósito de suas seções.
+Classes, construtores e métodos relevantes possuem documentação didática. Os
+comentários internos mostram etapas de transações, validações, segurança,
+estoque, caixa, migrações e restauração de backup. Os testes descrevem o cenário
+verificado, e os arquivos FXML, CSS, SQL, Maven e PowerShell identificam o
+propósito de suas seções. Para manter compatibilidade, comentários de código
+usam apenas caracteres sem acentos; textos da interface continuam acentuados.
 
 ## Interface redesenhada
 

@@ -48,6 +48,7 @@ public final class RelatorioController {
     private final ExportadorCsv exporter;
     private List<LinhaRelatorio> currentRows = List.of();
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     public RelatorioController(
             RelatorioService service, UsuarioService usuarios,
             ProdutoService produtos, ExportadorCsv exporter) {
@@ -57,6 +58,7 @@ public final class RelatorioController {
         this.exporter = exporter;
     }
 
+    /** Carrega tipos, filtros, conversores e colunas da tela de relatorios. */
     @FXML
     private void initialize() {
         tipoCombo.getItems().setAll(TipoRelatorio.values());
@@ -84,6 +86,7 @@ public final class RelatorioController {
                         ? "" : row.getValue().data().format(DATE_TIME)));
     }
 
+    /** Monta o filtro atual e solicita as linhas consolidadas ao servico. */
     @FXML
     private void generate() {
         try {
@@ -95,6 +98,7 @@ public final class RelatorioController {
         }
     }
 
+    /** Pede um destino ao usuario e exporta o resultado exibido para CSV. */
     @FXML
     private void exportCsv() {
         if (currentRows.isEmpty()) {
@@ -117,6 +121,7 @@ public final class RelatorioController {
         }
     }
 
+    /** Restaura datas e selecoes para os valores iniciais. */
     @FXML
     private void clearFilters() {
         operadorCombo.getSelectionModel().clearSelection();
@@ -126,6 +131,7 @@ public final class RelatorioController {
         fimPicker.setValue(LocalDate.now());
     }
 
+    /** Converte os componentes da tela em um objeto de filtro imutavel. */
     private FiltroRelatorio filter() {
         Usuario user = operadorCombo.getValue();
         Produto product = produtoCombo.getValue();
@@ -135,6 +141,7 @@ public final class RelatorioController {
                 product == null ? null : product.getId());
     }
 
+    /** Cria um conversor para mostrar objetos de dominio por um texto amigavel. */
     private <T> StringConverter<T> converter(java.util.function.Function<T, String> label) {
         return new StringConverter<>() {
             @Override public String toString(T value) {
@@ -144,14 +151,17 @@ public final class RelatorioController {
         };
     }
 
+    /** Substitui valores nulos por texto vazio nas celulas. */
     private String text(String value) {
         return value == null ? "" : value;
     }
 
+    /** Formata valores monetarios de acordo com o padrao brasileiro. */
     private String money(java.math.BigDecimal value) {
         return value == null ? "" : CURRENCY.format(value);
     }
 
+    /** Exibe feedback de geracao e exportacao junto aos filtros. */
     private void message(String text, boolean error) {
         mensagemLabel.setText(text == null ? "Ocorreu um erro." : text);
         mensagemLabel.setStyle(error ? "-fx-text-fill: #b91c1c;" : "-fx-text-fill: #166534;");

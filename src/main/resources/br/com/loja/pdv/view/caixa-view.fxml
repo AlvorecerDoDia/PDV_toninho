@@ -5,6 +5,7 @@
 <?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="br.com.loja.pdv.controller.CaixaController" styleClass="page-shell">
+    <!-- Estado atual do caixa permanece visivel no topo. -->
     <HBox alignment="CENTER_LEFT">
         <VBox styleClass="page-header">
             <Label text="Caixa" styleClass="page-title"/>
@@ -15,6 +16,7 @@
         <Label fx:id="statusLabel" styleClass="balance-chip"/>
     </HBox>
     <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <!-- Abertura e fechamento sao fluxos opostos e ficam visualmente separados. -->
     <HBox spacing="12">
         <VBox spacing="9" HBox.hgrow="ALWAYS" styleClass="card">
             <Label text="Início do turno" styleClass="section-title"/>
@@ -34,6 +36,7 @@
             </HBox>
         </VBox>
     </HBox>
+    <!-- Suprimento e sangria alteram apenas o dinheiro fisico do caixa. -->
     <VBox spacing="9" styleClass="card">
         <HBox alignment="CENTER_LEFT">
             <VBox spacing="1">
@@ -50,6 +53,7 @@
             <Button text="Registrar sangria" onAction="#withdraw" styleClass="button, danger"/>
         </HBox>
     </VBox>
+    <!-- Historico usado para conferencia do turno atual. -->
     <VBox spacing="8" VBox.vgrow="ALWAYS" styleClass="card">
         <Label text="Movimentações do caixa atual" styleClass="section-title"/>
         <TableView fx:id="movimentacoesTable" VBox.vgrow="ALWAYS">

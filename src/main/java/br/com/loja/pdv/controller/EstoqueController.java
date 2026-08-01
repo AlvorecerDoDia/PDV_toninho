@@ -33,11 +33,13 @@ public final class EstoqueController {
     private final EstoqueService estoqueService;
     private final ProdutoService produtoService;
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     public EstoqueController(EstoqueService estoqueService, ProdutoService produtoService) {
         this.estoqueService = estoqueService;
         this.produtoService = produtoService;
     }
 
+    /** Configura combos, tabela, filtros de data e listeners da tela de estoque. */
     @FXML
     private void initialize() {
         UiFormatters.inteiro(quantidadeField);
@@ -69,6 +71,7 @@ public final class EstoqueController {
         produtoCombo.valueProperty().addListener((observable, oldValue, value) -> refresh());
     }
 
+    /** Monta uma movimentacao a partir do formulario e a envia ao servico. */
     @FXML
     private void register() {
         Produto produto = produtoCombo.getValue();
@@ -89,6 +92,7 @@ public final class EstoqueController {
         }
     }
 
+    /** Atualiza o saldo selecionado e consulta o historico no periodo informado. */
     @FXML
     private void refresh() {
         Produto produto = produtoCombo.getValue();
@@ -109,6 +113,7 @@ public final class EstoqueController {
         }
     }
 
+    /** Apresenta validacoes e confirmacoes junto ao formulario. */
     private void message(String text, boolean error) {
         mensagemLabel.setText(text == null ? "Ocorreu um erro." : text);
         mensagemLabel.setStyle(error ? "-fx-text-fill: #b91c1c;" : "-fx-text-fill: #166534;");

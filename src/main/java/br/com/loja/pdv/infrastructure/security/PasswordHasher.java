@@ -16,6 +16,7 @@ public final class PasswordHasher {
     private static final int SALT_LENGTH = 16;
     private final SecureRandom random = new SecureRandom();
 
+    /** Gera salt aleatorio e deriva um hash PBKDF2 para armazenamento. */
     public String hash(char[] password) {
         // Cada senha recebe salt exclusivo; o formato salvo inclui os parametros
         // necessarios para futuras verificacoes sem armazenar a senha original.
@@ -27,6 +28,7 @@ public final class PasswordHasher {
                 + Base64.getEncoder().encodeToString(hash);
     }
 
+    /** Recalcula o hash com o salt armazenado e compara em tempo constante. */
     public boolean verify(char[] password, String encoded) {
         if (encoded == null) return false;
         String[] parts = encoded.split("\\$");
@@ -41,6 +43,7 @@ public final class PasswordHasher {
         }
     }
 
+    /** Executa a derivacao PBKDF2 com os parametros de seguranca definidos. */
     private byte[] derive(char[] password, byte[] salt, int iterations) {
         PBEKeySpec specification = new PBEKeySpec(password, salt, iterations, KEY_LENGTH);
         try {

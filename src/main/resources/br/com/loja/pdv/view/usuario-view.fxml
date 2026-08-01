@@ -11,8 +11,10 @@
                styleClass="page-subtitle"/>
     </VBox>
     <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <!-- Formulario de acesso a esquerda e consulta a direita. -->
     <SplitPane dividerPositions="0.38" VBox.vgrow="ALWAYS">
         <items>
+            <!-- Dados pessoais, credencial, perfil e estado da conta. -->
             <VBox spacing="10" styleClass="card">
                 <VBox spacing="1">
                     <Label text="Dados de acesso" styleClass="section-title"/>
@@ -41,6 +43,7 @@
                     <Button text="Limpar formulário" onAction="#clear" styleClass="button, ghost"/>
                 </HBox>
             </VBox>
+            <!-- Lista usada para selecionar uma conta existente. -->
             <VBox spacing="8" styleClass="card">
                 <VBox spacing="1">
                     <Label text="Usuários cadastrados" styleClass="section-title"/>

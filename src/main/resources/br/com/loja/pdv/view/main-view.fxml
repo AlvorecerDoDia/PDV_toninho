@@ -9,6 +9,7 @@
     <fx:define>
         <ToggleGroup fx:id="navGroup"/>
     </fx:define>
+    <!-- Barra persistente mostra contexto, caixa e usuario autenticado. -->
     <top>
         <HBox styleClass="app-bar">
             <VBox styleClass="app-brand-block">
@@ -20,6 +21,7 @@
             <Label fx:id="usuarioLabel" styleClass="status-chip, session-indicator"/>
         </HBox>
     </top>
+    <!-- Menu lateral apresenta apenas opcoes permitidas pelo perfil. -->
     <left>
         <VBox styleClass="nav-panel">
             <Label text="OPERAÇÃO" styleClass="nav-section"/>
@@ -59,6 +61,7 @@
             </Label>
         </VBox>
     </left>
+    <!-- As abas sao usadas como conteiner; seus cabecalhos ficam ocultos pelo CSS. -->
     <center>
         <TabPane fx:id="tabs" tabClosingPolicy="UNAVAILABLE" styleClass="main-tabs">
             <tabs>

@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+/** Testa a persistencia SQLite usando um banco temporario e isolado. */
 class SQLiteEstoqueRepositoryTest {
     @TempDir Path tempDirectory;
     private Database database;
@@ -43,6 +44,7 @@ class SQLiteEstoqueRepositoryTest {
         service = new EstoqueService(new SQLiteEstoqueRepository(database), products);
     }
 
+    /** Verifica o cenario: deve registrar entrada eajuste positivo. */
     @Test
     void deveRegistrarEntradaEAjustePositivo() {
         service.registrar(produto.getId(), TipoMovimentacaoEstoque.ENTRADA, 10, null);
@@ -50,6 +52,7 @@ class SQLiteEstoqueRepositoryTest {
         assertEquals(13, service.buscarSaldo(produto.getId()));
     }
 
+    /** Verifica o cenario: deve registrar ajuste negativo eperda. */
     @Test
     void deveRegistrarAjusteNegativoEPerda() {
         service.registrar(produto.getId(), TipoMovimentacaoEstoque.ENTRADA, 10, null);
@@ -58,6 +61,7 @@ class SQLiteEstoqueRepositoryTest {
         assertEquals(7, service.buscarSaldo(produto.getId()));
     }
 
+    /** Verifica o cenario: deve impedir estoque negativo. */
     @Test
     void deveImpedirEstoqueNegativo() {
         assertThrows(ValidationException.class, () ->
@@ -65,12 +69,14 @@ class SQLiteEstoqueRepositoryTest {
         assertEquals(0, service.buscarSaldo(produto.getId()));
     }
 
+    /** Verifica o cenario: deve exigir motivo para ajustes eperda. */
     @Test
     void deveExigirMotivoParaAjustesEPerda() {
         assertThrows(ValidationException.class, () -> service.registrar(
                 produto.getId(), TipoMovimentacaoEstoque.AJUSTE_POSITIVO, 1, " "));
     }
 
+    /** Verifica o cenario: deve listar historico com saldos anterior eposterior. */
     @Test
     void deveListarHistoricoComSaldosAnteriorEPosterior() {
         service.registrar(produto.getId(), TipoMovimentacaoEstoque.ENTRADA, 5, null);
@@ -80,6 +86,7 @@ class SQLiteEstoqueRepositoryTest {
         assertEquals(5, history.getFirst().getQuantidadePosterior());
     }
 
+    /** Verifica o cenario: deve fazer rollback quando historico falhar. */
     @Test
     void deveFazerRollbackQuandoHistoricoFalhar() throws Exception {
         try (Connection connection = database.getConnection();
@@ -94,6 +101,7 @@ class SQLiteEstoqueRepositoryTest {
         assertEquals(0, service.buscarSaldo(produto.getId()));
     }
 
+    /** Verifica o cenario: deve impedir movimentacao de produto inativo. */
     @Test
     void deveImpedirMovimentacaoDeProdutoInativo() {
         new ProdutoService(new SQLiteProdutoRepository(database)).desativar(produto.getId());

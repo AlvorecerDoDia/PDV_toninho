@@ -52,6 +52,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/** Testa a integracao entre interface, servicos e banco em um fluxo proximo do uso real. */
 class ProdutoFxmlTest {
 
     @TempDir
@@ -68,6 +69,7 @@ class ProdutoFxmlTest {
         assertTrue(initialized.await(5, TimeUnit.SECONDS));
     }
 
+    /** Verifica o cenario: deve carregar tela de produtos sem erro. */
     @Test
     void deveCarregarTelaDeProdutosSemErro() throws InterruptedException {
         Database database = new Database(tempDirectory.resolve("fxml.db"));

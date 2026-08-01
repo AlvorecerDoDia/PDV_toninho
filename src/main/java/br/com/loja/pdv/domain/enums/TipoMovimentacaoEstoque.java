@@ -12,15 +12,18 @@ public enum TipoMovimentacaoEstoque {
     private final int direction;
     private final boolean reasonRequired;
 
+    /** Define o efeito no saldo e se a justificativa e obrigatoria. */
     TipoMovimentacaoEstoque(int direction, boolean reasonRequired) {
         this.direction = direction;
         this.reasonRequired = reasonRequired;
     }
 
+    /** Calcula o saldo posterior usando o efeito positivo ou negativo do tipo. */
     public int apply(int current, int quantity) {
         return Math.addExact(current, Math.multiplyExact(direction, quantity));
     }
 
+    /** Informa se o tipo exige justificativa do operador. */
     public boolean isReasonRequired() {
         return reasonRequired;
     }

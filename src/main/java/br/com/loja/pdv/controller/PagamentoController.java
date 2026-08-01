@@ -38,6 +38,7 @@ public final class PagamentoController {
     private final List<Pagamento> currentPayments = new ArrayList<>();
     private Consumer<String> onSaleFinalized;
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     public PagamentoController(
             PagamentoService pagamentos, VendaService vendas, CarrinhoVenda carrinho) {
         this.pagamentos = pagamentos;
@@ -45,6 +46,7 @@ public final class PagamentoController {
         this.carrinho = carrinho;
     }
 
+    /** Configura formas, tabela e valores iniciais do painel de recebimento. */
     @FXML
     private void initialize() {
         UiFormatters.moeda(valorField);
@@ -57,6 +59,7 @@ public final class PagamentoController {
         refreshTotals();
     }
 
+    /** Adiciona uma parcela de pagamento e recalcula restante e troco. */
     @FXML
     private void addPayment() {
         try {
@@ -71,6 +74,7 @@ public final class PagamentoController {
         }
     }
 
+    /** Remove a parcela selecionada e atualiza os totais. */
     @FXML
     private void removePayment() {
         Pagamento selected = pagamentosTable.getSelectionModel().getSelectedItem();
@@ -84,6 +88,7 @@ public final class PagamentoController {
         message("Pagamento removido.", false);
     }
 
+    /** Valida os pagamentos, finaliza a venda e avisa a tela do carrinho. */
     @FXML
     private void finishSale() {
         try {
@@ -100,14 +105,17 @@ public final class PagamentoController {
         }
     }
 
+    /** Registra a acao executada depois que uma venda for concluida. */
     public void setOnSaleFinalized(Consumer<String> callback) {
         onSaleFinalized = callback;
     }
 
+    /** Move o foco para o campo de valor ao abrir a etapa de pagamento. */
     public void focus() {
         valorField.requestFocus();
     }
 
+    /** Recalcula os indicadores de total recebido, restante e troco. */
     public void refreshTotals() {
         BigDecimal received = pagamentos.totalRecebido(currentPayments);
         BigDecimal remaining = carrinho.getTotal().subtract(received).max(BigDecimal.ZERO);
@@ -127,6 +135,7 @@ public final class PagamentoController {
         trocoLabel.setText(CURRENCY.format(change));
     }
 
+    /** Converte o texto monetario informado para BigDecimal. */
     private BigDecimal parseMoney(String text) {
         String normalized = text == null ? "" : text.strip();
         if (normalized.contains(",")) {
@@ -135,6 +144,7 @@ public final class PagamentoController {
         return new BigDecimal(normalized);
     }
 
+    /** Mostra feedback relacionado apenas ao pagamento. */
     private void message(String text, boolean error) {
         mensagemLabel.setText(text == null ? "Ocorreu um erro." : text);
         mensagemLabel.setStyle(error ? "-fx-text-fill: #b91c1c;" : "-fx-text-fill: #166534;");

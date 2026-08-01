@@ -21,6 +21,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Testa a persistencia SQLite usando um banco temporario e isolado. */
 class SQLiteRelatorioRepositoryTest {
     @TempDir Path tempDirectory;
     private RelatorioService reports;
@@ -74,6 +75,7 @@ class SQLiteRelatorioRepositoryTest {
                 LocalDate.now(), LocalDate.now(), null, null, null);
     }
 
+    /** Verifica o cenario: deve gerar vendas totais pagamentos eprodutos sem canceladas. */
     @Test
     void deveGerarVendasTotaisPagamentosEProdutosSemCanceladas() {
         LinhaRelatorio daily = reports.gerar(
@@ -93,6 +95,7 @@ class SQLiteRelatorioRepositoryTest {
         assertEquals(new BigDecimal("60.00"), productLine.valorSecundario());
     }
 
+    /** Verifica o cenario: deve gerar filtros descontos cancelamentos estoque ecaixa. */
     @Test
     void deveGerarFiltrosDescontosCancelamentosEstoqueECaixa() {
         FiltroRelatorio managerFilter = new FiltroRelatorio(
@@ -112,6 +115,7 @@ class SQLiteRelatorioRepositoryTest {
         assertEquals(new BigDecimal("190.00"), closure.valorSecundario());
     }
 
+    /** Verifica o cenario: deve calcular lucro com custo historico edesconsiderar canceladas. */
     @Test
     void deveCalcularLucroComCustoHistoricoEDesconsiderarCanceladas() {
         LinhaRelatorio profit = reports.gerar(
@@ -121,6 +125,7 @@ class SQLiteRelatorioRepositoryTest {
                 TipoRelatorio.MOVIMENTACOES_ESTOQUE, filter).isEmpty());
     }
 
+    /** Verifica o cenario: deve exportar csv brasileiro seguro. */
     @Test
     void deveExportarCsvBrasileiroSeguro() throws Exception {
         Path csv = tempDirectory.resolve("saida").resolve("relatorio.csv");

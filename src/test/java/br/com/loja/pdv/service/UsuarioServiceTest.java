@@ -16,6 +16,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Testa regras de negocio sem depender da interface grafica. */
 class UsuarioServiceTest {
     @TempDir Path tempDirectory;
     private UsuarioService usuarios;
@@ -34,6 +35,7 @@ class UsuarioServiceTest {
         autenticacao = new AutenticacaoService(repository, hasher, sessao);
     }
 
+    /** Verifica o cenario: deve criar administrador inicial com hash etroca obrigatoria. */
     @Test
     void deveCriarAdministradorInicialComHashETrocaObrigatoria() {
         Usuario admin = usuarios.criarAdministradorInicial("SenhaForte1".toCharArray());
@@ -43,6 +45,7 @@ class UsuarioServiceTest {
         assertTrue(admin.isAlterarSenha());
     }
 
+    /** Verifica o cenario: deve configurar login esenha admin no primeiro acesso. */
     @Test
     void deveConfigurarLoginESenhaAdminNoPrimeiroAcesso() {
         assertTrue(usuarios.configurarAdministradorInicialPadrao());
@@ -54,6 +57,7 @@ class UsuarioServiceTest {
         assertNotEquals("admin", admin.getSenhaHash());
     }
 
+    /** Verifica o cenario: nao deve redefinir senha depois da troca obrigatoria. */
     @Test
     void naoDeveRedefinirSenhaDepoisDaTrocaObrigatoria() {
         usuarios.configurarAdministradorInicialPadrao();
@@ -67,6 +71,7 @@ class UsuarioServiceTest {
                 autenticacao.autenticar("admin", "NovaSenha2".toCharArray()));
     }
 
+    /** Verifica o cenario: deve autenticar usuario valido emanter sessao. */
     @Test
     void deveAutenticarUsuarioValidoEManterSessao() {
         Usuario admin = usuarios.criarAdministradorInicial("SenhaForte1".toCharArray());
@@ -75,6 +80,7 @@ class UsuarioServiceTest {
         assertEquals(admin.getId(), sessao.atual().orElseThrow().getId());
     }
 
+    /** Verifica o cenario: deve recusar login invalido eusuario inativo. */
     @Test
     void deveRecusarLoginInvalidoEUsuarioInativo() {
         Usuario admin = usuarios.criarAdministradorInicial("SenhaForte1".toCharArray());
@@ -85,6 +91,7 @@ class UsuarioServiceTest {
                 autenticacao.autenticar("admin", "SenhaForte1".toCharArray()));
     }
 
+    /** Verifica o cenario: deve trocar senha eremover obrigatoriedade. */
     @Test
     void deveTrocarSenhaERemoverObrigatoriedade() {
         Usuario admin = usuarios.criarAdministradorInicial("SenhaForte1".toCharArray());
@@ -93,6 +100,7 @@ class UsuarioServiceTest {
         autenticacao.autenticar("admin", "NovaSenha2".toCharArray());
     }
 
+    /** Verifica o cenario: deve bloquear funcao sem permissao. */
     @Test
     void deveBloquearFuncaoSemPermissao() {
         Usuario operador = usuarios.criar(
@@ -103,6 +111,7 @@ class UsuarioServiceTest {
         assertDoesNotThrow(() -> sessao.exigir(Permissao.VENDAS));
     }
 
+    /** Verifica o cenario: deve permitir desconto somente para perfil autorizado. */
     @Test
     void devePermitirDescontoSomenteParaPerfilAutorizado() {
         Usuario operador = usuarios.criar(
@@ -118,6 +127,7 @@ class UsuarioServiceTest {
         assertDoesNotThrow(() -> sessao.exigir(Permissao.DESCONTOS));
     }
 
+    /** Verifica o cenario: deve impedir segundo administrador inicial. */
     @Test
     void deveImpedirSegundoAdministradorInicial() {
         usuarios.criarAdministradorInicial("SenhaForte1".toCharArray());

@@ -33,10 +33,12 @@ public final class CaixaController {
 
     private final CaixaService service;
 
+    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
     public CaixaController(CaixaService service) {
         this.service = service;
     }
 
+    /** Configura formatadores monetarios, colunas e o estado inicial da tela. */
     @FXML
     private void initialize() {
         UiFormatters.moeda(aberturaField, valorField, contadoField);
@@ -51,6 +53,7 @@ public final class CaixaController {
         refresh();
     }
 
+    /** Abre um novo caixa usando o valor informado pelo operador. */
     @FXML
     private void open() {
         execute(() -> {
@@ -60,6 +63,7 @@ public final class CaixaController {
         });
     }
 
+    /** Registra uma entrada manual de dinheiro no caixa atual. */
     @FXML
     private void supply() {
         execute(() -> {
@@ -69,6 +73,7 @@ public final class CaixaController {
         });
     }
 
+    /** Confirma e registra uma retirada manual de dinheiro. */
     @FXML
     private void withdraw() {
         if (!confirm("Confirmar sangria",
@@ -80,6 +85,7 @@ public final class CaixaController {
         });
     }
 
+    /** Confirma o fechamento e compara o valor contado com o valor esperado. */
     @FXML
     private void close() {
         if (!confirm("Fechar caixa",
@@ -92,6 +98,7 @@ public final class CaixaController {
         });
     }
 
+    /** Atualiza o status, os saldos e o historico de movimentacoes. */
     @FXML
     private void refresh() {
         try {
@@ -105,6 +112,7 @@ public final class CaixaController {
         }
     }
 
+    /** Centraliza o tratamento de erros das acoes que alteram o caixa. */
     private void execute(Action action) {
         try {
             message(action.run(), false);
@@ -114,6 +122,7 @@ public final class CaixaController {
         }
     }
 
+    /** Converte a entrada brasileira com virgula para BigDecimal. */
     private BigDecimal parseMoney(String text) {
         String normalized = text == null ? "" : text.strip();
         if (normalized.contains(",")) {
@@ -122,16 +131,19 @@ public final class CaixaController {
         return new BigDecimal(normalized);
     }
 
+    /** Limpa somente os campos usados por suprimento e sangria. */
     private void clearMovement() {
         valorField.clear();
         motivoField.clear();
     }
 
+    /** Exibe o resultado da ultima operacao com cor semantica. */
     private void message(String text, boolean error) {
         mensagemLabel.setText(text == null ? "Ocorreu um erro." : text);
         mensagemLabel.setStyle(error ? "-fx-text-fill: #b91c1c;" : "-fx-text-fill: #166534;");
     }
 
+    /** Abre uma confirmacao explicita antes de uma acao sensivel. */
     private boolean confirm(String title, String text) {
         Alert alert = new Alert(
                 Alert.AlertType.CONFIRMATION, text, ButtonType.YES, ButtonType.NO);
@@ -140,8 +152,10 @@ public final class CaixaController {
         return alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
     }
 
+    /** Representa uma acao de caixa que devolve a mensagem de sucesso. */
     @FunctionalInterface
     private interface Action {
+        /** Executa a alteracao solicitada. */
         String run();
     }
 }

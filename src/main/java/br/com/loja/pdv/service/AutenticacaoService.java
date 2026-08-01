@@ -13,6 +13,7 @@ public final class AutenticacaoService {
     private final PasswordHasher hasher;
     private final SessaoUsuario sessao;
 
+    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public AutenticacaoService(
             UsuarioRepository repository, PasswordHasher hasher, SessaoUsuario sessao) {
         this.repository = repository;
@@ -20,6 +21,7 @@ public final class AutenticacaoService {
         this.sessao = sessao;
     }
 
+    /** Valida login, status e senha antes de iniciar a sessao. */
     public Usuario autenticar(String login, char[] senha) {
         String normalizedLogin = login == null ? "" : login.strip().toLowerCase();
         Usuario usuario = repository.buscarPorLogin(normalizedLogin)
@@ -32,10 +34,12 @@ public final class AutenticacaoService {
         return usuario;
     }
 
+    /** Encerra a sessao atual. */
     public void sair() {
         sessao.encerrar();
     }
 
+    /** Usa uma unica mensagem para nao revelar qual credencial falhou. */
     private ValidationException invalidCredentials() {
         return new ValidationException("Login ou senha inválidos.");
     }

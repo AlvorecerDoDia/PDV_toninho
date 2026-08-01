@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 
 /** Monta as dependencias e controla a troca entre login e tela principal. */
 public class App extends Application {
+    // Objetos compartilhados durante toda a execucao da aplicacao.
     private Database database;
     private UsuarioService userService;
     private AutenticacaoService authenticationService;
@@ -39,6 +40,7 @@ public class App extends Application {
     private AuditoriaService auditService;
     private boolean initialAdminConfigured;
 
+    /** Monta as dependencias compartilhadas antes de qualquer tela ser exibida. */
     @Override
     public void init() {
         LoggingConfigurator.configurar(AppPaths.logDirectory());
@@ -66,6 +68,7 @@ public class App extends Application {
         initialAdminConfigured = userService.configurarAdministradorInicialPadrao();
     }
 
+    /** Configura a janela principal e inicia o fluxo pela tela de login. */
     @Override
     public void start(Stage stage) throws IOException {
         showLogin(stage);
@@ -82,6 +85,7 @@ public class App extends Application {
         }
     }
 
+    /** Carrega o FXML de login e injeta no controller os servicos de autenticacao. */
     private void showLogin(Stage stage) throws IOException {
         FXMLLoader loader = loader("/br/com/loja/pdv/view/login-view.fxml");
         loader.setControllerFactory(type -> {
@@ -97,6 +101,7 @@ public class App extends Application {
         stage.centerOnScreen();
     }
 
+    /** Converte a falha verificada de carregamento em erro de inicializacao da interface. */
     private void showMainUnchecked(Stage stage) {
         try {
             showMain(stage);
@@ -105,6 +110,7 @@ public class App extends Application {
         }
     }
 
+    /** Carrega a estrutura principal, define o tamanho minimo e centraliza a janela. */
     private void showMain(Stage stage) throws IOException {
         FXMLLoader loader = loader("/br/com/loja/pdv/view/main-view.fxml");
         loader.setControllerFactory(type -> createMainController(type));
@@ -114,6 +120,7 @@ public class App extends Application {
         stage.centerOnScreen();
     }
 
+    /** Cria cada controller com as dependencias corretas sem usar um framework de injecao. */
     private Object createMainController(Class<?> type) {
         ProdutoService productService = new ProdutoService(productRepository, auditService);
         if (type == MainController.class) {
@@ -155,14 +162,17 @@ public class App extends Application {
         throw unconfigured(type);
     }
 
+    /** Cria um FXMLLoader para um recurso obrigatorio do classpath. */
     private FXMLLoader loader(String resource) {
         return new FXMLLoader(Objects.requireNonNull(App.class.getResource(resource)));
     }
 
+    /** Produz uma mensagem clara quando um controller novo nao foi registrado na fabrica. */
     private IllegalArgumentException unconfigured(Class<?> type) {
         return new IllegalArgumentException("Controller não configurado: " + type.getName());
     }
 
+    /** Tenta criar um backup automatico durante o encerramento normal da aplicacao. */
     @Override
     public void stop() {
         if (backupService == null) return;

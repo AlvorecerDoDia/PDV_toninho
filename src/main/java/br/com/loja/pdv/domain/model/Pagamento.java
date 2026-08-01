@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 /** Parcela de pagamento associada a uma forma de recebimento. */
 public class Pagamento {
+    // Uma venda pode possuir varias parcelas com formas diferentes.
     private Long id;
     private Long vendaId;
     private FormaPagamento forma;

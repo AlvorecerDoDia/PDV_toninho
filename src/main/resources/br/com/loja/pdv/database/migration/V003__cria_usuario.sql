@@ -1,4 +1,5 @@
 -- Usuarios locais, perfis de acesso e credenciais armazenadas por hash.
+-- Cada migracao e executada uma unica vez e registrada em schema_version.
 CREATE TABLE usuario (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     nome TEXT NOT NULL,

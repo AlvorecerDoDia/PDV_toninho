@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 /** Representa a abertura e o eventual fechamento do caixa de um operador. */
 public class Caixa {
+    // Identificacao, operador e estado persistido da sessao de caixa.
     private Long id;
     private long usuarioId;
     private StatusCaixa status;

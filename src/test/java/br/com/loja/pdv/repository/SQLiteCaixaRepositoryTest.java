@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Testa a persistencia SQLite usando um banco temporario e isolado. */
 class SQLiteCaixaRepositoryTest {
     @TempDir Path tempDirectory;
     private Database database;
@@ -43,6 +44,7 @@ class SQLiteCaixaRepositoryTest {
         repository = new SQLiteCaixaRepository(database);
     }
 
+    /** Verifica o cenario: deve persistir caixa emovimentacao. */
     @Test
     void devePersistirCaixaEMovimentacao() {
         Caixa caixa = open(new BigDecimal("40.00"));
@@ -53,6 +55,7 @@ class SQLiteCaixaRepositoryTest {
         assertEquals(1, reopened.listarMovimentacoes(caixa.getId()).size());
     }
 
+    /** Verifica o cenario: deve impedir movimentacao em caixa fechado. */
     @Test
     void deveImpedirMovimentacaoEmCaixaFechado() {
         Caixa caixa = open(BigDecimal.TEN);
@@ -62,6 +65,7 @@ class SQLiteCaixaRepositoryTest {
                         BigDecimal.ONE, "Troco")));
     }
 
+    /** Verifica o cenario: deve fazer rollback da abertura quando movimentacao falhar. */
     @Test
     void deveFazerRollbackDaAberturaQuandoMovimentacaoFalhar() throws Exception {
         try (Connection connection = database.getConnection();

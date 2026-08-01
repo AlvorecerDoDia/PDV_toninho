@@ -19,10 +19,12 @@ import java.util.List;
 public final class SQLitePagamentoRepository implements PagamentoRepository {
     private final Database database;
 
+    /** Recebe a configuracao de banco usada para abrir conexoes em cada operacao. */
     public SQLitePagamentoRepository(Database database) {
         this.database = database;
     }
 
+    /** Consulta todas as parcelas de pagamento vinculadas a uma venda. */
     @Override
     public List<Pagamento> listarPorVenda(long vendaId) {
         try (Connection connection = database.getConnection();

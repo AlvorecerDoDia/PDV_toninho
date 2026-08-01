@@ -11,8 +11,10 @@
                styleClass="page-subtitle"/>
     </VBox>
     <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <!-- Coluna principal controla produtos; coluna lateral resume e recebe. -->
     <HBox spacing="12" VBox.vgrow="ALWAYS">
         <VBox spacing="10" HBox.hgrow="ALWAYS">
+            <!-- Entrada rapida por codigo ou pesquisa no catalogo. -->
             <VBox styleClass="card, card-compact">
                 <Label text="Adicionar produto" styleClass="section-title"/>
                 <VBox spacing="7">
@@ -36,6 +38,7 @@
                 </VBox>
             </VBox>
 
+            <!-- Carrinho com edicao de quantidade, remocao e desconto. -->
             <VBox spacing="8" VBox.vgrow="ALWAYS" styleClass="card">
                 <HBox alignment="CENTER_LEFT">
                     <VBox spacing="1">
@@ -65,6 +68,7 @@
             </VBox>
         </VBox>
 
+        <!-- Resumo financeiro e componente de pagamentos. -->
         <VBox spacing="10" prefWidth="350" minWidth="330" maxWidth="380">
             <VBox styleClass="card, total-card">
                 <Label text="RESUMO DA VENDA" styleClass="section-eyebrow"/>

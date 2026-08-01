@@ -48,6 +48,7 @@
             <Button text="Exportar resultado em CSV" onAction="#exportCsv"/>
         </HBox>
     </VBox>
+    <!-- Resultado generico adaptado a cada consulta consolidada. -->
     <VBox spacing="8" VBox.vgrow="ALWAYS" styleClass="card">
         <Label text="Resultado" styleClass="section-title"/>
         <TableView fx:id="tabela" VBox.vgrow="ALWAYS">

@@ -19,6 +19,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/** Testa regras de negocio sem depender da interface grafica. */
 class CaixaServiceTest {
     @TempDir Path tempDirectory;
     private CaixaService service;
@@ -38,6 +39,7 @@ class CaixaServiceTest {
         service = new CaixaService(repository, session);
     }
 
+    /** Verifica o cenario: deve abrir caixa. */
     @Test
     void deveAbrirCaixa() {
         Caixa caixa = service.abrir(new BigDecimal("50.00"));
@@ -46,12 +48,14 @@ class CaixaServiceTest {
         assertEquals(new BigDecimal("50.00"), repository.buscarDinheiroEsperado(caixa.getId()));
     }
 
+    /** Verifica o cenario: deve impedir abertura duplicada. */
     @Test
     void deveImpedirAberturaDuplicada() {
         service.abrir(BigDecimal.ZERO);
         assertThrows(ValidationException.class, () -> service.abrir(BigDecimal.TEN));
     }
 
+    /** Verifica o cenario: deve registrar suprimento esangria. */
     @Test
     void deveRegistrarSuprimentoESangria() {
         Caixa caixa = service.abrir(new BigDecimal("100.00"));
@@ -62,6 +66,7 @@ class CaixaServiceTest {
         assertEquals(3, repository.listarMovimentacoes(caixa.getId()).size());
     }
 
+    /** Verifica o cenario: deve impedir sangria maior que saldo. */
     @Test
     void deveImpedirSangriaMaiorQueSaldo() {
         service.abrir(new BigDecimal("10.00"));
@@ -69,6 +74,7 @@ class CaixaServiceTest {
                 service.sangrar(new BigDecimal("10.01"), "Retirada"));
     }
 
+    /** Verifica o cenario: deve exigir motivo evalor valido. */
     @Test
     void deveExigirMotivoEValorValido() {
         service.abrir(BigDecimal.ZERO);
@@ -80,6 +86,7 @@ class CaixaServiceTest {
                 service.sangrar(BigDecimal.ZERO, "Retirada"));
     }
 
+    /** Verifica o cenario: deve fechar caixa ecalcular diferenca. */
     @Test
     void deveFecharCaixaECalcularDiferenca() {
         Caixa open = service.abrir(new BigDecimal("100.00"));
@@ -92,6 +99,7 @@ class CaixaServiceTest {
         assertEquals(new BigDecimal("-1.50"), closed.getDiferenca());
     }
 
+    /** Verifica o cenario: deve associar caixa ao usuario da sessao. */
     @Test
     void deveAssociarCaixaAoUsuarioDaSessao() {
         Caixa caixa = service.abrir(BigDecimal.ZERO);

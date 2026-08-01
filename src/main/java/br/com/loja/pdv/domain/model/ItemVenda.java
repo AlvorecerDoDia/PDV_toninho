@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 /** Item persistido com nome, custo e preco historicos da venda. */
 public class ItemVenda {
+    // Valores abaixo sao uma fotografia do item no momento da venda.
     private Long id;
     private Long vendaId;
     private long produtoId;

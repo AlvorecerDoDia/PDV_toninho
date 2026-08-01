@@ -23,10 +23,12 @@ public final class SQLiteProdutoRepository implements ProdutoRepository {
 
     private final Database database;
 
+    /** Recebe a configuracao de banco usada para abrir conexoes em cada operacao. */
     public SQLiteProdutoRepository(Database database) {
         this.database = database;
     }
 
+    /** Insere um produto completo e recupera o identificador criado. */
     @Override
     public Produto salvar(Produto produto) {
         String sql = """
@@ -52,6 +54,7 @@ public final class SQLiteProdutoRepository implements ProdutoRepository {
         }
     }
 
+    /** Atualiza dados cadastrais sem modificar o saldo de estoque. */
     @Override
     public void atualizar(Produto produto) {
         String sql = """
@@ -73,11 +76,13 @@ public final class SQLiteProdutoRepository implements ProdutoRepository {
         }
     }
 
+    /** Consulta um produto pelo identificador. */
     @Override
     public Optional<Produto> buscarPorId(long id) {
         return findOne("SELECT * FROM produto WHERE id = ?", statement -> statement.setLong(1, id));
     }
 
+    /** Consulta um produto pelo codigo normalizado. */
     @Override
     public Optional<Produto> buscarPorCodigoBarras(String codigo) {
         return findOne(
@@ -86,11 +91,13 @@ public final class SQLiteProdutoRepository implements ProdutoRepository {
         );
     }
 
+    /** Lista somente produtos disponiveis para venda. */
     @Override
     public List<Produto> listarAtivos() {
         return list("SELECT * FROM produto WHERE ativo = 1 ORDER BY nome", null);
     }
 
+    /** Busca por trecho do nome ou do codigo, incluindo inativos para gestao. */
     @Override
     public List<Produto> pesquisar(String termo) {
         String pattern = "%" + (termo == null ? "" : termo.strip().toLowerCase()) + "%";
@@ -104,16 +111,19 @@ public final class SQLiteProdutoRepository implements ProdutoRepository {
         });
     }
 
+    /** Marca o produto como inativo sem apagar seu historico. */
     @Override
     public void desativar(long id) {
         updateStatus(id, false);
     }
 
+    /** Volta a disponibilizar o produto para operacoes. */
     @Override
     public void reativar(long id) {
         updateStatus(id, true);
     }
 
+    /** Compartilha o comando de ativacao e desativacao. */
     private void updateStatus(long id, boolean active) {
         String sql = "UPDATE produto SET ativo = ?, atualizado_em = ? WHERE id = ?";
         try (Connection connection = database.getConnection();
@@ -129,11 +139,13 @@ public final class SQLiteProdutoRepository implements ProdutoRepository {
         }
     }
 
+    /** Executa uma consulta que retorna no maximo um produto. */
     private Optional<Produto> findOne(String sql, SqlBinder binder) {
         List<Produto> products = list(sql, binder);
         return products.stream().findFirst();
     }
 
+    /** Executa consultas que retornam varios produtos. */
     private List<Produto> list(String sql, SqlBinder binder) {
         try (Connection connection = database.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -152,6 +164,7 @@ public final class SQLiteProdutoRepository implements ProdutoRepository {
         }
     }
 
+    /** Preenche os parametros comuns de insercao e atualizacao. */
     private void bind(PreparedStatement statement, Produto produto) throws SQLException {
         statement.setString(1, produto.getCodigoBarras());
         statement.setString(2, produto.getNome());
@@ -164,6 +177,7 @@ public final class SQLiteProdutoRepository implements ProdutoRepository {
         statement.setString(9, produto.getAtualizadoEm().toString());
     }
 
+    /** Converte a linha JDBC em Produto. */
     private Produto map(ResultSet resultSet) throws SQLException {
         Produto produto = new Produto();
         produto.setId(resultSet.getLong("id"));
@@ -179,6 +193,7 @@ public final class SQLiteProdutoRepository implements ProdutoRepository {
         return produto;
     }
 
+    /** Traduz codigo duplicado e outras falhas de persistencia. */
     private RuntimeException translate(SQLException exception) {
         if (exception.getErrorCode() == 19
                 && exception.getMessage().toLowerCase().contains("codigo_barras")) {
@@ -187,8 +202,10 @@ public final class SQLiteProdutoRepository implements ProdutoRepository {
         return new DatabaseException("Não foi possível acessar os produtos.", exception);
     }
 
+    /** Configura os parametros de uma consulta reutilizavel. */
     @FunctionalInterface
     private interface SqlBinder {
+        /** Preenche os parametros antes da execucao. */
         void bind(PreparedStatement statement) throws SQLException;
     }
 }
