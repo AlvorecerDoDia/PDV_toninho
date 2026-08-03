@@ -17,8 +17,7 @@ public final class LoggingConfigurator {
             Logger root = Logger.getLogger("");
             for (Handler handler : root.getHandlers()) root.removeHandler(handler);
 
-            FileHandler arquivo = new FileHandler(
-                    diretorio.resolve("pdv-%g.log").toString(), 2_000_000, 5, true);
+            FileHandler arquivo = new FileHandler(diretorio.resolve("pdv-%g.log").toString(), 2_000_000, 5, true);
             arquivo.setEncoding("UTF-8");
             arquivo.setFormatter(new SimpleFormatter());
             arquivo.setLevel(Level.ALL);

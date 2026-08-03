@@ -134,7 +134,7 @@ public class App extends Application {
             return new PagamentoController(paymentService, saleService, saleCart);
         }
         if (type == HistoricoVendaController.class) {
-            FormatadorComprovante formatter = new FormatadorComprovante("PDV Toninho");
+            FormatadorComprovante formatter = new FormatadorComprovante("Toninho Variedades");
             return new HistoricoVendaController(
                     saleService, userService, new SQLitePagamentoRepository(database),
                     formatter, new ImpressoraWindows(formatter));

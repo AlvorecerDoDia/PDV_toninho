@@ -11,17 +11,15 @@ import java.util.Locale;
 
 /** Constroi o texto do comprovante usando apenas valores historicos da venda. */
 public final class FormatadorComprovante {
-    private static final NumberFormat CURRENCY =
-            NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
-    private static final DateTimeFormatter DATE_TIME =
-            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private static final NumberFormat CURRENCY = NumberFormat.getCurrencyInstance(Locale.of("pt", "BR"));
+    private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
     private static final String SEPARATOR = "----------------------------------------";
     private final String storeName;
 
     /** Define o nome da loja exibido no cabecalho do comprovante. */
     public FormatadorComprovante(String storeName) {
         String normalized = storeName == null ? "" : storeName.strip();
-        this.storeName = normalized.isEmpty() ? "PDV Toninho" : normalized;
+        this.storeName = normalized.isEmpty() ? "Toninho Variedades" : normalized;
     }
 
     /** Monta todo o comprovante nao fiscal a partir dos dados historicos da venda. */
@@ -37,8 +35,7 @@ public final class FormatadorComprovante {
         receipt.append("Operador: ").append(venda.getOperadorId()).append('\n');
         receipt.append("Status: ").append(venda.getStatus()).append('\n');
         if (venda.getMotivoCancelamento() != null) {
-            receipt.append("Cancelamento: ")
-                    .append(venda.getMotivoCancelamento()).append('\n');
+            receipt.append("Cancelamento: ").append(venda.getMotivoCancelamento()).append('\n');
         }
         receipt.append(SEPARATOR).append('\n');
         for (ItemVenda item : venda.getItens()) appendItem(receipt, item);
@@ -61,9 +58,7 @@ public final class FormatadorComprovante {
     /** Acrescenta quantidade, nome, preco unitario e subtotal de um item. */
     private void appendItem(StringBuilder receipt, ItemVenda item) {
         receipt.append(item.getProdutoNome()).append('\n');
-        receipt.append(item.getQuantidade()).append(" x ")
-                .append(CURRENCY.format(item.getPrecoUnitario()))
-                .append(" = ").append(CURRENCY.format(item.getSubtotal())).append('\n');
+        receipt.append(item.getQuantidade()).append(" x ").append(CURRENCY.format(item.getPrecoUnitario())).append(" = ").append(CURRENCY.format(item.getSubtotal())).append('\n');
     }
 
     /** Acrescenta uma forma de pagamento e seu valor. */
