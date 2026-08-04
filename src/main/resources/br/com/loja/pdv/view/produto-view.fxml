@@ -28,6 +28,11 @@
                         <Label text="Nome *" styleClass="field-label"/>
                         <TextField fx:id="nomeField" promptText="Nome usado na venda"/>
                     </VBox>
+                    <VBox spacing="4">
+                        <Label text="Categoria *" styleClass="field-label"/>
+                        <ComboBox fx:id="categoriaCombo" promptText="Selecione uma categoria"
+                                  maxWidth="Infinity"/>
+                    </VBox>
                     <HBox spacing="8">
                         <VBox spacing="4" HBox.hgrow="ALWAYS">
                             <Label text="Preço de custo *" styleClass="field-label"/>
@@ -77,11 +82,12 @@
                 <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
                     <placeholder><Label text="Nenhum produto encontrado."/></placeholder>
                     <columns>
-                        <TableColumn fx:id="nomeColumn" text="Nome" prefWidth="230"/>
-                        <TableColumn fx:id="codigoColumn" text="Código" prefWidth="135"/>
-                        <TableColumn fx:id="vendaColumn" text="Preço" prefWidth="95"/>
-                        <TableColumn fx:id="estoqueColumn" text="Estoque" prefWidth="80"/>
-                        <TableColumn fx:id="statusColumn" text="Situação" prefWidth="85"/>
+                        <TableColumn fx:id="nomeColumn" text="Nome" prefWidth="190"/>
+                        <TableColumn fx:id="categoriaColumn" text="Categoria" prefWidth="130"/>
+                        <TableColumn fx:id="codigoColumn" text="Código" prefWidth="120"/>
+                        <TableColumn fx:id="vendaColumn" text="Preço" prefWidth="90"/>
+                        <TableColumn fx:id="estoqueColumn" text="Estoque" prefWidth="75"/>
+                        <TableColumn fx:id="statusColumn" text="Situação" prefWidth="80"/>
                     </columns>
                 </TableView>
             </VBox>

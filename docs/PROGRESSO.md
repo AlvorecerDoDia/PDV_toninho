@@ -232,3 +232,12 @@ Primeira versão funcional concluída e pronta para uso local em um computador W
 - Comentários internos: transações de venda, estoque e caixa, migrações, senhas e restauração de backup passaram a explicar suas decisões menos óbvias.
 - Recursos: telas FXML, seções CSS, migrações SQL e script de empacotamento também foram identificados e documentados.
 - Validação: 105 testes aprovados, pacote Windows recriado e `PDV Toninho.exe` iniciado com banco temporário criado corretamente.
+
+
+## Correcao da codificacao da impressao termica
+
+- Diagnostico: o comprovante era convertido para UTF-8 e enviado como dados brutos; a impressora interpretava esses bytes usando outra pagina de codigo.
+- Sintomas corrigidos: simbolo monetario seguido de caracteres estranhos, acentos corrompidos em `NAO`, nomes de produtos e mensagem final.
+- Solucao: espaco monetario normalizado, transliteracao para ASCII e envio em bytes US-ASCII.
+- Compatibilidade: a visualizacao continua usando Unicode; apenas a saida fisica usa a forma ASCII mais segura.
+- Testes: normalizacao de acentos, espaco nao separavel, sinais tipograficos e garantia de que nenhum byte acima de 127 e enviado.

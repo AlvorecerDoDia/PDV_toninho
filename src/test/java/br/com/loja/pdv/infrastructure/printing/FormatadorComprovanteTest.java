@@ -31,6 +31,8 @@ class FormatadorComprovanteTest {
         assertTrue(text.contains("DINHEIRO"));
         assertTrue(text.contains("Valor recebido"));
         assertTrue(text.contains("Troco"));
+        assertTrue(text.contains("R$ 5,00"));
+        assertFalse(text.contains("\u00A0"));
         assertFalse(text.contains("SEGUNDA VIA"));
     }
 

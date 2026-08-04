@@ -9,7 +9,7 @@ pagamentos, comprovantes, cancelamentos, relatórios, auditoria e backups.
 
 ## Funcionalidades
 
-- cadastro com quantidade inicial, pesquisa, edição, ativação e desativação de produtos;
+- cadastro com categoria e quantidade inicial, pesquisa, edição, ativação e desativação de produtos;
 - estoque transacional com entradas, ajustes, perdas, saídas e devoluções;
 - perfis Administrador, Gerente e Operador, com senha armazenada por hash;
 - abertura, suprimento, sangria e fechamento de caixa;
@@ -121,6 +121,11 @@ comprovante para essa impressora. Antes do envio é possível visualizar o
 conteúdo. Se a impressora estiver ausente ou falhar, a venda permanece salva e
 pode ser reimpressa pelo histórico.
 
+A visualização mantém os acentos normalmente. No envio físico, o sistema
+converte o comprovante para caracteres ASCII e troca o espaço especial do
+formato `R$` por um espaço comum. Isso evita símbolos corrompidos em impressoras
+térmicas que interpretam texto bruto com páginas de código antigas.
+
 ## Gerar o aplicativo ou instalador Windows
 
 O JDK 21 inclui `jpackage`. Para criar uma pasta portátil contendo
@@ -198,6 +203,9 @@ heurísticas aplicadas estão documentadas em `docs/REDESIGN_INTERFACE.md`.
 - **Login inicial não aparece:** já existe um banco com usuários; restaure o
   backup correto ou use um Administrador existente.
 - **Impressão falha:** configure uma impressora padrão e tente a segunda via.
+- **Caracteres estranhos no comprovante:** gere novamente o aplicativo com a
+  correção de codificação; a impressão física deve exibir `R$ 7,00`, `NAO` e
+  `preferencia`, sem sequências de caracteres inválidas.
 - **Instalador não é gerado:** confirme `jpackage --version` e `candle -?`.
 - **Arquivo de backup recusado:** escolha um banco SQLite íntegro criado pelo
   próprio sistema.

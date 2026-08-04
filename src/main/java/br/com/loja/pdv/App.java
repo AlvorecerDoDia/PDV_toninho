@@ -32,6 +32,7 @@ public class App extends Application {
     private AutenticacaoService authenticationService;
     private SessaoUsuario session;
     private SQLiteProdutoRepository productRepository;
+    private CategoriaService categoryService;
     private SQLiteCaixaRepository cashRepository;
     private CarrinhoVenda saleCart;
     private PagamentoService paymentService;
@@ -56,6 +57,7 @@ public class App extends Application {
         authenticationService = new AutenticacaoService(
                 userRepository, passwordHasher, session);
         productRepository = new SQLiteProdutoRepository(database);
+        categoryService = new CategoriaService(new SQLiteCategoriaRepository(database));
         cashRepository = new SQLiteCaixaRepository(database);
         saleCart = new CarrinhoVenda();
         paymentService = new PagamentoService();
@@ -122,7 +124,8 @@ public class App extends Application {
 
     /** Cria cada controller com as dependencias corretas sem usar um framework de injecao. */
     private Object createMainController(Class<?> type) {
-        ProdutoService productService = new ProdutoService(productRepository, auditService);
+        ProdutoService productService = new ProdutoService(
+                productRepository, categoryService, auditService);
         if (type == MainController.class) {
             return new MainController(
                     session, new CaixaService(cashRepository, session, auditService));
@@ -134,7 +137,7 @@ public class App extends Application {
             return new PagamentoController(paymentService, saleService, saleCart);
         }
         if (type == HistoricoVendaController.class) {
-            FormatadorComprovante formatter = new FormatadorComprovante("Toninho Variedades");
+            FormatadorComprovante formatter = new FormatadorComprovante("PDV Toninho");
             return new HistoricoVendaController(
                     saleService, userService, new SQLitePagamentoRepository(database),
                     formatter, new ImpressoraWindows(formatter));
@@ -146,7 +149,9 @@ public class App extends Application {
                     userService, productService, new ExportadorCsv());
         }
         if (type == BackupController.class) return new BackupController(backupService);
-        if (type == ProdutoController.class) return new ProdutoController(productService);
+        if (type == ProdutoController.class) {
+            return new ProdutoController(productService, categoryService);
+        }
         if (type == EstoqueController.class) {
             return new EstoqueController(
                     new EstoqueService(

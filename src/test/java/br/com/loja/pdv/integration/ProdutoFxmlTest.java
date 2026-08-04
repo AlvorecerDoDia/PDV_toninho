@@ -15,6 +15,7 @@ import br.com.loja.pdv.domain.model.CarrinhoVenda;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
 import br.com.loja.pdv.repository.sqlite.SQLiteProdutoRepository;
+import br.com.loja.pdv.repository.sqlite.SQLiteCategoriaRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteEstoqueRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteUsuarioRepository;
 import br.com.loja.pdv.repository.sqlite.SQLiteCaixaRepository;
@@ -35,6 +36,7 @@ import br.com.loja.pdv.infrastructure.printing.ImpressoraWindows;
 import br.com.loja.pdv.infrastructure.reporting.ExportadorCsv;
 import br.com.loja.pdv.infrastructure.backup.GerenciadorBackup;
 import br.com.loja.pdv.service.ProdutoService;
+import br.com.loja.pdv.service.CategoriaService;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -83,6 +85,8 @@ class ProdutoFxmlTest {
         Platform.runLater(() -> {
             try {
                 SQLiteProdutoRepository products = new SQLiteProdutoRepository(database);
+                CategoriaService categoryService = new CategoriaService(
+                        new SQLiteCategoriaRepository(database));
                 ProdutoService productService = new ProdutoService(products);
                 UsuarioService userService = new UsuarioService(
                         new SQLiteUsuarioRepository(database), new PasswordHasher());
@@ -130,7 +134,7 @@ class ProdutoFxmlTest {
                                 session));
                     }
                     if (type == ProdutoController.class) {
-                        return new ProdutoController(productService);
+                        return new ProdutoController(productService, categoryService);
                     }
                     if (type == EstoqueController.class) {
                         return new EstoqueController(

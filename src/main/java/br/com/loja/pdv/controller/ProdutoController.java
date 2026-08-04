@@ -1,6 +1,8 @@
 package br.com.loja.pdv.controller;
 
+import br.com.loja.pdv.domain.model.Categoria;
 import br.com.loja.pdv.domain.model.Produto;
+import br.com.loja.pdv.service.CategoriaService;
 import br.com.loja.pdv.service.ProdutoService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
@@ -13,6 +15,7 @@ public final class ProdutoController {
     // Componentes declarados no FXML e preenchidos automaticamente pelo JavaFX.
     @FXML private TextField codigoField;
     @FXML private TextField nomeField;
+    @FXML private ComboBox<Categoria> categoriaCombo;
     @FXML private TextField custoField;
     @FXML private TextField vendaField;
     @FXML private TextField quantidadeField;
@@ -20,6 +23,7 @@ public final class ProdutoController {
     @FXML private TextField pesquisaField;
     @FXML private TableView<Produto> tabela;
     @FXML private TableColumn<Produto, String> nomeColumn;
+    @FXML private TableColumn<Produto, String> categoriaColumn;
     @FXML private TableColumn<Produto, String> codigoColumn;
     @FXML private TableColumn<Produto, String> vendaColumn;
     @FXML private TableColumn<Produto, String> estoqueColumn;
@@ -28,21 +32,29 @@ public final class ProdutoController {
     @FXML private Button desativarButton;
     @FXML private Button reativarButton;
 
-    // O servico concentra regras; selected define se o formulario cria ou edita.
+    // Os servicos concentram regras; selected define se o formulario cria ou edita.
     private final ProdutoService service;
+    private final CategoriaService categorias;
     private Produto selected;
 
-    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
-    public ProdutoController(ProdutoService service) {
+    /** Recebe os servicos de produtos e categorias usados pela tela. */
+    public ProdutoController(ProdutoService service, CategoriaService categorias) {
         this.service = service;
+        this.categorias = categorias;
     }
 
-    /** Configura campos, tabela, selecao e pesquisa do cadastro de produtos. */
+    /** Configura campos, categorias, tabela, selecao e pesquisa. */
     @FXML
     private void initialize() {
         UiFormatters.moeda(custoField, vendaField);
         UiFormatters.inteiro(quantidadeField, minimoField);
+        categoriaCombo.getItems().setAll(categorias.listarAtivas());
+
         nomeColumn.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getNome()));
+        categoriaColumn.setCellValueFactory(row -> new SimpleStringProperty(
+                row.getValue().getCategoria() == null
+                        ? "Sem categoria"
+                        : row.getValue().getCategoria().getNome()));
         codigoColumn.setCellValueFactory(row -> new SimpleStringProperty(
                 row.getValue().getCodigoBarras() == null ? "" : row.getValue().getCodigoBarras()));
         vendaColumn.setCellValueFactory(row -> new SimpleStringProperty(
@@ -70,6 +82,7 @@ public final class ProdutoController {
             Produto produto = selected == null ? new Produto() : selected;
             produto.setCodigoBarras(codigoField.getText());
             produto.setNome(nomeField.getText());
+            produto.setCategoria(categoriaCombo.getValue());
             produto.setPrecoCusto(new BigDecimal(custoField.getText().replace(',', '.')));
             produto.setPrecoVenda(new BigDecimal(vendaField.getText().replace(',', '.')));
             produto.setQuantidadeEstoque(parseInteger(quantidadeField, "quantidade inicial"));
@@ -107,7 +120,11 @@ public final class ProdutoController {
     private void clear() {
         selected = null;
         tabela.getSelectionModel().clearSelection();
-        codigoField.clear(); nomeField.clear(); custoField.clear(); vendaField.clear();
+        codigoField.clear();
+        nomeField.clear();
+        categoriaCombo.getSelectionModel().clearSelection();
+        custoField.clear();
+        vendaField.clear();
         quantidadeField.setText("0");
         quantidadeField.setDisable(false);
         minimoField.setText("0");
@@ -121,6 +138,8 @@ public final class ProdutoController {
         if (produto == null) return;
         codigoField.setText(produto.getCodigoBarras());
         nomeField.setText(produto.getNome());
+        ensureCategoryAvailable(produto.getCategoria());
+        categoriaCombo.getSelectionModel().select(produto.getCategoria());
         custoField.setText(produto.getPrecoCusto().toPlainString());
         vendaField.setText(produto.getPrecoVenda().toPlainString());
         quantidadeField.setText(Integer.toString(produto.getQuantidadeEstoque()));
@@ -128,6 +147,13 @@ public final class ProdutoController {
         minimoField.setText(Integer.toString(produto.getEstoqueMinimo()));
         desativarButton.setDisable(!produto.isAtivo());
         reativarButton.setDisable(produto.isAtivo());
+    }
+
+    /** Mantem visivel a categoria antiga caso ela tenha sido desativada. */
+    private void ensureCategoryAvailable(Categoria categoria) {
+        if (categoria != null && !categoriaCombo.getItems().contains(categoria)) {
+            categoriaCombo.getItems().add(categoria);
+        }
     }
 
     /** Converte a quantidade para inteiro e gera uma validacao amigavel em caso de erro. */

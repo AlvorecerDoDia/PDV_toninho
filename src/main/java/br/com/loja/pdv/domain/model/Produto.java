@@ -10,6 +10,7 @@ public class Produto {
     private Long id;
     private String codigoBarras;
     private String nome;
+    private Categoria categoria;
     private BigDecimal precoCusto;
     private BigDecimal precoVenda;
     private int quantidadeEstoque;
@@ -24,6 +25,8 @@ public class Produto {
     public void setCodigoBarras(String codigoBarras) { this.codigoBarras = codigoBarras; }
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
+    public Categoria getCategoria() { return categoria; }
+    public void setCategoria(Categoria categoria) { this.categoria = categoria; }
     public BigDecimal getPrecoCusto() { return precoCusto; }
     public void setPrecoCusto(BigDecimal precoCusto) { this.precoCusto = precoCusto; }
     public BigDecimal getPrecoVenda() { return precoVenda; }

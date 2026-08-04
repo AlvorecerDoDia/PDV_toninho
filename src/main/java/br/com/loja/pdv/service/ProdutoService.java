@@ -18,28 +18,41 @@ import java.util.Optional;
 public final class ProdutoService {
 
     private final ProdutoRepository repository;
+    private final CategoriaService categorias;
     private final Clock clock;
     private final AuditoriaService auditoria;
 
     /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public ProdutoService(ProdutoRepository repository) {
-        this(repository, null, Clock.systemDefaultZone());
+        this(repository, null, null, Clock.systemDefaultZone());
     }
 
     /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public ProdutoService(ProdutoRepository repository, AuditoriaService auditoria) {
-        this(repository, auditoria, Clock.systemDefaultZone());
+        this(repository, null, auditoria, Clock.systemDefaultZone());
+    }
+
+    /** Exige categorias validas no fluxo real de cadastro da aplicacao. */
+    public ProdutoService(
+            ProdutoRepository repository,
+            CategoriaService categorias,
+            AuditoriaService auditoria) {
+        this(repository, categorias, auditoria, Clock.systemDefaultZone());
     }
 
     /** Variante usada pelos testes sem auditoria e com relogio controlado. */
     ProdutoService(ProdutoRepository repository, Clock clock) {
-        this(repository, null, clock);
+        this(repository, null, null, clock);
     }
 
-    /** Construtor completo que recebe repositorio, auditoria e relogio. */
+    /** Construtor completo que recebe repositorio, categorias, auditoria e relogio. */
     ProdutoService(
-            ProdutoRepository repository, AuditoriaService auditoria, Clock clock) {
+            ProdutoRepository repository,
+            CategoriaService categorias,
+            AuditoriaService auditoria,
+            Clock clock) {
         this.repository = repository;
+        this.categorias = categorias;
         this.auditoria = auditoria;
         this.clock = clock;
     }
@@ -122,6 +135,18 @@ public final class ProdutoService {
         }
         produto.setNome(name);
         produto.setCodigoBarras(normalizeBarcode(produto.getCodigoBarras()));
+        if (categorias != null) {
+            if (produto.getCategoria() == null
+                    || produto.getCategoria().getId() == null
+                    || produto.getCategoria().getId() <= 0) {
+                throw new ValidationException("Selecione uma categoria para o produto.");
+            }
+            var categoria = categorias.buscarPorId(produto.getCategoria().getId());
+            if (!categoria.isAtiva()) {
+                throw new ValidationException("A categoria selecionada está inativa.");
+            }
+            produto.setCategoria(categoria);
+        }
         produto.setPrecoCusto(validateMoney(produto.getPrecoCusto(), "preço de custo"));
         produto.setPrecoVenda(validateMoney(produto.getPrecoVenda(), "preço de venda"));
         if (produto.getQuantidadeEstoque() < 0) {

@@ -37,7 +37,9 @@ class DatabaseMigratorTest {
             assertTrue(tableExists(statement, "item_venda"));
             assertTrue(tableExists(statement, "pagamento"));
             assertTrue(tableExists(statement, "auditoria"));
-            assertEquals(6, count(statement, "schema_version"));
+            assertTrue(tableExists(statement, "categoria"));
+            assertEquals(5, count(statement, "categoria"));
+            assertEquals(7, count(statement, "schema_version"));
         }
     }
 
@@ -52,7 +54,7 @@ class DatabaseMigratorTest {
 
         try (Connection connection = database.getConnection();
              Statement statement = connection.createStatement()) {
-            assertEquals(6, count(statement, "schema_version"));
+            assertEquals(7, count(statement, "schema_version"));
         }
     }
 
