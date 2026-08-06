@@ -48,7 +48,7 @@ public final class ProdutoController {
     private void initialize() {
         UiFormatters.moeda(custoField, vendaField);
         UiFormatters.inteiro(quantidadeField, minimoField);
-        categoriaCombo.getItems().setAll(categorias.listarAtivas());
+        categoriaCombo.getItems().setAll(categorias.listarTodas());
 
         nomeColumn.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getNome()));
         categoriaColumn.setCellValueFactory(row -> new SimpleStringProperty(
@@ -162,6 +162,16 @@ public final class ProdutoController {
             throw new NumberFormatException("Informe " + name + ".");
         }
         return Integer.parseInt(field.getText());
+    }
+
+    /** Atualiza categorias e produtos quando a aba Cadastro volta a ser exibida. */
+    void recarregar() {
+        if (categoriaCombo == null || tabela == null) return;
+        Categoria atual = categoriaCombo.getValue();
+        categoriaCombo.getItems().setAll(categorias.listarTodas());
+        ensureCategoryAvailable(atual);
+        if (atual != null) categoriaCombo.getSelectionModel().select(atual);
+        refresh();
     }
 
     /** Executa a pesquisa atual e substitui os itens exibidos na tabela. */

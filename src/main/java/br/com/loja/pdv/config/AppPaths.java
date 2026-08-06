@@ -33,7 +33,7 @@ public final class AppPaths {
         return baseDirectory().resolve("backups");
     }
 
-    /** Retorna a pasta usada pelos arquivos de log rotativos. */
+    /** Retorna a pasta usada pelos arquivo de log. */
     public static Path logDirectory() {
         return baseDirectory().resolve("logs");
     }

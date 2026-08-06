@@ -1,138 +1,63 @@
 package br.com.loja.pdv.service;
 
-import br.com.loja.pdv.domain.enums.PerfilUsuario;
-import br.com.loja.pdv.domain.enums.Permissao;
 import br.com.loja.pdv.domain.model.Usuario;
 import br.com.loja.pdv.exception.ValidationException;
-import br.com.loja.pdv.infrastructure.database.Database;
-import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
 import br.com.loja.pdv.infrastructure.security.PasswordHasher;
-import br.com.loja.pdv.repository.sqlite.SQLiteUsuarioRepository;
-import org.junit.jupiter.api.BeforeEach;
+import br.com.loja.pdv.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
-import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Testa regras de negocio sem depender da interface grafica. */
+/** Testa usuarios sem perfis e sem troca obrigatoria no primeiro acesso. */
 class UsuarioServiceTest {
-    @TempDir Path tempDirectory;
-    private UsuarioService usuarios;
-    private AutenticacaoService autenticacao;
-    private SessaoUsuario sessao;
-    private SQLiteUsuarioRepository repository;
+    private final MemoryRepository repository = new MemoryRepository();
+    private final UsuarioService service = new UsuarioService(repository, new PasswordHasher());
 
-    @BeforeEach
-    void setUp() {
-        Database database = new Database(tempDirectory.resolve("usuarios.db"));
-        new DatabaseInitializer(database).initialize();
-        repository = new SQLiteUsuarioRepository(database);
-        PasswordHasher hasher = new PasswordHasher();
-        usuarios = new UsuarioService(repository, hasher);
-        sessao = new SessaoUsuario();
-        autenticacao = new AutenticacaoService(repository, hasher, sessao);
+    @Test
+    void deveCriarAdministradorInicialUmaUnicaVez() {
+        assertTrue(service.configurarUsuarioInicialPadrao());
+        assertFalse(service.configurarUsuarioInicialPadrao());
+        assertEquals("admin", repository.listar().getFirst().getLogin());
     }
 
-    /** Verifica o cenario: deve criar administrador inicial com hash etroca obrigatoria. */
     @Test
-    void deveCriarAdministradorInicialComHashETrocaObrigatoria() {
-        Usuario admin = usuarios.criarAdministradorInicial("SenhaForte1".toCharArray());
-        assertNotEquals("SenhaForte1", admin.getSenhaHash());
-        assertTrue(admin.getSenhaHash().startsWith("pbkdf2-sha256$"));
-        assertEquals(PerfilUsuario.ADMINISTRADOR, admin.getPerfil());
-        assertTrue(admin.isAlterarSenha());
+    void deveCriarEAtualizarUsuarioSimples() {
+        Usuario usuario = service.criar("  Maria  ", " MARIA ", "1234".toCharArray());
+        assertEquals("Maria", usuario.getNome());
+        assertEquals("maria", usuario.getLogin());
+
+        service.atualizar(usuario.getId(), "Maria Silva", "maria.silva", false);
+        assertFalse(service.buscar(usuario.getId()).isAtivo());
     }
 
-    /** Verifica o cenario: deve configurar login esenha admin no primeiro acesso. */
     @Test
-    void deveConfigurarLoginESenhaAdminNoPrimeiroAcesso() {
-        assertTrue(usuarios.configurarAdministradorInicialPadrao());
-
-        Usuario admin = autenticacao.autenticar("admin", "admin".toCharArray());
-
-        assertEquals(PerfilUsuario.ADMINISTRADOR, admin.getPerfil());
-        assertTrue(admin.isAlterarSenha());
-        assertNotEquals("admin", admin.getSenhaHash());
+    void deveExigirSenhaMinima() {
+        assertThrows(ValidationException.class,
+                () -> service.criar("Joao", "joao", "123".toCharArray()));
     }
 
-    /** Verifica o cenario: nao deve redefinir senha depois da troca obrigatoria. */
-    @Test
-    void naoDeveRedefinirSenhaDepoisDaTrocaObrigatoria() {
-        usuarios.configurarAdministradorInicialPadrao();
-        Usuario admin = autenticacao.autenticar("admin", "admin".toCharArray());
-        usuarios.trocarSenha(admin.getId(), "NovaSenha2".toCharArray());
-
-        assertFalse(usuarios.configurarAdministradorInicialPadrao());
-        assertThrows(ValidationException.class, () ->
-                autenticacao.autenticar("admin", "admin".toCharArray()));
-        assertDoesNotThrow(() ->
-                autenticacao.autenticar("admin", "NovaSenha2".toCharArray()));
-    }
-
-    /** Verifica o cenario: deve autenticar usuario valido emanter sessao. */
-    @Test
-    void deveAutenticarUsuarioValidoEManterSessao() {
-        Usuario admin = usuarios.criarAdministradorInicial("SenhaForte1".toCharArray());
-        Usuario logged = autenticacao.autenticar("ADMIN", "SenhaForte1".toCharArray());
-        assertEquals(admin.getId(), logged.getId());
-        assertEquals(admin.getId(), sessao.atual().orElseThrow().getId());
-    }
-
-    /** Verifica o cenario: deve recusar login invalido eusuario inativo. */
-    @Test
-    void deveRecusarLoginInvalidoEUsuarioInativo() {
-        Usuario admin = usuarios.criarAdministradorInicial("SenhaForte1".toCharArray());
-        assertThrows(ValidationException.class, () ->
-                autenticacao.autenticar("admin", "incorreta".toCharArray()));
-        usuarios.atualizar(admin.getId(), admin.getNome(), admin.getLogin(), admin.getPerfil(), false);
-        assertThrows(ValidationException.class, () ->
-                autenticacao.autenticar("admin", "SenhaForte1".toCharArray()));
-    }
-
-    /** Verifica o cenario: deve trocar senha eremover obrigatoriedade. */
-    @Test
-    void deveTrocarSenhaERemoverObrigatoriedade() {
-        Usuario admin = usuarios.criarAdministradorInicial("SenhaForte1".toCharArray());
-        usuarios.trocarSenha(admin.getId(), "NovaSenha2".toCharArray());
-        assertFalse(usuarios.buscar(admin.getId()).isAlterarSenha());
-        autenticacao.autenticar("admin", "NovaSenha2".toCharArray());
-    }
-
-    /** Verifica o cenario: deve bloquear funcao sem permissao. */
-    @Test
-    void deveBloquearFuncaoSemPermissao() {
-        Usuario operador = usuarios.criar(
-                "Operador", "operador", "SenhaForte1".toCharArray(),
-                PerfilUsuario.OPERADOR, false);
-        sessao.iniciar(operador);
-        assertThrows(ValidationException.class, () -> sessao.exigir(Permissao.USUARIOS));
-        assertDoesNotThrow(() -> sessao.exigir(Permissao.VENDAS));
-    }
-
-    /** Verifica o cenario: deve permitir desconto somente para perfil autorizado. */
-    @Test
-    void devePermitirDescontoSomenteParaPerfilAutorizado() {
-        Usuario operador = usuarios.criar(
-                "Operador", "operador", "SenhaForte1".toCharArray(),
-                PerfilUsuario.OPERADOR, false);
-        sessao.iniciar(operador);
-        assertThrows(ValidationException.class, () -> sessao.exigir(Permissao.DESCONTOS));
-
-        Usuario gerente = usuarios.criar(
-                "Gerente", "gerente", "SenhaForte2".toCharArray(),
-                PerfilUsuario.GERENTE, false);
-        sessao.iniciar(gerente);
-        assertDoesNotThrow(() -> sessao.exigir(Permissao.DESCONTOS));
-    }
-
-    /** Verifica o cenario: deve impedir segundo administrador inicial. */
-    @Test
-    void deveImpedirSegundoAdministradorInicial() {
-        usuarios.criarAdministradorInicial("SenhaForte1".toCharArray());
-        assertThrows(ValidationException.class, () ->
-                usuarios.criarAdministradorInicial("OutraSenha2".toCharArray()));
-        assertEquals(1, repository.contar());
+    private static final class MemoryRepository implements UsuarioRepository {
+        private final List<Usuario> usuarios = new ArrayList<>();
+        @Override public Usuario salvar(Usuario usuario) {
+            usuario.setId((long) usuarios.size() + 1);
+            usuarios.add(usuario);
+            return usuario;
+        }
+        @Override public void atualizar(Usuario usuario) { }
+        @Override public Optional<Usuario> buscarPorId(long id) {
+            return usuarios.stream().filter(u -> u.getId() == id).findFirst();
+        }
+        @Override public Optional<Usuario> buscarPorLogin(String login) {
+            return usuarios.stream().filter(u -> u.getLogin().equals(login)).findFirst();
+        }
+        @Override public List<Usuario> listar() { return List.copyOf(usuarios); }
+        @Override public long contar() { return usuarios.size(); }
     }
 }

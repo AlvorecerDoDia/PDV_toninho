@@ -9,7 +9,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** Centraliza cadastro, consulta e situacao das categorias de produto. */
+/** Permite cadastrar, renomear e listar categorias. */
 public final class CategoriaService {
     private final CategoriaRepository repository;
     private final Clock clock;
@@ -24,16 +24,16 @@ public final class CategoriaService {
     }
 
     public Categoria cadastrar(String nome) {
-        String normalized = normalize(nome);
-        if (repository.buscarPorNome(normalized).isPresent()) {
+        String normalizado = normalizar(nome);
+        if (repository.buscarPorNome(normalizado).isPresent()) {
             throw new ValidationException("Já existe uma categoria com esse nome.");
         }
-        LocalDateTime now = LocalDateTime.now(clock);
+        LocalDateTime agora = LocalDateTime.now(clock);
         Categoria categoria = new Categoria();
-        categoria.setNome(normalized);
+        categoria.setNome(normalizado);
         categoria.setAtiva(true);
-        categoria.setCriadoEm(now);
-        categoria.setAtualizadoEm(now);
+        categoria.setCriadoEm(agora);
+        categoria.setAtualizadoEm(agora);
         return repository.salvar(categoria);
     }
 
@@ -41,16 +41,16 @@ public final class CategoriaService {
         if (categoria == null || categoria.getId() == null || categoria.getId() <= 0) {
             throw new ValidationException("Selecione uma categoria válida para atualizar.");
         }
-        Categoria persisted = buscarPorId(categoria.getId());
-        String normalized = normalize(categoria.getNome());
-        repository.buscarPorNome(normalized)
-                .filter(found -> !found.getId().equals(categoria.getId()))
-                .ifPresent(found -> {
+        Categoria persistida = buscarPorId(categoria.getId());
+        String normalizado = normalizar(categoria.getNome());
+        repository.buscarPorNome(normalizado)
+                .filter(encontrada -> !encontrada.getId().equals(categoria.getId()))
+                .ifPresent(encontrada -> {
                     throw new ValidationException("Já existe uma categoria com esse nome.");
                 });
-        categoria.setNome(normalized);
-        categoria.setAtiva(persisted.isAtiva());
-        categoria.setCriadoEm(persisted.getCriadoEm());
+        categoria.setNome(normalizado);
+        categoria.setAtiva(true);
+        categoria.setCriadoEm(persistida.getCriadoEm());
         categoria.setAtualizadoEm(LocalDateTime.now(clock));
         repository.atualizar(categoria);
     }
@@ -60,29 +60,15 @@ public final class CategoriaService {
                 .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada."));
     }
 
-    public List<Categoria> listarAtivas() {
-        return repository.listarAtivas();
-    }
-
     public List<Categoria> listarTodas() {
         return repository.listarTodas();
     }
 
-    public void desativar(long id) {
-        buscarPorId(id);
-        repository.desativar(id);
-    }
-
-    public void reativar(long id) {
-        buscarPorId(id);
-        repository.reativar(id);
-    }
-
-    private String normalize(String name) {
-        String normalized = name == null ? "" : name.strip().replaceAll("\\s+", " ");
-        if (normalized.isEmpty()) {
+    private String normalizar(String nome) {
+        String normalizado = nome == null ? "" : nome.strip().replaceAll("\\s+", " ");
+        if (normalizado.isEmpty()) {
             throw new ValidationException("O nome da categoria é obrigatório.");
         }
-        return normalized;
+        return normalizado;
     }
 }

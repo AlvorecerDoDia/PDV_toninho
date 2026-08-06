@@ -38,8 +38,10 @@ class DatabaseMigratorTest {
             assertTrue(tableExists(statement, "pagamento"));
             assertTrue(tableExists(statement, "auditoria"));
             assertTrue(tableExists(statement, "categoria"));
+            assertTrue(columnExists(statement, "item_venda", "categoria_id"));
+            assertTrue(columnExists(statement, "item_venda", "categoria_nome"));
             assertEquals(5, count(statement, "categoria"));
-            assertEquals(7, count(statement, "schema_version"));
+            assertEquals(8, count(statement, "schema_version"));
         }
     }
 
@@ -54,7 +56,7 @@ class DatabaseMigratorTest {
 
         try (Connection connection = database.getConnection();
              Statement statement = connection.createStatement()) {
-            assertEquals(7, count(statement, "schema_version"));
+            assertEquals(8, count(statement, "schema_version"));
         }
     }
 
@@ -122,6 +124,17 @@ class DatabaseMigratorTest {
                 """.formatted(table);
         try (ResultSet resultSet = statement.executeQuery(query)) {
             return resultSet.next() && resultSet.getInt(1) == 1;
+        }
+    }
+
+
+    private boolean columnExists(Statement statement, String table, String column)
+            throws SQLException {
+        try (ResultSet resultSet = statement.executeQuery("PRAGMA table_info(" + table + ")")) {
+            while (resultSet.next()) {
+                if (column.equals(resultSet.getString("name"))) return true;
+            }
+            return false;
         }
     }
 

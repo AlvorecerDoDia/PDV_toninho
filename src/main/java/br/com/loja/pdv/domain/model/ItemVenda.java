@@ -9,6 +9,8 @@ public class ItemVenda {
     private Long vendaId;
     private long produtoId;
     private String produtoNome;
+    private Long categoriaId;
+    private String categoriaNome;
     private int quantidade;
     private BigDecimal custoUnitario;
     private BigDecimal precoUnitario;
@@ -22,6 +24,10 @@ public class ItemVenda {
     public void setProdutoId(long produtoId) { this.produtoId = produtoId; }
     public String getProdutoNome() { return produtoNome; }
     public void setProdutoNome(String produtoNome) { this.produtoNome = produtoNome; }
+    public Long getCategoriaId() { return categoriaId; }
+    public void setCategoriaId(Long categoriaId) { this.categoriaId = categoriaId; }
+    public String getCategoriaNome() { return categoriaNome; }
+    public void setCategoriaNome(String categoriaNome) { this.categoriaNome = categoriaNome; }
     public int getQuantidade() { return quantidade; }
     public void setQuantidade(int quantidade) { this.quantidade = quantidade; }
     public BigDecimal getCustoUnitario() { return custoUnitario; }

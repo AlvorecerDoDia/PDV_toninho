@@ -1,29 +1,16 @@
 # Categorias de produtos
 
-A implementação usa uma entidade persistida porque as categorias são dados da loja,
-não regras fixas do programa. Isso evita recompilar o aplicativo sempre que a lista
-precisar crescer.
+Categorias sao dados persistidos no SQLite. Cada produto pertence a uma categoria.
 
-## Estrutura
+A tela Cadastro possui uma aba Categorias para:
 
-- `Categoria`: modelo com ID, nome, situação e datas;
-- `CategoriaRepository`: contrato de persistência;
-- `SQLiteCategoriaRepository`: implementação SQLite;
-- `CategoriaService`: validação, cadastro, consulta, ativação e desativação;
-- `produto.categoria_id`: chave estrangeira que liga cada produto a uma categoria;
-- `ComboBox<Categoria>`: seleção obrigatória no cadastro de produtos.
+- cadastrar;
+- renomear;
+- listar.
 
-## Migração de bancos existentes
+Categorias nao sao apagadas porque produtos e vendas antigas podem referencia-las.
+A migracao V007 cria as categorias iniciais e associa produtos antigos a
+`Sem categoria`.
 
-A migração `V007__cria_categoria_produto.sql` cria as categorias iniciais e atribui
-`Sem categoria` aos produtos já existentes. Assim, nenhum registro antigo é perdido.
-
-## Categorias iniciais
-
-- Sem categoria
-- Papelaria
-- Brinquedos
-- Acessórios
-- Outros
-
-A estrutura já permite adicionar uma tela de administração de categorias no futuro.
+O Historico usa a categoria gravada no item no momento da venda. Por isso, o nome
+historico permanece correto mesmo quando a categoria atual e renomeada.

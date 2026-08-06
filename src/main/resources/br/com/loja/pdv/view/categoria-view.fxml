@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Cadastro simples de categorias. -->
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.loja.pdv.controller.CategoriaController" styleClass="page-shell">
+    <VBox styleClass="page-header">
+        <Label text="Categorias" styleClass="page-title"/>
+        <Label text="Cadastre ou renomeie as categorias usadas nos produtos."
+               styleClass="page-subtitle"/>
+    </VBox>
+    <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <SplitPane dividerPositions="0.38" VBox.vgrow="ALWAYS">
+        <items>
+            <VBox spacing="10" styleClass="card">
+                <Label text="Dados da categoria" styleClass="section-title"/>
+                <VBox spacing="4">
+                    <Label text="Nome" styleClass="field-label"/>
+                    <TextField fx:id="nomeField" promptText="Ex.: Papelaria"/>
+                </VBox>
+                <HBox spacing="8">
+                    <Button text="Salvar" onAction="#save" styleClass="button, primary"/>
+                    <Button text="Limpar" onAction="#clear" styleClass="button, ghost"/>
+                </HBox>
+                <Label text="Categorias usadas por produtos não são apagadas."
+                       wrapText="true" styleClass="field-hint"/>
+            </VBox>
+            <VBox spacing="8" styleClass="card">
+                <Label text="Categorias cadastradas" styleClass="section-title"/>
+                <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
+                    <placeholder><Label text="Nenhuma categoria cadastrada."/></placeholder>
+                    <columns>
+                        <TableColumn fx:id="nomeColumn" text="Nome" prefWidth="420"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </items>
+    </SplitPane>
+</VBox>

@@ -5,14 +5,11 @@ import br.com.loja.pdv.domain.model.Categoria;
 import java.util.List;
 import java.util.Optional;
 
-/** Contrato CRUD das categorias de produtos. */
+/** Contrato simples de cadastro e consulta de categorias. */
 public interface CategoriaRepository {
     Categoria salvar(Categoria categoria);
     void atualizar(Categoria categoria);
     Optional<Categoria> buscarPorId(long id);
     Optional<Categoria> buscarPorNome(String nome);
-    List<Categoria> listarAtivas();
     List<Categoria> listarTodas();
-    void desativar(long id);
-    void reativar(long id);
 }

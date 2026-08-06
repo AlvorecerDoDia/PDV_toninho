@@ -5,29 +5,27 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.*;
 
-/** Instala os handlers de console e arquivo rotativo do java.util.logging. */
+/** Configura um unico arquivo de log e a saida de avisos no console. */
 public final class LoggingConfigurator {
-    /** Impede a criacao de instancias de uma classe formada apenas por funcoes utilitarias. */
     private LoggingConfigurator() {}
 
-    /** Cria a pasta de logs e instala saidas de console e arquivo rotativo. */
     public static void configurar(Path diretorio) {
         try {
             Files.createDirectories(diretorio);
-            Logger root = Logger.getLogger("");
-            for (Handler handler : root.getHandlers()) root.removeHandler(handler);
+            Logger raiz = Logger.getLogger("");
+            for (Handler handler : raiz.getHandlers()) raiz.removeHandler(handler);
 
             FileHandler arquivo = new FileHandler(
-                    diretorio.resolve("pdv-%g.log").toString(), 2_000_000, 5, true);
+                    diretorio.resolve("pdv.log").toString(), true);
             arquivo.setEncoding("UTF-8");
             arquivo.setFormatter(new SimpleFormatter());
             arquivo.setLevel(Level.ALL);
-            root.addHandler(arquivo);
+            raiz.addHandler(arquivo);
 
             ConsoleHandler console = new ConsoleHandler();
             console.setLevel(Level.WARNING);
-            root.addHandler(console);
-            root.setLevel(Level.INFO);
+            raiz.addHandler(console);
+            raiz.setLevel(Level.INFO);
         } catch (IOException exception) {
             System.err.println("Não foi possível iniciar o log em arquivo: "
                     + exception.getMessage());

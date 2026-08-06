@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Estrutura principal com navegacao por contexto e estado da sessao. -->
+<!-- Estrutura principal com somente as areas essenciais do PDV. -->
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="br.com.loja.pdv.controller.MainController"
             stylesheets="@../css/app.css" styleClass="page">
-    <fx:define>
-        <ToggleGroup fx:id="navGroup"/>
-    </fx:define>
-    <!-- Barra persistente mostra contexto, caixa e usuario autenticado. -->
+    <fx:define><ToggleGroup fx:id="navGroup"/></fx:define>
     <top>
         <HBox styleClass="app-bar">
             <VBox styleClass="app-brand-block">
@@ -21,7 +18,6 @@
             <Label fx:id="usuarioLabel" styleClass="status-chip, session-indicator"/>
         </HBox>
     </top>
-    <!-- Menu lateral apresenta apenas opcoes permitidas pelo perfil. -->
     <left>
         <VBox styleClass="nav-panel">
             <Label text="OPERAÇÃO" styleClass="nav-section"/>
@@ -31,18 +27,13 @@
             <ToggleButton fx:id="caixaNav" text="Caixa"
                           toggleGroup="$navGroup" onAction="#showCaixa"
                           maxWidth="Infinity" styleClass="toggle-button, nav-button"/>
-
-            <Label fx:id="consultasSection" text="CONSULTAS" styleClass="nav-section"/>
-            <ToggleButton fx:id="historicoNav" text="Histórico de vendas"
+            <Label text="CONSULTAS" styleClass="nav-section"/>
+            <ToggleButton fx:id="historicoNav" text="Histórico"
                           toggleGroup="$navGroup" onAction="#showHistorico"
                           maxWidth="Infinity" styleClass="toggle-button, nav-button"/>
-            <ToggleButton fx:id="relatoriosNav" text="Relatórios"
-                          toggleGroup="$navGroup" onAction="#showRelatorios"
-                          maxWidth="Infinity" styleClass="toggle-button, nav-button"/>
-
-            <Label fx:id="gestaoSection" text="GESTÃO" styleClass="nav-section"/>
-            <ToggleButton fx:id="produtosNav" text="Produtos"
-                          toggleGroup="$navGroup" onAction="#showProdutos"
+            <Label text="GESTÃO" styleClass="nav-section"/>
+            <ToggleButton fx:id="cadastroNav" text="Cadastro"
+                          toggleGroup="$navGroup" onAction="#showCadastro"
                           maxWidth="Infinity" styleClass="toggle-button, nav-button"/>
             <ToggleButton fx:id="estoqueNav" text="Estoque"
                           toggleGroup="$navGroup" onAction="#showEstoque"
@@ -50,29 +41,21 @@
             <ToggleButton fx:id="usuariosNav" text="Usuários"
                           toggleGroup="$navGroup" onAction="#showUsuarios"
                           maxWidth="Infinity" styleClass="toggle-button, nav-button"/>
-
-            <Label fx:id="sistemaSection" text="SISTEMA" styleClass="nav-section"/>
-            <ToggleButton fx:id="backupNav" text="Backup e restauração"
-                          toggleGroup="$navGroup" onAction="#showBackup"
-                          maxWidth="Infinity" styleClass="toggle-button, nav-button"/>
             <Region VBox.vgrow="ALWAYS"/>
             <Label text="Selecione uma área para continuar." wrapText="true" styleClass="hint">
                 <VBox.margin><Insets top="12" right="8" bottom="4" left="8"/></VBox.margin>
             </Label>
         </VBox>
     </left>
-    <!-- As abas sao usadas como conteiner; seus cabecalhos ficam ocultos pelo CSS. -->
     <center>
         <TabPane fx:id="tabs" tabClosingPolicy="UNAVAILABLE" styleClass="main-tabs">
             <tabs>
                 <Tab fx:id="vendasTab" text="Venda"><content><fx:include source="venda-view.fxml"/></content></Tab>
                 <Tab fx:id="caixaTab" text="Caixa"><content><fx:include source="caixa-view.fxml"/></content></Tab>
-                <Tab fx:id="historicoTab" text="Histórico"><content><fx:include source="historico-venda-view.fxml"/></content></Tab>
-                <Tab fx:id="relatoriosTab" text="Relatórios"><content><fx:include source="relatorio-view.fxml"/></content></Tab>
-                <Tab fx:id="produtosTab" text="Produtos"><content><fx:include source="produto-view.fxml"/></content></Tab>
+                <Tab fx:id="historicoTab" text="Histórico"><content><fx:include source="historico-view.fxml"/></content></Tab>
+                <Tab fx:id="cadastroTab" text="Cadastro"><content><fx:include source="cadastro-view.fxml"/></content></Tab>
                 <Tab fx:id="estoqueTab" text="Estoque"><content><fx:include source="estoque-view.fxml"/></content></Tab>
                 <Tab fx:id="usuariosTab" text="Usuários"><content><fx:include source="usuario-view.fxml"/></content></Tab>
-                <Tab fx:id="backupTab" text="Backup"><content><fx:include source="backup-view.fxml"/></content></Tab>
             </tabs>
         </TabPane>
     </center>

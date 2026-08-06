@@ -1,89 +1,84 @@
 package br.com.loja.pdv.controller;
 
-import br.com.loja.pdv.domain.enums.PerfilUsuario;
-import br.com.loja.pdv.domain.enums.Permissao;
 import br.com.loja.pdv.domain.model.Usuario;
-import br.com.loja.pdv.service.SessaoUsuario;
 import br.com.loja.pdv.service.UsuarioService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
-/** Controla cadastro e manutencao dos usuarios e perfis. */
+/** Controla o cadastro simples de usuarios. */
 public final class UsuarioController {
     @FXML private TextField nomeField;
     @FXML private TextField loginField;
     @FXML private PasswordField senhaField;
-    @FXML private ComboBox<PerfilUsuario> perfilCombo;
     @FXML private CheckBox ativoCheck;
     @FXML private Label mensagemLabel;
     @FXML private TableView<Usuario> tabela;
     @FXML private TableColumn<Usuario, String> nomeColumn;
     @FXML private TableColumn<Usuario, String> loginColumn;
-    @FXML private TableColumn<Usuario, String> perfilColumn;
     @FXML private TableColumn<Usuario, String> statusColumn;
-    private final UsuarioService service;
-    private final SessaoUsuario sessao;
-    private Usuario selected;
 
-    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
-    public UsuarioController(UsuarioService service, SessaoUsuario sessao) {
+    private final UsuarioService service;
+    private Usuario selecionado;
+
+    public UsuarioController(UsuarioService service) {
         this.service = service;
-        this.sessao = sessao;
     }
 
-    /** Configura perfis, colunas e selecao da tabela de usuarios. */
     @FXML
     private void initialize() {
-        perfilCombo.getItems().setAll(PerfilUsuario.values());
-        nomeColumn.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getNome()));
-        loginColumn.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getLogin()));
-        perfilColumn.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getPerfil().name()));
-        statusColumn.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().isAtivo() ? "Ativo" : "Inativo"));
+        nomeColumn.setCellValueFactory(row ->
+                new SimpleStringProperty(row.getValue().getNome()));
+        loginColumn.setCellValueFactory(row ->
+                new SimpleStringProperty(row.getValue().getLogin()));
+        statusColumn.setCellValueFactory(row ->
+                new SimpleStringProperty(row.getValue().isAtivo() ? "Ativo" : "Inativo"));
         tabela.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, value) -> select(value));
-        refresh();
+                (observable, anterior, atual) -> selecionar(atual));
+        recarregar();
     }
 
-    /** Cria um usuario novo ou atualiza os dados do usuario selecionado. */
     @FXML
     private void save() {
         try {
-            sessao.exigir(Permissao.USUARIOS);
-            if (selected == null) {
+            if (selecionado == null) {
                 service.criar(nomeField.getText(), loginField.getText(),
-                        senhaField.getText().toCharArray(), perfilCombo.getValue(), true);
+                        senhaField.getText().toCharArray());
             } else {
-                service.atualizar(selected.getId(), nomeField.getText(), loginField.getText(),
-                        perfilCombo.getValue(), ativoCheck.isSelected());
+                service.atualizar(selecionado.getId(), nomeField.getText(),
+                        loginField.getText(), ativoCheck.isSelected());
                 if (!senhaField.getText().isBlank()) {
-                    service.trocarSenha(selected.getId(), senhaField.getText().toCharArray());
+                    service.trocarSenha(
+                            selecionado.getId(), senhaField.getText().toCharArray());
                 }
             }
             clear();
-            refresh();
+            recarregar();
             mensagemLabel.setText("Usuário salvo.");
         } catch (RuntimeException exception) {
             mensagemLabel.setText(ErrorHandler.mensagem(exception));
         }
     }
 
-    @FXML private void clear() {
-        selected = null;
+    @FXML
+    private void clear() {
+        selecionado = null;
         tabela.getSelectionModel().clearSelection();
-        nomeField.clear(); loginField.clear(); senhaField.clear();
-        perfilCombo.setValue(PerfilUsuario.OPERADOR);
+        nomeField.clear();
+        loginField.clear();
+        senhaField.clear();
         ativoCheck.setSelected(true);
     }
-    /** Recarrega todos os usuarios persistidos. */
-    private void refresh() { tabela.getItems().setAll(service.listar()); }
-    /** Preenche o formulario e protege o campo de senha durante a edicao. */
-    private void select(Usuario usuario) {
-        selected = usuario;
+
+    private void recarregar() {
+        tabela.getItems().setAll(service.listar());
+    }
+
+    private void selecionar(Usuario usuario) {
+        selecionado = usuario;
         if (usuario == null) return;
         nomeField.setText(usuario.getNome());
         loginField.setText(usuario.getLogin());
-        perfilCombo.setValue(usuario.getPerfil());
         ativoCheck.setSelected(usuario.isAtivo());
         senhaField.clear();
     }

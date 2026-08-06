@@ -67,31 +67,6 @@ public final class SQLiteCaixaRepository implements CaixaRepository {
                 """, usuarioId);
     }
 
-    /** Insere uma movimentacao somente se o caixa ainda estiver aberto. */
-    @Override
-    public MovimentacaoCaixa registrar(MovimentacaoCaixa movimentacao) {
-        try (Connection connection = database.getConnection()) {
-            connection.setAutoCommit(false);
-            try {
-                // Recalcula o valor esperado dentro da transacao para evitar saldo obsoleto.
-                ensureOpen(connection, movimentacao.getCaixaId());
-                BigDecimal expected = expected(connection, movimentacao.getCaixaId());
-                BigDecimal next = movimentacao.getTipo().aplicar(expected, movimentacao.getValor());
-                if (next.signum() < 0) {
-                    throw new ValidationException("A sangria supera o dinheiro esperado.");
-                }
-                insertMovement(connection, movimentacao);
-                connection.commit();
-                return movimentacao;
-            } catch (RuntimeException | SQLException exception) {
-                rollback(connection, exception);
-                throw translate("Não foi possível registrar a movimentação de caixa.", exception);
-            }
-        } catch (SQLException exception) {
-            throw new DatabaseException("Não foi possível acessar o caixa.", exception);
-        }
-    }
-
     /** Atualiza os valores finais e o status dentro de uma transacao. */
     @Override
     public Caixa fechar(long caixaId, BigDecimal valorContado, LocalDateTime fechadoEm) {

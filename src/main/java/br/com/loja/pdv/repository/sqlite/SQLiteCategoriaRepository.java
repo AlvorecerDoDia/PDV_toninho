@@ -6,17 +6,13 @@ import br.com.loja.pdv.exception.EntityNotFoundException;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.repository.CategoriaRepository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/** Persiste as categorias usadas pelo catalogo de produtos. */
+/** Persiste categorias usando a estrutura existente do banco. */
 public final class SQLiteCategoriaRepository implements CategoriaRepository {
     private final Database database;
 
@@ -28,12 +24,14 @@ public final class SQLiteCategoriaRepository implements CategoriaRepository {
     public Categoria salvar(Categoria categoria) {
         String sql = """
                 INSERT INTO categoria (nome, ativa, criado_em, atualizado_em)
-                VALUES (?, ?, ?, ?)
+                VALUES (?, 1, ?, ?)
                 """;
         try (Connection connection = database.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                      sql, Statement.RETURN_GENERATED_KEYS)) {
-            bind(statement, categoria);
+            statement.setString(1, categoria.getNome());
+            statement.setString(2, categoria.getCriadoEm().toString());
+            statement.setString(3, categoria.getAtualizadoEm().toString());
             statement.executeUpdate();
             try (ResultSet keys = statement.getGeneratedKeys()) {
                 if (!keys.next()) {
@@ -43,117 +41,74 @@ public final class SQLiteCategoriaRepository implements CategoriaRepository {
             }
             return categoria;
         } catch (SQLException exception) {
-            throw translate(exception);
+            throw new DatabaseException("Não foi possível salvar a categoria.", exception);
         }
     }
 
     @Override
     public void atualizar(Categoria categoria) {
         String sql = """
-                UPDATE categoria
-                SET nome = ?, ativa = ?, criado_em = ?, atualizado_em = ?
-                WHERE id = ?
+                UPDATE categoria SET nome = ?, ativa = 1, atualizado_em = ? WHERE id = ?
                 """;
         try (Connection connection = database.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            bind(statement, categoria);
-            statement.setLong(5, categoria.getId());
+            statement.setString(1, categoria.getNome());
+            statement.setString(2, categoria.getAtualizadoEm().toString());
+            statement.setLong(3, categoria.getId());
             if (statement.executeUpdate() == 0) {
                 throw new EntityNotFoundException("Categoria não encontrada.");
             }
         } catch (SQLException exception) {
-            throw translate(exception);
+            throw new DatabaseException("Não foi possível atualizar a categoria.", exception);
         }
     }
 
     @Override
     public Optional<Categoria> buscarPorId(long id) {
-        return findOne("SELECT * FROM categoria WHERE id = ?", statement -> statement.setLong(1, id));
+        return um("SELECT * FROM categoria WHERE id = ?", statement -> statement.setLong(1, id));
     }
 
     @Override
     public Optional<Categoria> buscarPorNome(String nome) {
-        return findOne(
-                "SELECT * FROM categoria WHERE nome = ? COLLATE NOCASE",
+        return um("SELECT * FROM categoria WHERE nome = ? COLLATE NOCASE",
                 statement -> statement.setString(1, nome));
     }
 
     @Override
-    public List<Categoria> listarAtivas() {
-        return list("SELECT * FROM categoria WHERE ativa = 1 ORDER BY nome", null);
-    }
-
-    @Override
     public List<Categoria> listarTodas() {
-        return list("SELECT * FROM categoria ORDER BY ativa DESC, nome", null);
+        return listar("SELECT * FROM categoria ORDER BY nome", null);
     }
 
-    @Override
-    public void desativar(long id) {
-        updateStatus(id, false);
+    private Optional<Categoria> um(String sql, Binder binder) {
+        return listar(sql, binder).stream().findFirst();
     }
 
-    @Override
-    public void reativar(long id) {
-        updateStatus(id, true);
-    }
-
-    private void updateStatus(long id, boolean active) {
-        String sql = "UPDATE categoria SET ativa = ?, atualizado_em = ? WHERE id = ?";
-        try (Connection connection = database.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setBoolean(1, active);
-            statement.setString(2, LocalDateTime.now().toString());
-            statement.setLong(3, id);
-            if (statement.executeUpdate() == 0) {
-                throw new EntityNotFoundException("Categoria não encontrada.");
-            }
-        } catch (SQLException exception) {
-            throw translate(exception);
-        }
-    }
-
-    private Optional<Categoria> findOne(String sql, SqlBinder binder) {
-        return list(sql, binder).stream().findFirst();
-    }
-
-    private List<Categoria> list(String sql, SqlBinder binder) {
+    private List<Categoria> listar(String sql, Binder binder) {
         try (Connection connection = database.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             if (binder != null) binder.bind(statement);
             try (ResultSet resultSet = statement.executeQuery()) {
-                List<Categoria> categories = new ArrayList<>();
-                while (resultSet.next()) categories.add(map(resultSet));
-                return categories;
+                List<Categoria> categorias = new ArrayList<>();
+                while (resultSet.next()) categorias.add(mapear(resultSet));
+                return categorias;
             }
         } catch (SQLException exception) {
-            throw translate(exception);
+            throw new DatabaseException("Não foi possível consultar as categorias.", exception);
         }
     }
 
-    private void bind(PreparedStatement statement, Categoria categoria) throws SQLException {
-        statement.setString(1, categoria.getNome());
-        statement.setBoolean(2, categoria.isAtiva());
-        statement.setString(3, categoria.getCriadoEm().toString());
-        statement.setString(4, categoria.getAtualizadoEm().toString());
-    }
-
-    private Categoria map(ResultSet resultSet) throws SQLException {
+    private Categoria mapear(ResultSet resultSet) throws SQLException {
         Categoria categoria = new Categoria();
         categoria.setId(resultSet.getLong("id"));
         categoria.setNome(resultSet.getString("nome"));
-        categoria.setAtiva(resultSet.getBoolean("ativa"));
+        categoria.setAtiva(true);
         categoria.setCriadoEm(LocalDateTime.parse(resultSet.getString("criado_em")));
         categoria.setAtualizadoEm(LocalDateTime.parse(resultSet.getString("atualizado_em")));
         return categoria;
     }
 
-    private RuntimeException translate(SQLException exception) {
-        return new DatabaseException("Não foi possível acessar as categorias.", exception);
-    }
-
     @FunctionalInterface
-    private interface SqlBinder {
+    private interface Binder {
         void bind(PreparedStatement statement) throws SQLException;
     }
 }

@@ -9,81 +9,65 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.List;
 
-/**
- * Monta pagamentos, valida os valores recebidos e calcula o troco da venda.
- */
+/** Cria um unico pagamento para cada venda. */
 public final class PagamentoService {
     private final Clock clock;
 
-    /** Recebe as dependencias necessarias para aplicar as regras deste caso de uso. */
     public PagamentoService() {
         this(Clock.systemDefaultZone());
     }
 
-    /** Variante usada pelos testes para controlar a data dos pagamentos. */
     PagamentoService(Clock clock) {
         this.clock = clock;
     }
 
-    /** Cria uma parcela valida com valor positivo e horario atual. */
-    public Pagamento criar(FormaPagamento forma, BigDecimal valor) {
-        if (forma == null) throw new ValidationException("Informe a forma de pagamento.");
+    public Pagamento criar(
+            FormaPagamento forma, BigDecimal valorInformado, BigDecimal total) {
+        if (forma == null) {
+            throw new ValidationException("Informe a forma de pagamento.");
+        }
+        BigDecimal totalNormalizado = normalizarPositivo(total, "total da venda");
+        BigDecimal valor;
+        if (forma == FormaPagamento.DINHEIRO) {
+            valor = normalizarPositivo(valorInformado, "valor recebido");
+            if (valor.compareTo(totalNormalizado) < 0) {
+                throw new ValidationException("O valor recebido é insuficiente.");
+            }
+        } else {
+            valor = totalNormalizado;
+        }
         Pagamento pagamento = new Pagamento();
         pagamento.setForma(forma);
-        pagamento.setValor(normalizePositive(valor));
+        pagamento.setValor(valor);
         pagamento.setCriadoEm(LocalDateTime.now(clock));
         return pagamento;
     }
 
-    /** Confirma cobertura do total e permite troco somente sobre dinheiro. */
-    public BigDecimal validarECalcularTroco(
-            BigDecimal total, List<Pagamento> pagamentos) {
-        if (total == null || total.signum() < 0) {
-            throw new ValidationException("O total da venda é inválido.");
+    public BigDecimal calcularTroco(BigDecimal total, Pagamento pagamento) {
+        if (pagamento == null || pagamento.getForma() == null) {
+            throw new ValidationException("Pagamento inválido.");
         }
-        List<Pagamento> safePayments = pagamentos == null ? List.of() : pagamentos;
-        BigDecimal received = BigDecimal.ZERO.setScale(2);
-        BigDecimal cash = BigDecimal.ZERO.setScale(2);
-        for (Pagamento payment : safePayments) {
-            if (payment == null || payment.getForma() == null
-                    || payment.getCriadoEm() == null) {
-                throw new ValidationException("Pagamento inválido.");
-            }
-            BigDecimal value = normalizePositive(payment.getValor());
-            received = received.add(value);
-            if (payment.getForma() == FormaPagamento.DINHEIRO) cash = cash.add(value);
+        if (pagamento.getForma() != FormaPagamento.DINHEIRO) {
+            return BigDecimal.ZERO.setScale(2);
         }
-        if (received.compareTo(total) < 0) {
-            throw new ValidationException("A soma dos pagamentos é insuficiente.");
+        BigDecimal troco = pagamento.getValor().subtract(total);
+        if (troco.signum() < 0) {
+            throw new ValidationException("O valor recebido é insuficiente.");
         }
-        BigDecimal change = received.subtract(total);
-        if (change.compareTo(cash) > 0) {
-            throw new ValidationException("PIX e cartão não podem gerar troco.");
-        }
-        return change;
+        return troco.setScale(2);
     }
 
-    /** Soma todas as parcelas de pagamento. */
-    public BigDecimal totalRecebido(List<Pagamento> pagamentos) {
-        if (pagamentos == null) return BigDecimal.ZERO.setScale(2);
-        return pagamentos.stream()
-                .map(Pagamento::getValor)
-                .reduce(BigDecimal.ZERO.setScale(2), BigDecimal::add);
-    }
-
-    /** Normaliza para duas casas e exige valor maior que zero. */
-    private BigDecimal normalizePositive(BigDecimal value) {
-        if (value == null || value.signum() <= 0) {
-            throw new ValidationException("O valor do pagamento deve ser maior que zero.");
+    private BigDecimal normalizarPositivo(BigDecimal valor, String campo) {
+        if (valor == null || valor.signum() <= 0) {
+            throw new ValidationException("O " + campo + " deve ser maior que zero.");
         }
         try {
-            MoneyUtils.toCents(value);
-            return value.setScale(2, RoundingMode.UNNECESSARY);
+            MoneyUtils.toCents(valor);
+            return valor.setScale(2, RoundingMode.UNNECESSARY);
         } catch (ArithmeticException exception) {
             throw new ValidationException(
-                    "O pagamento deve possuir no máximo duas casas decimais.");
+                    "O " + campo + " deve possuir no máximo duas casas decimais.");
         }
     }
 }

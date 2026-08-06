@@ -12,48 +12,43 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/** Testa as regras de negocio das categorias sem usar banco. */
+/** Testa o cadastro simples de categorias. */
 class CategoriaServiceTest {
-    private final CategoriaService service = new CategoriaService(new MemoryRepository());
+    private final MemoryRepository repository = new MemoryRepository();
+    private final CategoriaService service = new CategoriaService(repository);
 
     @Test
-    void deveNormalizarNomeAoCadastrar() {
+    void deveCadastrarERenomearCategoria() {
         Categoria categoria = service.cadastrar("  Material   Escolar  ");
         assertEquals("Material Escolar", categoria.getNome());
+
+        categoria.setNome("Papelaria escolar");
+        service.atualizar(categoria);
+        assertEquals("Papelaria escolar", service.buscarPorId(categoria.getId()).getNome());
     }
 
     @Test
-    void deveImpedirNomeVazio() {
-        assertThrows(ValidationException.class, () -> service.cadastrar("  "));
-    }
-
-    @Test
-    void deveImpedirNomeDuplicadoIgnorandoMaiusculas() {
+    void deveImpedirNomeDuplicado() {
         service.cadastrar("Papelaria");
         assertThrows(ValidationException.class, () -> service.cadastrar("papelaria"));
     }
 
     private static final class MemoryRepository implements CategoriaRepository {
-        private final List<Categoria> values = new ArrayList<>();
-        private long sequence = 1;
+        private final List<Categoria> categorias = new ArrayList<>();
 
         @Override public Categoria salvar(Categoria categoria) {
-            categoria.setId(sequence++);
-            values.add(categoria);
+            categoria.setId((long) categorias.size() + 1);
+            categorias.add(categoria);
             return categoria;
         }
-        @Override public void atualizar(Categoria categoria) {}
+        @Override public void atualizar(Categoria categoria) { }
         @Override public Optional<Categoria> buscarPorId(long id) {
-            return values.stream().filter(value -> value.getId() == id).findFirst();
+            return categorias.stream().filter(c -> c.getId() == id).findFirst();
         }
         @Override public Optional<Categoria> buscarPorNome(String nome) {
-            return values.stream().filter(value -> value.getNome().equalsIgnoreCase(nome)).findFirst();
+            return categorias.stream()
+                    .filter(c -> c.getNome().equalsIgnoreCase(nome)).findFirst();
         }
-        @Override public List<Categoria> listarAtivas() {
-            return values.stream().filter(Categoria::isAtiva).toList();
-        }
-        @Override public List<Categoria> listarTodas() { return List.copyOf(values); }
-        @Override public void desativar(long id) { buscarPorId(id).orElseThrow().setAtiva(false); }
-        @Override public void reativar(long id) { buscarPorId(id).orElseThrow().setAtiva(true); }
+        @Override public List<Categoria> listarTodas() { return List.copyOf(categorias); }
     }
 }

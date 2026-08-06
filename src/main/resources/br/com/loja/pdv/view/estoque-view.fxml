@@ -1,68 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Movimentacao de estoque com saldo e historico em areas separadas. -->
-<?import javafx.geometry.Insets?>
+<!-- Estoque simplificado para entrada e ajuste de saldo. -->
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="br.com.loja.pdv.controller.EstoqueController" styleClass="page-shell">
     <VBox styleClass="page-header">
         <Label text="Estoque" styleClass="page-title"/>
-        <Label text="Registre entradas, ajustes, perdas e devoluções com motivo rastreável."
+        <Label text="Registre entradas ou ajuste diretamente o saldo do produto."
                styleClass="page-subtitle"/>
     </VBox>
     <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
-    <!-- O painel esquerdo registra; o direito consulta o historico. -->
     <SplitPane dividerPositions="0.36" VBox.vgrow="ALWAYS">
         <items>
-            <!-- Formulario de uma nova movimentacao. -->
             <VBox spacing="10" styleClass="card">
-                <VBox spacing="1">
-                    <Label text="Nova movimentação" styleClass="section-title"/>
-                    <Label text="Confira o produto e o saldo antes de registrar." styleClass="hint"/>
+                <Label text="Produto e saldo" styleClass="section-title"/>
+                <ComboBox fx:id="produtoCombo" promptText="Selecione um produto"
+                          maxWidth="Infinity"/>
+                <Label fx:id="saldoLabel" text="Saldo: —" styleClass="balance-chip"/>
+                <Separator/>
+                <VBox spacing="5">
+                    <Label text="Registrar entrada" styleClass="section-title"/>
+                    <TextField fx:id="entradaField" promptText="Quantidade recebida"/>
+                    <Button text="Adicionar ao estoque" onAction="#registerEntry"
+                            styleClass="button, primary" maxWidth="Infinity"/>
                 </VBox>
-                <VBox spacing="4">
-                    <Label text="Produto" styleClass="field-label"/>
-                    <ComboBox fx:id="produtoCombo" maxWidth="Infinity"/>
-                </VBox>
-                <Label fx:id="saldoLabel" text="Saldo atual: --" styleClass="balance-chip"/>
-                <VBox spacing="4">
-                    <Label text="Tipo de movimentação" styleClass="field-label"/>
-                    <ComboBox fx:id="tipoCombo" maxWidth="Infinity"/>
-                </VBox>
-                <VBox spacing="4">
-                    <Label text="Quantidade" styleClass="field-label"/>
-                    <TextField fx:id="quantidadeField" promptText="Informe a quantidade"/>
+                <Separator/>
+                <VBox spacing="5">
+                    <Label text="Ajustar saldo" styleClass="section-title"/>
+                    <Label text="Informe a quantidade final que deve ficar no estoque."
+                           wrapText="true" styleClass="hint"/>
+                    <TextField fx:id="novoSaldoField" promptText="Novo saldo"/>
+                    <Button text="Aplicar ajuste" onAction="#adjustBalance"
+                            maxWidth="Infinity"/>
                 </VBox>
                 <VBox spacing="4" VBox.vgrow="ALWAYS">
                     <Label text="Motivo" styleClass="field-label"/>
-                    <TextArea fx:id="motivoArea" promptText="Explique a origem da movimentação"
+                    <TextArea fx:id="motivoArea"
+                              promptText="Obrigatório para ajuste; opcional para entrada"
                               prefRowCount="4" wrapText="true" VBox.vgrow="ALWAYS"/>
                 </VBox>
-                <Button text="Registrar movimentação" onAction="#register"
-                        styleClass="button, primary" maxWidth="Infinity"/>
             </VBox>
-            <!-- Consulta por produto e periodo. -->
             <VBox spacing="9" styleClass="card">
                 <HBox alignment="CENTER_LEFT">
                     <VBox spacing="1">
-                        <Label text="Histórico" styleClass="section-title"/>
-                        <Label text="Use o período para localizar movimentações." styleClass="hint"/>
+                        <Label text="Movimentações" styleClass="section-title"/>
+                        <Label text="Consulte o histórico do produto selecionado."
+                               styleClass="hint"/>
                     </VBox>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Label text="De" styleClass="field-label"/>
                     <DatePicker fx:id="inicioPicker"/>
                     <Label text="Até" styleClass="field-label"/>
                     <DatePicker fx:id="fimPicker"/>
-                    <Button text="Aplicar filtro" onAction="#refresh"/>
+                    <Button text="Aplicar" onAction="#refresh"/>
                 </HBox>
                 <TableView fx:id="historicoTable" VBox.vgrow="ALWAYS">
                     <placeholder><Label text="Nenhuma movimentação no período."/></placeholder>
                     <columns>
                         <TableColumn fx:id="dataColumn" text="Data" prefWidth="145"/>
-                        <TableColumn fx:id="tipoColumn" text="Tipo" prefWidth="145"/>
+                        <TableColumn fx:id="tipoColumn" text="Tipo" prefWidth="110"/>
                         <TableColumn fx:id="quantidadeColumn" text="Qtd." prefWidth="65"/>
                         <TableColumn fx:id="saldoColumn" text="Saldo" prefWidth="90"/>
-                        <TableColumn fx:id="motivoColumn" text="Motivo" prefWidth="260"/>
+                        <TableColumn fx:id="motivoColumn" text="Motivo" prefWidth="300"/>
                     </columns>
                 </TableView>
             </VBox>

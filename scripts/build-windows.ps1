@@ -1,33 +1,32 @@
 [CmdletBinding()]
-param(
-    [switch]$Installer
-)
+param()
 
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 
 Push-Location $projectRoot
 try {
-    # Compila e testa antes de preparar qualquer distribuicao.
+    # Compila e testa antes de preparar o aplicativo portatil.
     & ".\mvnw.cmd" clean package
     if ($LASTEXITCODE -ne 0) {
-        throw "A compilação Maven falhou."
+        throw "A compilacao Maven falhou."
     }
 
     $packageInput = Join-Path $projectRoot "target\package-input"
     New-Item -ItemType Directory -Path $packageInput -Force | Out-Null
-    # O jpackage recebe o JAR da aplicacao e todas as dependencias de execucao.
+
+    # Copia as dependencias usadas durante a execucao.
     & ".\mvnw.cmd" dependency:copy-dependencies `
         "-DincludeScope=runtime" `
         "-DoutputDirectory=$packageInput"
     if ($LASTEXITCODE -ne 0) {
-        throw "Não foi possível preparar as dependências do aplicativo."
+        throw "Nao foi possivel preparar as dependencias do aplicativo."
     }
+
     Copy-Item -LiteralPath (Join-Path $projectRoot "target\pdv-toninho.jar") `
         -Destination $packageInput -Force
 
     $jpackage = $null
-    # Prioriza o JDK explicitamente configurado e usa o PATH como alternativa.
     if ($env:JAVA_HOME) {
         $candidate = Join-Path $env:JAVA_HOME "bin\jpackage.exe"
         if (Test-Path -LiteralPath $candidate) {
@@ -41,42 +40,26 @@ try {
         }
     }
     if (-not $jpackage) {
-        throw "jpackage.exe não encontrado. Instale um JDK 21 e configure JAVA_HOME."
+        throw "jpackage.exe nao encontrado. Instale um JDK 21 e configure JAVA_HOME."
     }
 
-    $packageType = if ($Installer) { "exe" } else { "app-image" }
-    # PdvLauncher evita a inicializacao especial do JavaFX ao abrir o executavel.
-    $arguments = @(
-        "--type", $packageType,
-        "--name", "PDV Toninho",
-        "--app-version", "1.0.0",
-        "--vendor", "PDV Toninho",
-        "--description", "Sistema local de ponto de venda",
-        "--dest", (Join-Path $projectRoot "target\distribution"),
-        "--input", $packageInput,
-        "--main-jar", "pdv-toninho.jar",
-        "--main-class", "br.com.loja.pdv.PdvLauncher",
-        "--java-options", "-Dfile.encoding=UTF-8"
-    )
-    if ($Installer) {
-        $arguments += @(
-            "--win-dir-chooser",
-            "--win-menu",
-            "--win-menu-group", "PDV Toninho",
-            "--win-shortcut"
-        )
-    }
+    & $jpackage `
+        --type app-image `
+        --name "PDV Toninho" `
+        --app-version "1.0.0" `
+        --vendor "PDV Toninho" `
+        --description "Sistema local de ponto de venda" `
+        --dest (Join-Path $projectRoot "target\distribution") `
+        --input $packageInput `
+        --main-jar "pdv-toninho.jar" `
+        --main-class "br.com.loja.pdv.PdvLauncher" `
+        --java-options "-Dfile.encoding=UTF-8"
 
-    & $jpackage @arguments
     if ($LASTEXITCODE -ne 0) {
-        throw "O jpackage não conseguiu gerar o pacote Windows."
+        throw "O jpackage nao conseguiu gerar o aplicativo portatil."
     }
 
-    if ($Installer) {
-        Write-Host "Instalador criado em target\distribution."
-    } else {
-        Write-Host "Aplicativo portátil criado em target\distribution\PDV Toninho."
-    }
+    Write-Host "Aplicativo criado em target\distribution\PDV Toninho."
 } finally {
     Pop-Location
 }

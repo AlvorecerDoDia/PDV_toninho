@@ -3,6 +3,7 @@ package br.com.loja.pdv.repository.sqlite;
 import br.com.loja.pdv.domain.enums.StatusVenda;
 import br.com.loja.pdv.domain.model.ItemVenda;
 import br.com.loja.pdv.domain.model.Pagamento;
+import br.com.loja.pdv.domain.model.ProdutoVendidoHistorico;
 import br.com.loja.pdv.domain.model.Venda;
 import br.com.loja.pdv.exception.DatabaseException;
 import br.com.loja.pdv.exception.ValidationException;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /** Executa venda e cancelamento como transacoes completas do SQLite. */
 public final class SQLiteVendaRepository implements VendaRepository {
@@ -27,7 +29,7 @@ public final class SQLiteVendaRepository implements VendaRepository {
         this.database = database;
     }
 
-    /** Persiste venda, itens, pagamentos, estoque e caixa na mesma transacao. */
+    /** Persiste venda, item, pagamento, estoque e caixa na mesma transacao. */
     @Override
     public Venda finalizar(Venda venda) {
         try (Connection connection = database.getConnection()) {
@@ -46,7 +48,6 @@ public final class SQLiteVendaRepository implements VendaRepository {
                     insertPayment(connection, venda.getId(), payment);
                 }
                 insertCashMovement(connection, venda);
-                insertDiscountAudit(connection, venda);
                 connection.commit();
                 return venda;
             } catch (RuntimeException | SQLException exception) {
@@ -123,15 +124,56 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
-    /** Estorna estoque e caixa, marca a venda e registra auditoria na mesma transacao. */
+    /** Consulta itens vendidos no periodo e filtra por qualquer categoria selecionada. */
+    @Override
+    public List<ProdutoVendidoHistorico> listarProdutosVendidos(
+            LocalDateTime inicio, LocalDateTime fim, Set<Long> categoriaIds) {
+        List<Long> categorias = categoriaIds == null
+                ? List.of()
+                : categoriaIds.stream().sorted().toList();
+        String filtroCategorias = categorias.isEmpty()
+                ? ""
+                : " AND i.categoria_id IN (" + String.join(", ",
+                        categorias.stream().map(id -> "?").toList()) + ")";
+        String sql = """
+                SELECT i.id item_id, v.id venda_id, v.numero numero_venda,
+                       v.criado_em data_venda, i.produto_id, i.produto_nome,
+                       i.categoria_id, COALESCE(i.categoria_nome, 'Sem categoria') categoria_nome,
+                       i.quantidade, i.preco_unitario_centavos, i.subtotal_centavos
+                FROM item_venda i
+                JOIN venda v ON v.id = i.venda_id
+                WHERE v.status = 'FINALIZADA'
+                  AND v.criado_em >= ? AND v.criado_em <= ?
+                """ + filtroCategorias + " ORDER BY v.criado_em DESC, i.id DESC";
+        try (Connection connection = database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, inicio.toString());
+            statement.setString(2, fim.toString());
+            int index = 3;
+            for (Long categoriaId : categorias) {
+                statement.setLong(index++, categoriaId);
+            }
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<ProdutoVendidoHistorico> result = new ArrayList<>();
+                while (resultSet.next()) {
+                    result.add(mapProdutoVendido(resultSet));
+                }
+                return result;
+            }
+        } catch (SQLException exception) {
+            throw new DatabaseException(
+                    "Não foi possível consultar os produtos vendidos.", exception);
+        }
+    }
+
+    /** Estorna estoque e caixa e marca a venda na mesma transacao. */
     @Override
     public Venda cancelar(
             long vendaId, long usuarioId, String motivo, LocalDateTime canceladoEm) {
         try (Connection connection = database.getConnection()) {
             connection.setAutoCommit(false);
             try {
-                // O cancelamento so e concluido depois de devolver todos os itens,
-                // estornar o caixa e registrar a auditoria na mesma transacao.
+                // O cancelamento devolve estoque e estorna o caixa na mesma transacao.
                 Venda venda = findSale(connection, vendaId);
                 if (venda.getStatus() == StatusVenda.CANCELADA) {
                     throw new ValidationException("A venda já foi cancelada.");
@@ -145,8 +187,6 @@ public final class SQLiteVendaRepository implements VendaRepository {
                 if (cashToReverse.signum() > 0) {
                     reverseCash(connection, venda, usuarioId, motivo, canceladoEm, cashToReverse);
                 }
-                insertCancellationAudit(
-                        connection, venda, usuarioId, motivo, canceladoEm);
                 connection.commit();
                 venda.setStatus(StatusVenda.CANCELADA);
                 venda.setCanceladoEm(canceladoEm);
@@ -312,47 +352,6 @@ public final class SQLiteVendaRepository implements VendaRepository {
         }
     }
 
-    /** Registra os dados essenciais do cancelamento para rastreabilidade. */
-    private void insertCancellationAudit(
-            Connection connection, Venda venda, long usuarioId, String motivo,
-            LocalDateTime canceledAt) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement("""
-                INSERT INTO auditoria (
-                    usuario_id, acao, entidade, entidade_id,
-                    valores_anteriores, valores_novos, criado_em
-                ) VALUES (?, 'CANCELAMENTO', 'VENDA', ?, ?, ?, ?)
-                """)) {
-            statement.setLong(1, usuarioId);
-            statement.setLong(2, venda.getId());
-            statement.setString(3, "status=FINALIZADA");
-            statement.setString(4, "status=CANCELADA; motivo=" + motivo);
-            statement.setString(5, canceledAt.toString());
-            statement.executeUpdate();
-        }
-    }
-
-    /** Registra descontos aplicados durante a venda. */
-    private void insertDiscountAudit(Connection connection, Venda venda)
-            throws SQLException {
-        if (venda.getDesconto().signum() == 0) return;
-        try (PreparedStatement statement = connection.prepareStatement("""
-                INSERT INTO auditoria (
-                    usuario_id, acao, entidade, entidade_id,
-                    valores_anteriores, valores_novos, criado_em
-                ) VALUES (?, 'DESCONTO', 'VENDA', ?, ?, ?, ?)
-                """)) {
-            statement.setLong(1, venda.getOperadorId());
-            statement.setLong(2, venda.getId());
-            statement.setString(3, "subtotal="
-                    + venda.getSubtotal().toPlainString());
-            statement.setString(4, "desconto="
-                    + venda.getDesconto().toPlainString()
-                    + "; total=" + venda.getTotal().toPlainString());
-            statement.setString(5, venda.getCriadoEm().toString());
-            statement.executeUpdate();
-        }
-    }
-
     /** Confirma que a venda esta vinculada a um caixa ainda aberto. */
     private void ensureOpenCashRegister(Connection connection, Venda venda) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
@@ -372,9 +371,12 @@ public final class SQLiteVendaRepository implements VendaRepository {
     /** Bloqueia produtos, valida saldo e copia precos historicos para os itens. */
     private void validateAndCaptureStock(Connection connection, Venda venda) throws SQLException {
         String sql = """
-                SELECT nome, preco_custo_centavos, preco_venda_centavos,
-                       quantidade_estoque, ativo
-                FROM produto WHERE id = ?
+                SELECT p.nome, p.preco_custo_centavos, p.preco_venda_centavos,
+                       p.quantidade_estoque, p.ativo, p.categoria_id,
+                       COALESCE(c.nome, 'Sem categoria') categoria_nome
+                FROM produto p
+                LEFT JOIN categoria c ON c.id = p.categoria_id
+                WHERE p.id = ?
                 """;
         for (ItemVenda item : venda.getItens()) {
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -395,6 +397,9 @@ public final class SQLiteVendaRepository implements VendaRepository {
                                         + " foi alterado. Atualize o carrinho.");
                     }
                     item.setProdutoNome(resultSet.getString("nome"));
+                    long categoriaId = resultSet.getLong("categoria_id");
+                    item.setCategoriaId(resultSet.wasNull() ? null : categoriaId);
+                    item.setCategoriaNome(resultSet.getString("categoria_nome"));
                     item.setCustoUnitario(MoneyUtils.fromCents(
                             resultSet.getLong("preco_custo_centavos")));
                 }
@@ -434,19 +439,26 @@ public final class SQLiteVendaRepository implements VendaRepository {
             throws SQLException {
         String sql = """
                 INSERT INTO item_venda (
-                    venda_id, produto_id, produto_nome, quantidade,
-                    custo_unitario_centavos, preco_unitario_centavos, subtotal_centavos
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    venda_id, produto_id, produto_nome, categoria_id, categoria_nome,
+                    quantidade, custo_unitario_centavos,
+                    preco_unitario_centavos, subtotal_centavos
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement statement = connection.prepareStatement(
                 sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setLong(1, vendaId);
             statement.setLong(2, item.getProdutoId());
             statement.setString(3, item.getProdutoNome());
-            statement.setInt(4, item.getQuantidade());
-            statement.setLong(5, MoneyUtils.toCents(item.getCustoUnitario()));
-            statement.setLong(6, MoneyUtils.toCents(item.getPrecoUnitario()));
-            statement.setLong(7, MoneyUtils.toCents(item.getSubtotal()));
+            if (item.getCategoriaId() == null) {
+                statement.setNull(4, Types.BIGINT);
+            } else {
+                statement.setLong(4, item.getCategoriaId());
+            }
+            statement.setString(5, item.getCategoriaNome());
+            statement.setInt(6, item.getQuantidade());
+            statement.setLong(7, MoneyUtils.toCents(item.getCustoUnitario()));
+            statement.setLong(8, MoneyUtils.toCents(item.getPrecoUnitario()));
+            statement.setLong(9, MoneyUtils.toCents(item.getSubtotal()));
             statement.executeUpdate();
             try (ResultSet keys = statement.getGeneratedKeys()) {
                 if (keys.next()) item.setId(keys.getLong(1));
@@ -569,6 +581,9 @@ public final class SQLiteVendaRepository implements VendaRepository {
         item.setVendaId(resultSet.getLong("venda_id"));
         item.setProdutoId(resultSet.getLong("produto_id"));
         item.setProdutoNome(resultSet.getString("produto_nome"));
+        long categoriaId = resultSet.getLong("categoria_id");
+        item.setCategoriaId(resultSet.wasNull() ? null : categoriaId);
+        item.setCategoriaNome(resultSet.getString("categoria_nome"));
         item.setQuantidade(resultSet.getInt("quantidade"));
         item.setCustoUnitario(MoneyUtils.fromCents(
                 resultSet.getLong("custo_unitario_centavos")));
@@ -576,6 +591,26 @@ public final class SQLiteVendaRepository implements VendaRepository {
                 resultSet.getLong("preco_unitario_centavos")));
         item.setSubtotal(MoneyUtils.fromCents(resultSet.getLong("subtotal_centavos")));
         return item;
+    }
+
+
+    /** Converte uma linha da consulta consolidada em produto vendido. */
+    private ProdutoVendidoHistorico mapProdutoVendido(ResultSet resultSet)
+            throws SQLException {
+        long categoriaId = resultSet.getLong("categoria_id");
+        Long categoria = resultSet.wasNull() ? null : categoriaId;
+        return new ProdutoVendidoHistorico(
+                resultSet.getLong("item_id"),
+                resultSet.getLong("venda_id"),
+                resultSet.getString("numero_venda"),
+                LocalDateTime.parse(resultSet.getString("data_venda")),
+                resultSet.getLong("produto_id"),
+                resultSet.getString("produto_nome"),
+                categoria,
+                resultSet.getString("categoria_nome"),
+                resultSet.getInt("quantidade"),
+                MoneyUtils.fromCents(resultSet.getLong("preco_unitario_centavos")),
+                MoneyUtils.fromCents(resultSet.getLong("subtotal_centavos")));
     }
 
     /** Desfaz toda a venda ou cancelamento quando qualquer etapa falha. */

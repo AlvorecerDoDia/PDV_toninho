@@ -1,68 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Caixa organizado por estado, operacoes e historico. -->
-<?import javafx.geometry.Insets?>
+<!-- Caixa simplificado sem suprimento ou sangria manual. -->
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="br.com.loja.pdv.controller.CaixaController" styleClass="page-shell">
-    <!-- Estado atual do caixa permanece visivel no topo. -->
     <HBox alignment="CENTER_LEFT">
         <VBox styleClass="page-header">
             <Label text="Caixa" styleClass="page-title"/>
-            <Label text="Abra o turno, registre movimentações e confira o fechamento."
+            <Label text="Abra o caixa, realize as vendas e confira o fechamento."
                    styleClass="page-subtitle"/>
         </VBox>
         <Region HBox.hgrow="ALWAYS"/>
-        <Label fx:id="statusLabel" styleClass="balance-chip"/>
+        <VBox alignment="CENTER_RIGHT">
+            <Label fx:id="statusLabel" styleClass="balance-chip"/>
+            <Label fx:id="esperadoLabel" styleClass="hint"/>
+        </VBox>
     </HBox>
     <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
-    <!-- Abertura e fechamento sao fluxos opostos e ficam visualmente separados. -->
     <HBox spacing="12">
         <VBox spacing="9" HBox.hgrow="ALWAYS" styleClass="card">
-            <Label text="Início do turno" styleClass="section-title"/>
-            <Label text="Informe o dinheiro disponível antes da primeira venda." wrapText="true" styleClass="hint"/>
+            <Label text="Abrir caixa" styleClass="section-title"/>
+            <Label text="Informe o dinheiro disponível no início do atendimento."
+                   wrapText="true" styleClass="hint"/>
             <HBox spacing="8">
-                <TextField fx:id="aberturaField" promptText="Valor de abertura" HBox.hgrow="ALWAYS"/>
-                <Button text="Abrir caixa" onAction="#open" styleClass="button, primary"/>
+                <TextField fx:id="aberturaField" promptText="Valor inicial"
+                           HBox.hgrow="ALWAYS"/>
+                <Button text="Abrir" onAction="#open" styleClass="button, primary"/>
             </HBox>
         </VBox>
         <VBox spacing="9" HBox.hgrow="ALWAYS" styleClass="card, card-danger">
-            <Label text="Encerramento do turno" styleClass="section-title"/>
-            <Label text="Conte o dinheiro físico antes de fechar. Esta ação exige confirmação."
+            <Label text="Fechar caixa" styleClass="section-title"/>
+            <Label text="Conte o dinheiro físico e informe o valor encontrado."
                    wrapText="true" styleClass="hint"/>
             <HBox spacing="8">
-                <TextField fx:id="contadoField" promptText="Valor contado" HBox.hgrow="ALWAYS"/>
-                <Button text="Fechar caixa" onAction="#close" styleClass="button, danger"/>
+                <TextField fx:id="contadoField" promptText="Valor contado"
+                           HBox.hgrow="ALWAYS"/>
+                <Button text="Fechar" onAction="#close" styleClass="button, danger"/>
             </HBox>
         </VBox>
     </HBox>
-    <!-- Suprimento e sangria alteram apenas o dinheiro fisico do caixa. -->
-    <VBox spacing="9" styleClass="card">
-        <HBox alignment="CENTER_LEFT">
-            <VBox spacing="1">
-                <Label text="Entrada ou retirada" styleClass="section-title"/>
-                <Label text="O motivo ajuda na conferência e na auditoria." styleClass="hint"/>
-            </VBox>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Atualizar histórico" onAction="#refresh" styleClass="button, ghost"/>
-        </HBox>
-        <HBox spacing="8">
-            <TextField fx:id="valorField" promptText="Valor" prefWidth="150"/>
-            <TextField fx:id="motivoField" promptText="Informe o motivo" HBox.hgrow="ALWAYS"/>
-            <Button text="Registrar suprimento" onAction="#supply"/>
-            <Button text="Registrar sangria" onAction="#withdraw" styleClass="button, danger"/>
-        </HBox>
-    </VBox>
-    <!-- Historico usado para conferencia do turno atual. -->
     <VBox spacing="8" VBox.vgrow="ALWAYS" styleClass="card">
-        <Label text="Movimentações do caixa atual" styleClass="section-title"/>
+        <HBox alignment="CENTER_LEFT">
+            <Label text="Movimentações automáticas" styleClass="section-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Atualizar" onAction="#refresh" styleClass="button, ghost"/>
+        </HBox>
         <TableView fx:id="movimentacoesTable" VBox.vgrow="ALWAYS">
             <placeholder><Label text="Nenhuma movimentação registrada."/></placeholder>
             <columns>
-                <TableColumn fx:id="dataColumn" text="Data" prefWidth="155"/>
-                <TableColumn fx:id="tipoColumn" text="Tipo" prefWidth="170"/>
-                <TableColumn fx:id="valorColumn" text="Valor" prefWidth="130"/>
-                <TableColumn fx:id="motivoColumn" text="Motivo" prefWidth="420"/>
+                <TableColumn fx:id="dataColumn" text="Data" prefWidth="190"/>
+                <TableColumn fx:id="tipoColumn" text="Tipo" prefWidth="190"/>
+                <TableColumn fx:id="valorColumn" text="Valor" prefWidth="170"/>
             </columns>
         </TableView>
     </VBox>

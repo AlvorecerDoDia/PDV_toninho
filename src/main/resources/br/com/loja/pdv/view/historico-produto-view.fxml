@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Consulta produtos vendidos por periodo e varias categorias. -->
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="br.com.loja.pdv.controller.HistoricoProdutoController"
+      styleClass="page-shell">
+    <VBox styleClass="page-header">
+        <Label text="Produtos vendidos" styleClass="page-title"/>
+        <Label text="Consulte os itens vendidos em um período e combine várias categorias no mesmo filtro."
+               styleClass="page-subtitle"/>
+    </VBox>
+    <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
+    <VBox spacing="8" styleClass="card, card-compact">
+        <Label text="Filtros" styleClass="section-title"/>
+        <HBox spacing="8">
+            <VBox spacing="4">
+                <Label text="Data inicial" styleClass="field-label"/>
+                <DatePicker fx:id="inicioPicker"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Data final" styleClass="field-label"/>
+                <DatePicker fx:id="fimPicker"/>
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Categorias" styleClass="field-label"/>
+                <MenuButton fx:id="categoriaMenu" text="Todas as categorias"
+                            maxWidth="Infinity"/>
+                <Label text="Marque uma ou mais categorias. Sem seleção, todas serão incluídas."
+                       styleClass="field-hint"/>
+            </VBox>
+            <Button text="Pesquisar" onAction="#search" styleClass="button, primary">
+                <HBox.margin><Insets top="21"/></HBox.margin>
+            </Button>
+            <Button text="Limpar" onAction="#clearFilters" styleClass="button, ghost">
+                <HBox.margin><Insets top="21"/></HBox.margin>
+            </Button>
+        </HBox>
+    </VBox>
+    <HBox spacing="10">
+        <VBox styleClass="metric-card" HBox.hgrow="ALWAYS">
+            <Label text="UNIDADES VENDIDAS" styleClass="metric-label"/>
+            <Label fx:id="quantidadeTotalLabel" text="0" styleClass="metric-value"/>
+        </VBox>
+        <VBox styleClass="metric-card, total-card" HBox.hgrow="ALWAYS">
+            <Label text="VALOR DOS ITENS" styleClass="metric-label"/>
+            <Label fx:id="valorTotalLabel" text="R$ 0,00" styleClass="metric-value"/>
+        </VBox>
+    </HBox>
+    <VBox spacing="8" styleClass="card" VBox.vgrow="ALWAYS">
+        <Label text="Resultados" styleClass="section-title"/>
+        <TableView fx:id="tabela" VBox.vgrow="ALWAYS">
+            <placeholder><Label text="Nenhum produto vendido encontrado."/></placeholder>
+            <columns>
+                <TableColumn fx:id="dataColumn" text="Data" prefWidth="135"/>
+                <TableColumn fx:id="vendaColumn" text="Venda" prefWidth="205"/>
+                <TableColumn fx:id="produtoColumn" text="Produto" prefWidth="230"/>
+                <TableColumn fx:id="categoriaColumn" text="Categoria" prefWidth="145"/>
+                <TableColumn fx:id="quantidadeColumn" text="Qtd." prefWidth="65"/>
+                <TableColumn fx:id="unitarioColumn" text="Unitário" prefWidth="105"/>
+                <TableColumn fx:id="subtotalColumn" text="Subtotal" prefWidth="110"/>
+            </columns>
+        </TableView>
+    </VBox>
+</VBox>

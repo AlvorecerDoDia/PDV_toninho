@@ -1,16 +1,15 @@
 package br.com.loja.pdv;
 
-import br.com.loja.pdv.controller.*;
 import br.com.loja.pdv.config.AppPaths;
+import br.com.loja.pdv.controller.*;
 import br.com.loja.pdv.domain.model.CarrinhoVenda;
+import br.com.loja.pdv.infrastructure.backup.GerenciadorBackup;
 import br.com.loja.pdv.infrastructure.database.Database;
 import br.com.loja.pdv.infrastructure.database.DatabaseInitializer;
-import br.com.loja.pdv.infrastructure.security.PasswordHasher;
+import br.com.loja.pdv.infrastructure.logging.LoggingConfigurator;
 import br.com.loja.pdv.infrastructure.printing.FormatadorComprovante;
 import br.com.loja.pdv.infrastructure.printing.ImpressoraWindows;
-import br.com.loja.pdv.infrastructure.reporting.ExportadorCsv;
-import br.com.loja.pdv.infrastructure.backup.GerenciadorBackup;
-import br.com.loja.pdv.infrastructure.logging.LoggingConfigurator;
+import br.com.loja.pdv.infrastructure.security.PasswordHasher;
 import br.com.loja.pdv.repository.sqlite.*;
 import br.com.loja.pdv.service.*;
 import javafx.application.Application;
@@ -24,78 +23,75 @@ import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Monta as dependencias e controla a troca entre login e tela principal. */
+/** Monta as dependencias e controla login, telas e backup automatico. */
 public class App extends Application {
-    // Objetos compartilhados durante toda a execucao da aplicacao.
     private Database database;
-    private UsuarioService userService;
-    private AutenticacaoService authenticationService;
-    private SessaoUsuario session;
-    private SQLiteProdutoRepository productRepository;
-    private CategoriaService categoryService;
-    private SQLiteCaixaRepository cashRepository;
-    private CarrinhoVenda saleCart;
-    private PagamentoService paymentService;
-    private VendaService saleService;
-    private BackupService backupService;
-    private AuditoriaService auditService;
-    private boolean initialAdminConfigured;
+    private UsuarioService usuarioService;
+    private AutenticacaoService autenticacaoService;
+    private SessaoUsuario sessao;
+    private SQLiteProdutoRepository produtoRepository;
+    private CategoriaService categoriaService;
+    private SQLiteCaixaRepository caixaRepository;
+    private CarrinhoVenda carrinho;
+    private PagamentoService pagamentoService;
+    private VendaService vendaService;
+    private GerenciadorBackup backup;
+    private boolean usuarioInicialCriado;
 
-    /** Monta as dependencias compartilhadas antes de qualquer tela ser exibida. */
     @Override
     public void init() {
         LoggingConfigurator.configurar(AppPaths.logDirectory());
         Thread.setDefaultUncaughtExceptionHandler(ErrorHandler::registrarInesperado);
         database = Database.local();
         new DatabaseInitializer(database).initialize();
-        SQLiteUsuarioRepository userRepository = new SQLiteUsuarioRepository(database);
-        PasswordHasher passwordHasher = new PasswordHasher();
-        session = new SessaoUsuario();
-        auditService = new AuditoriaService(
-                new SQLiteAuditoriaRepository(database), session);
-        userService = new UsuarioService(userRepository, passwordHasher, auditService);
-        authenticationService = new AutenticacaoService(
-                userRepository, passwordHasher, session);
-        productRepository = new SQLiteProdutoRepository(database);
-        categoryService = new CategoriaService(new SQLiteCategoriaRepository(database));
-        cashRepository = new SQLiteCaixaRepository(database);
-        saleCart = new CarrinhoVenda();
-        paymentService = new PagamentoService();
-        saleService = new VendaService(
-                new SQLiteVendaRepository(database), productRepository, cashRepository,
-                session, paymentService);
-        backupService = new BackupService(
-                new GerenciadorBackup(database, AppPaths.backupDirectory()),
-                session, auditService);
-        initialAdminConfigured = userService.configurarAdministradorInicialPadrao();
+
+        SQLiteUsuarioRepository usuarioRepository =
+                new SQLiteUsuarioRepository(database);
+        PasswordHasher hasher = new PasswordHasher();
+        sessao = new SessaoUsuario();
+        usuarioService = new UsuarioService(usuarioRepository, hasher);
+        autenticacaoService = new AutenticacaoService(
+                usuarioRepository, hasher, sessao);
+        produtoRepository = new SQLiteProdutoRepository(database);
+        categoriaService = new CategoriaService(
+                new SQLiteCategoriaRepository(database));
+        caixaRepository = new SQLiteCaixaRepository(database);
+        carrinho = new CarrinhoVenda();
+        pagamentoService = new PagamentoService();
+        vendaService = new VendaService(
+                new SQLiteVendaRepository(database),
+                produtoRepository,
+                caixaRepository,
+                sessao,
+                pagamentoService);
+        backup = new GerenciadorBackup(database, AppPaths.backupDirectory());
+        usuarioInicialCriado = usuarioService.configurarUsuarioInicialPadrao();
     }
 
-    /** Configura a janela principal e inicia o fluxo pela tela de login. */
     @Override
     public void start(Stage stage) throws IOException {
-        showLogin(stage);
+        mostrarLogin(stage);
         stage.setTitle("PDV Toninho");
         stage.show();
-        if (initialAdminConfigured) {
+        if (usuarioInicialCriado) {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Primeiro acesso");
-            alert.setHeaderText("Administrador inicial configurado");
-            alert.setContentText("Login: admin\nSenha temporária: admin"
-                    + "\nA troca será exigida no primeiro acesso.");
+            alert.setHeaderText("Usuário inicial criado");
+            alert.setContentText("Login: admin\nSenha: admin"
+                    + "\nA senha pode ser alterada na tela Usuários.");
             alert.showAndWait();
-            initialAdminConfigured = false;
+            usuarioInicialCriado = false;
         }
     }
 
-    /** Carrega o FXML de login e injeta no controller os servicos de autenticacao. */
-    private void showLogin(Stage stage) throws IOException {
+    private void mostrarLogin(Stage stage) throws IOException {
         FXMLLoader loader = loader("/br/com/loja/pdv/view/login-view.fxml");
-        loader.setControllerFactory(type -> {
-            if (type == LoginController.class) {
+        loader.setControllerFactory(tipo -> {
+            if (tipo == LoginController.class) {
                 return new LoginController(
-                        authenticationService, userService, () -> showMainUnchecked(stage));
+                        autenticacaoService, () -> mostrarPrincipalSemExcecao(stage));
             }
-            throw unconfigured(type);
+            throw naoConfigurado(tipo);
         });
         stage.setScene(new Scene(loader.load(), 760, 520));
         stage.setMinWidth(720);
@@ -103,89 +99,91 @@ public class App extends Application {
         stage.centerOnScreen();
     }
 
-    /** Converte a falha verificada de carregamento em erro de inicializacao da interface. */
-    private void showMainUnchecked(Stage stage) {
+    private void mostrarPrincipalSemExcecao(Stage stage) {
         try {
-            showMain(stage);
+            mostrarPrincipal(stage);
         } catch (IOException exception) {
-            throw new IllegalStateException("Não foi possível abrir a tela principal.", exception);
+            throw new IllegalStateException(
+                    "Não foi possível abrir a tela principal.", exception);
         }
     }
 
-    /** Carrega a estrutura principal, define o tamanho minimo e centraliza a janela. */
-    private void showMain(Stage stage) throws IOException {
+    private void mostrarPrincipal(Stage stage) throws IOException {
         FXMLLoader loader = loader("/br/com/loja/pdv/view/main-view.fxml");
-        loader.setControllerFactory(type -> createMainController(type));
+        loader.setControllerFactory(this::criarControllerPrincipal);
         stage.setScene(new Scene(loader.load(), 1366, 768));
         stage.setMinWidth(1180);
         stage.setMinHeight(700);
         stage.centerOnScreen();
     }
 
-    /** Cria cada controller com as dependencias corretas sem usar um framework de injecao. */
-    private Object createMainController(Class<?> type) {
-        ProdutoService productService = new ProdutoService(
-                productRepository, categoryService, auditService);
-        if (type == MainController.class) {
-            return new MainController(
-                    session, new CaixaService(cashRepository, session, auditService));
+    private Object criarControllerPrincipal(Class<?> tipo) {
+        ProdutoService produtos = new ProdutoService(
+                produtoRepository, categoriaService);
+        CaixaService caixa = new CaixaService(caixaRepository, sessao);
+        if (tipo == MainController.class) return new MainController(sessao, caixa);
+        if (tipo == VendaController.class) {
+            return new VendaController(produtos, sessao, carrinho);
         }
-        if (type == VendaController.class) {
-            return new VendaController(productService, session, saleCart);
+        if (tipo == PagamentoController.class) {
+            return new PagamentoController(
+                    pagamentoService, vendaService, carrinho);
         }
-        if (type == PagamentoController.class) {
-            return new PagamentoController(paymentService, saleService, saleCart);
-        }
-        if (type == HistoricoVendaController.class) {
-            FormatadorComprovante formatter = new FormatadorComprovante("PDV Toninho");
+        if (tipo == HistoricoVendaController.class) {
+            FormatadorComprovante formatador =
+                    new FormatadorComprovante("PDV Toninho");
             return new HistoricoVendaController(
-                    saleService, userService, new SQLitePagamentoRepository(database),
-                    formatter, new ImpressoraWindows(formatter));
+                    vendaService,
+                    usuarioService,
+                    new SQLitePagamentoRepository(database),
+                    formatador,
+                    new ImpressoraWindows(formatador));
         }
-        if (type == RelatorioController.class) {
-            return new RelatorioController(
-                    new RelatorioService(
-                            new SQLiteRelatorioRepository(database), session),
-                    userService, productService, new ExportadorCsv());
+        if (tipo == HistoricoProdutoController.class) {
+            return new HistoricoProdutoController(vendaService, categoriaService);
         }
-        if (type == BackupController.class) return new BackupController(backupService);
-        if (type == ProdutoController.class) {
-            return new ProdutoController(productService, categoryService);
+        if (tipo == CadastroController.class) return new CadastroController();
+        if (tipo == CategoriaController.class) {
+            return new CategoriaController(categoriaService);
         }
-        if (type == EstoqueController.class) {
+        if (tipo == ProdutoController.class) {
+            return new ProdutoController(produtos, categoriaService);
+        }
+        if (tipo == EstoqueController.class) {
             return new EstoqueController(
                     new EstoqueService(
-                            new SQLiteEstoqueRepository(database), productRepository,
-                            session, auditService),
-                    productService);
+                            new SQLiteEstoqueRepository(database),
+                            produtoRepository,
+                            sessao),
+                    produtos);
         }
-        if (type == CaixaController.class) {
-            return new CaixaController(
-                    new CaixaService(cashRepository, session, auditService));
+        if (tipo == CaixaController.class) return new CaixaController(caixa);
+        if (tipo == UsuarioController.class) {
+            return new UsuarioController(usuarioService);
         }
-        if (type == UsuarioController.class) return new UsuarioController(userService, session);
-        throw unconfigured(type);
+        throw naoConfigurado(tipo);
     }
 
-    /** Cria um FXMLLoader para um recurso obrigatorio do classpath. */
-    private FXMLLoader loader(String resource) {
-        return new FXMLLoader(Objects.requireNonNull(App.class.getResource(resource)));
+    private FXMLLoader loader(String recurso) {
+        return new FXMLLoader(Objects.requireNonNull(App.class.getResource(recurso)));
     }
 
-    /** Produz uma mensagem clara quando um controller novo nao foi registrado na fabrica. */
-    private IllegalArgumentException unconfigured(Class<?> type) {
-        return new IllegalArgumentException("Controller não configurado: " + type.getName());
+    private IllegalArgumentException naoConfigurado(Class<?> tipo) {
+        return new IllegalArgumentException(
+                "Controller não configurado: " + tipo.getName());
     }
 
-    /** Tenta criar um backup automatico durante o encerramento normal da aplicacao. */
     @Override
     public void stop() {
-        if (backupService == null) return;
+        if (backup == null) return;
         try {
-            backupService.criarAutomatico();
+            backup.criarAutomatico();
+            backup.aplicarRetencao(10);
         } catch (RuntimeException exception) {
             Logger.getLogger(App.class.getName()).log(
-                    Level.SEVERE, "Falha ao criar backup automático no encerramento.", exception);
+                    Level.SEVERE,
+                    "Falha ao criar backup automático no encerramento.",
+                    exception);
         }
     }
 }

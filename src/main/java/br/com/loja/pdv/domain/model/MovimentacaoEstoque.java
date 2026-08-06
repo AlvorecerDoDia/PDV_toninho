@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 /** Historico de uma alteracao de estoque com saldos anterior e posterior. */
 public class MovimentacaoEstoque {
-    // O historico guarda o saldo antes e depois para permitir auditoria.
+    // O historico guarda o saldo antes e depois para permitir rastreio.
     private Long id;
     private long produtoId;
     private TipoMovimentacaoEstoque tipo;

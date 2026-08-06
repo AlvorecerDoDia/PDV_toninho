@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Agrupa o historico de vendas e a consulta dos produtos vendidos. -->
+<?import javafx.scene.control.*?>
+<TabPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+         tabClosingPolicy="UNAVAILABLE" styleClass="section-tabs">
+    <tabs>
+        <Tab text="Vendas">
+            <content><fx:include source="historico-venda-view.fxml"/></content>
+        </Tab>
+        <Tab text="Produtos vendidos">
+            <content><fx:include source="historico-produto-view.fxml"/></content>
+        </Tab>
+    </tabs>
+</TabPane>

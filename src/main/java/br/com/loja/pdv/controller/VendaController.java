@@ -1,6 +1,5 @@
 package br.com.loja.pdv.controller;
 
-import br.com.loja.pdv.domain.enums.Permissao;
 import br.com.loja.pdv.domain.model.CarrinhoVenda;
 import br.com.loja.pdv.domain.model.ItemCarrinho;
 import br.com.loja.pdv.domain.model.Produto;
@@ -64,7 +63,7 @@ public final class VendaController {
     private void initialize() {
         UiFormatters.inteiro(quantidadeField);
         UiFormatters.moeda(descontoField);
-        sessao.exigir(Permissao.VENDAS);
+        sessao.exigirLogin();
         produtoColumn.setCellValueFactory(row ->
                 new SimpleStringProperty(row.getValue().getProduto().getNome()));
         quantidadeColumn.setCellValueFactory(row ->
@@ -165,7 +164,6 @@ public final class VendaController {
     @FXML
     private void applyDiscount() {
         execute(() -> {
-            sessao.exigir(Permissao.DESCONTOS);
             carrinho.aplicarDesconto(parseMoney(descontoField.getText()));
             return "Desconto aplicado.";
         });

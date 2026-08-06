@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Agrupa os cadastros de produtos e categorias no mesmo modulo. -->
+<?import javafx.scene.control.*?>
+<TabPane fx:id="cadastroTabs" xmlns="http://javafx.com/javafx/21"
+         xmlns:fx="http://javafx.com/fxml/1"
+         fx:controller="br.com.loja.pdv.controller.CadastroController"
+         tabClosingPolicy="UNAVAILABLE" styleClass="section-tabs">
+    <tabs>
+        <Tab fx:id="produtosTab" text="Produtos">
+            <content>
+                <fx:include fx:id="produtoView" source="produto-view.fxml"/>
+            </content>
+        </Tab>
+        <Tab text="Categorias">
+            <content>
+                <fx:include fx:id="categoriaView" source="categoria-view.fxml"/>
+            </content>
+        </Tab>
+    </tabs>
+</TabPane>

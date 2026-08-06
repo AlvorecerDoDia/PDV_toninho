@@ -13,11 +13,11 @@ import javafx.util.StringConverter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-/** Liga os campos de estoque ao historico e as regras do servico. */
+/** Controla entradas, ajustes e a consulta do estoque. */
 public final class EstoqueController {
     @FXML private ComboBox<Produto> produtoCombo;
-    @FXML private ComboBox<TipoMovimentacaoEstoque> tipoCombo;
-    @FXML private TextField quantidadeField;
+    @FXML private TextField entradaField;
+    @FXML private TextField novoSaldoField;
     @FXML private TextArea motivoArea;
     @FXML private Label saldoLabel;
     @FXML private Label mensagemLabel;
@@ -33,66 +33,74 @@ public final class EstoqueController {
     private final EstoqueService estoqueService;
     private final ProdutoService produtoService;
 
-    /** Recebe os servicos e objetos de sessao usados pelas acoes desta tela. */
-    public EstoqueController(EstoqueService estoqueService, ProdutoService produtoService) {
+    public EstoqueController(
+            EstoqueService estoqueService, ProdutoService produtoService) {
         this.estoqueService = estoqueService;
         this.produtoService = produtoService;
     }
 
-    /** Configura combos, tabela, filtros de data e listeners da tela de estoque. */
     @FXML
     private void initialize() {
-        UiFormatters.inteiro(quantidadeField);
+        UiFormatters.inteiro(entradaField, novoSaldoField);
         produtoCombo.getItems().setAll(produtoService.listarAtivos());
         produtoCombo.setConverter(new StringConverter<>() {
             @Override public String toString(Produto produto) {
                 return produto == null ? "" : produto.getNome();
             }
-            @Override public Produto fromString(String text) { return null; }
+            @Override public Produto fromString(String texto) { return null; }
         });
-        tipoCombo.getItems().setAll(
-                TipoMovimentacaoEstoque.ENTRADA,
-                TipoMovimentacaoEstoque.AJUSTE_POSITIVO,
-                TipoMovimentacaoEstoque.AJUSTE_NEGATIVO,
-                TipoMovimentacaoEstoque.DEVOLUCAO,
-                TipoMovimentacaoEstoque.PERDA
-        );
         inicioPicker.setValue(LocalDate.now().minusMonths(1));
         fimPicker.setValue(LocalDate.now());
         dataColumn.setCellValueFactory(row -> new SimpleStringProperty(
-                row.getValue().getCriadoEm().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))));
-        tipoColumn.setCellValueFactory(row -> new SimpleStringProperty(row.getValue().getTipo().name()));
+                row.getValue().getCriadoEm().format(
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))));
+        tipoColumn.setCellValueFactory(row -> new SimpleStringProperty(
+                nomeTipo(row.getValue().getTipo())));
         quantidadeColumn.setCellValueFactory(row -> new SimpleStringProperty(
                 Integer.toString(row.getValue().getQuantidade())));
         saldoColumn.setCellValueFactory(row -> new SimpleStringProperty(
-                row.getValue().getQuantidadeAnterior() + " → " + row.getValue().getQuantidadePosterior()));
+                row.getValue().getQuantidadeAnterior() + " → "
+                        + row.getValue().getQuantidadePosterior()));
         motivoColumn.setCellValueFactory(row -> new SimpleStringProperty(
                 row.getValue().getMotivo() == null ? "" : row.getValue().getMotivo()));
-        produtoCombo.valueProperty().addListener((observable, oldValue, value) -> refresh());
+        produtoCombo.valueProperty().addListener(
+                (observable, anterior, atual) -> refresh());
     }
 
-    /** Monta uma movimentacao a partir do formulario e a envia ao servico. */
     @FXML
-    private void register() {
-        Produto produto = produtoCombo.getValue();
-        if (produto == null) {
-            message("Selecione um produto.", true);
-            return;
-        }
+    private void registerEntry() {
+        Produto produto = produtoSelecionado();
+        if (produto == null) return;
         try {
-            estoqueService.registrar(
-                    produto.getId(), tipoCombo.getValue(),
-                    Integer.parseInt(quantidadeField.getText()), motivoArea.getText());
-            quantidadeField.clear();
+            estoqueService.registrarEntrada(
+                    produto.getId(), Integer.parseInt(entradaField.getText()),
+                    motivoArea.getText());
+            entradaField.clear();
             motivoArea.clear();
-            message("Movimentação registrada.", false);
+            mensagem("Entrada registrada.", false);
             refresh();
         } catch (RuntimeException exception) {
-            message(ErrorHandler.mensagem(exception), true);
+            mensagem(ErrorHandler.mensagem(exception), true);
         }
     }
 
-    /** Atualiza o saldo selecionado e consulta o historico no periodo informado. */
+    @FXML
+    private void adjustBalance() {
+        Produto produto = produtoSelecionado();
+        if (produto == null) return;
+        try {
+            estoqueService.ajustarSaldo(
+                    produto.getId(), Integer.parseInt(novoSaldoField.getText()),
+                    motivoArea.getText());
+            novoSaldoField.clear();
+            motivoArea.clear();
+            mensagem("Saldo ajustado.", false);
+            refresh();
+        } catch (RuntimeException exception) {
+            mensagem(ErrorHandler.mensagem(exception), true);
+        }
+    }
+
     @FXML
     private void refresh() {
         Produto produto = produtoCombo.getValue();
@@ -102,20 +110,40 @@ public final class EstoqueController {
             return;
         }
         try {
-            int balance = estoqueService.buscarSaldo(produto.getId());
-            saldoLabel.setText("Saldo: " + balance);
-            saldoLabel.setStyle(balance <= produto.getEstoqueMinimo()
-                    ? "-fx-text-fill: #b91c1c; -fx-font-weight: bold;" : "");
+            int saldo = estoqueService.buscarSaldo(produto.getId());
+            saldoLabel.setText("Saldo: " + saldo);
+            saldoLabel.setStyle(saldo <= produto.getEstoqueMinimo()
+                    ? "-fx-text-fill: #b91c1c; -fx-font-weight: bold;"
+                    : "");
             historicoTable.getItems().setAll(estoqueService.listar(
                     produto.getId(), inicioPicker.getValue(), fimPicker.getValue()));
         } catch (RuntimeException exception) {
-            message(ErrorHandler.mensagem(exception), true);
+            mensagem(ErrorHandler.mensagem(exception), true);
         }
     }
 
-    /** Apresenta validacoes e confirmacoes junto ao formulario. */
-    private void message(String text, boolean error) {
-        mensagemLabel.setText(text == null ? "Ocorreu um erro." : text);
-        mensagemLabel.setStyle(error ? "-fx-text-fill: #b91c1c;" : "-fx-text-fill: #166534;");
+    private Produto produtoSelecionado() {
+        Produto produto = produtoCombo.getValue();
+        if (produto == null) {
+            mensagem("Selecione um produto.", true);
+        }
+        return produto;
+    }
+
+    private String nomeTipo(TipoMovimentacaoEstoque tipo) {
+        return switch (tipo) {
+            case ENTRADA -> "Entrada";
+            case AJUSTE_POSITIVO, AJUSTE_NEGATIVO -> "Ajuste";
+            case SAIDA_VENDA -> "Venda";
+            case DEVOLUCAO -> "Devolução";
+            case PERDA -> "Perda";
+        };
+    }
+
+    private void mensagem(String texto, boolean erro) {
+        mensagemLabel.setText(texto == null ? "Ocorreu um erro." : texto);
+        mensagemLabel.setStyle(erro
+                ? "-fx-text-fill: #b91c1c;"
+                : "-fx-text-fill: #166534;");
     }
 }

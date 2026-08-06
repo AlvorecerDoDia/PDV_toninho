@@ -1,48 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Entrada no sistema com foco na autenticacao. -->
-<?import javafx.geometry.Insets?>
+<!-- Tela simples de acesso ao PDV. -->
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="br.com.loja.pdv.controller.LoginController"
             stylesheets="@../css/app.css" styleClass="login-root">
-    <!-- Identidade e contexto da aplicacao. -->
     <left>
         <VBox styleClass="login-brand">
             <Label text="PDV Toninho" styleClass="login-brand-title"/>
-            <Label text="Vendas, estoque e caixa em um único lugar."
+            <Label text="Vendas, cadastro, estoque e histórico em um único lugar."
                    wrapText="true" styleClass="login-brand-text"/>
             <Region VBox.vgrow="ALWAYS"/>
-            <Label text="Acesso protegido por usuário e perfil."
-                   wrapText="true" styleClass="login-brand-text"/>
         </VBox>
     </left>
-    <!-- Cartao de credenciais e troca obrigatoria da senha inicial. -->
     <center>
         <StackPane styleClass="login-card-wrap">
             <VBox spacing="12" styleClass="card, login-card">
                 <VBox spacing="2">
                     <Label text="Bem-vindo" styleClass="login-title"/>
-                    <Label text="Entre com suas credenciais para iniciar." styleClass="page-subtitle"/>
+                    <Label text="Entre com seu login e senha." styleClass="page-subtitle"/>
                 </VBox>
                 <Label fx:id="mensagemLabel" wrapText="true" styleClass="feedback"/>
                 <VBox spacing="5">
                     <Label text="Login" styleClass="field-label"/>
-                    <TextField fx:id="loginField" promptText="Digite seu login" accessibleText="Campo de login"/>
+                    <TextField fx:id="loginField" promptText="Digite seu login"/>
                 </VBox>
                 <VBox spacing="5">
                     <Label text="Senha" styleClass="field-label"/>
-                    <PasswordField fx:id="senhaField" promptText="Digite sua senha" accessibleText="Campo de senha"/>
+                    <PasswordField fx:id="senhaField" promptText="Digite sua senha"/>
                 </VBox>
-                <VBox spacing="5">
-                    <Label fx:id="novaSenhaLabel" text="Crie uma nova senha" visible="false"
-                           managed="false" styleClass="field-label"/>
-                    <PasswordField fx:id="novaSenhaField" promptText="Mínimo de 8 caracteres"
-                                   visible="false" managed="false" accessibleText="Campo de nova senha"/>
-                </VBox>
-                <Button text="Entrar no sistema" onAction="#login" defaultButton="true"
+                <Button text="Entrar" onAction="#login" defaultButton="true"
                         styleClass="button, primary" maxWidth="Infinity"/>
-                <Label text="Pressione Enter para continuar." styleClass="hint"/>
             </VBox>
         </StackPane>
     </center>
